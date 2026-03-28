@@ -526,22 +526,22 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   const removeMember = useCallback(async (projectId: string, memberId: string) => {
     if (!user) return;
     const displayName = user.user_metadata?.display_name || user.email || "Unknown";
-    const project = projects.find(p => p.id === projectId);
+    const project = projectsRef.current.find(p => p.id === projectId);
     const member = project?.members.find(m => m.id === memberId);
     await supabase.from("project_members").delete().eq("id", memberId);
     await logActivity(user.id, displayName, projectId, "member_removed", `removed ${member?.displayName || "a member"}`);
     await fetchProjects();
-  }, [user, fetchProjects, projects]);
+  }, [user, fetchProjects]);
 
   const updateMemberRole = useCallback(async (projectId: string, memberId: string, role: "editor" | "viewer") => {
     if (!user) return;
     const displayName = user.user_metadata?.display_name || user.email || "Unknown";
-    const project = projects.find(p => p.id === projectId);
+    const project = projectsRef.current.find(p => p.id === projectId);
     const member = project?.members.find(m => m.id === memberId);
     await supabase.from("project_members").update({ role }).eq("id", memberId);
     await logActivity(user.id, displayName, projectId, "member_updated", `changed ${member?.displayName || "a member"} role to ${role}`);
     await fetchProjects();
-  }, [user, fetchProjects, projects]);
+  }, [user, fetchProjects]);
 
   const userRole = useCallback((projectId: string): "editor" | "viewer" | null => {
     if (!user) return null;
