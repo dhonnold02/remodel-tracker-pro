@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { ProjectData } from "@/hooks/useProjects";
 import { getProjectStats, getAggregatedStats } from "@/types/project";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, HardHat, LogOut } from "lucide-react";
+import { Plus, HardHat, LogOut, Search, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import ProjectCard from "@/components/ProjectCard";
 
@@ -22,6 +22,17 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects }: Dashb
   const { signOut } = useAuth();
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredProjects = useMemo(() => {
+    if (!searchQuery.trim()) return projects;
+    const q = searchQuery.toLowerCase();
+    return projects.filter((p) => {
+      if (p.name.toLowerCase().includes(q)) return true;
+      if (p.tasks.some(t => t.title.toLowerCase().includes(q))) return true;
+      return false;
+    });
+  }, [projects, searchQuery]);
 
   const handleAdd = async () => {
     if (!newName.trim() || creating) return;
@@ -59,6 +70,22 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects }: Dashb
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-6 space-y-5 pb-24">
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search projects and tasks…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 h-10"
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
         <div className="flex gap-2">
           <Input
             placeholder="New project name…"
@@ -89,14 +116,18 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects }: Dashb
           </div>
         ) : (
           <div className="space-y-3">
-            {projects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                getSubProjects={getSubProjects}
-                onDelete={onDelete}
-              />
-            ))}
+            {filteredProjects.length === 0 && searchQuery ? (
+              <p className="text-sm text-muted-foreground text-center py-8">No projects match "{searchQuery}"</p>
+            ) : (
+              filteredProjects.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  getSubProjects={getSubProjects}
+                  onDelete={onDelete}
+                />
+              ))
+            )}
           </div>
         )}
       </main>
