@@ -22,10 +22,55 @@ const PRESET_COLORS = [
 
 const BrandingSettings = () => {
   const { brand, updateBrand } = useBranding();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(brand.brandName || "");
   const [logoUrl, setLogoUrl] = useState(brand.brandLogoUrl || "");
   const [selectedColor, setSelectedColor] = useState(brand.brandColor || "");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("File must be under 2MB");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `${user.id}/logo.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("brand-logos")
+        .upload(path, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("brand-logos")
+        .getPublicUrl(path);
+
+      setLogoUrl(urlData.publicUrl + "?t=" + Date.now());
+      toast.success("Logo uploaded!");
+    } catch (err: any) {
+      toast.error(err?.message || "Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoUrl("");
+  };
 
   const handleSave = async () => {
     await updateBrand({
@@ -73,13 +118,39 @@ const BrandingSettings = () => {
           </div>
 
           <div>
-            <Label className="text-sm">Logo URL</Label>
-            <Input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://example.com/logo.png" className="mt-1" />
-            {logoUrl && (
-              <div className="mt-2 flex items-center gap-2">
-                <img src={logoUrl} alt="Logo preview" className="h-8 w-8 rounded object-contain bg-secondary" onError={(e) => (e.currentTarget.style.display = "none")} />
-                <span className="text-xs text-muted-foreground">Preview</span>
+            <Label className="text-sm">Logo</Label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleLogoUpload}
+              className="hidden"
+            />
+            {logoUrl ? (
+              <div className="mt-2 flex items-center gap-3">
+                <img src={logoUrl} alt="Logo preview" className="h-12 w-12 rounded-lg object-contain bg-secondary border" onError={(e) => (e.currentTarget.style.display = "none")} />
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                    {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Replace"}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={handleRemoveLogo}>
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               </div>
+            ) : (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="mt-2 w-full flex items-center justify-center gap-2 border-2 border-dashed border-muted-foreground/30 rounded-lg py-4 text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+              >
+                {uploading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Upload className="h-4 w-4" />
+                )}
+                {uploading ? "Uploading…" : "Upload logo (max 2MB)"}
+              </button>
             )}
           </div>
 
