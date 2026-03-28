@@ -528,6 +528,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const deleteProject = useCallback(async (id: string) => {
     await supabase.from("projects").delete().eq("id", id);
     setProjects((prev) => prev.filter((p) => p.id !== id && p.parentId !== id));
   }, []);
