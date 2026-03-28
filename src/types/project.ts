@@ -3,6 +3,7 @@ export interface Task {
   title: string;
   notes: string;
   completed: boolean;
+  parentTaskId?: string | null;
 }
 
 export interface FileAttachment {
