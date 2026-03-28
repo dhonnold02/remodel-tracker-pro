@@ -126,6 +126,7 @@ const ProjectDetailPage = () => {
               <FileText className="h-4 w-4" />
             </button>
           </div>
+        </div>
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-5 space-y-4 pb-20">
