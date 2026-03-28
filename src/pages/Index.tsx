@@ -1,4 +1,4 @@
-import { useProjects } from "@/hooks/useProjects";
+import { useProjects } from "@/hooks/useProjects.tsx";
 import Dashboard from "@/components/Dashboard";
 
 const Index = () => {
