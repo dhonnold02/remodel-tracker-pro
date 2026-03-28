@@ -119,6 +119,47 @@ export type Database = {
           },
         ]
       }
+      invoices: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          paid: boolean
+          project_id: string
+          type: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          paid?: boolean
+          project_id: string
+          type?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          paid?: boolean
+          project_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       photos: {
         Row: {
           created_at: string
@@ -264,6 +305,7 @@ export type Database = {
       }
       projects: {
         Row: {
+          address: string
           created_at: string
           created_by: string | null
           end_date: string
@@ -277,6 +319,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          address?: string
           created_at?: string
           created_by?: string | null
           end_date?: string
@@ -290,6 +333,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          address?: string
           created_at?: string
           created_by?: string | null
           end_date?: string
