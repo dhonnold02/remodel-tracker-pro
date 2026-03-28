@@ -2,6 +2,22 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
+const logActivity = async (
+  userId: string,
+  userName: string,
+  projectId: string,
+  actionType: string,
+  description: string
+) => {
+  await supabase.from("activity_logs").insert({
+    project_id: projectId,
+    user_id: userId,
+    user_name: userName,
+    action_type: actionType,
+    description,
+  });
+};
+
 // Types matching the old ProjectData shape for component compatibility
 export interface Task {
   id: string;
