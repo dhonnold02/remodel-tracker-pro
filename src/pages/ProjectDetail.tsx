@@ -16,7 +16,8 @@ import ProgressBar from "@/components/ProgressBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ArrowLeft, HardHat, Plus, FolderOpen, ChevronRight, ChevronDown, Users, Activity } from "lucide-react";
+import { ArrowLeft, HardHat, Plus, FolderOpen, ChevronRight, ChevronDown, Users, Activity, Download, FileText } from "lucide-react";
+import { exportProjectCSV, exportProjectPDF } from "@/lib/exportProject";
 
 const ProjectDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -109,7 +110,22 @@ const ProjectDetailPage = () => {
               View only
             </span>
           )}
-        </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => exportProjectCSV(project, subProjects)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-secondary transition-colors"
+              title="Export CSV"
+            >
+              <Download className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => exportProjectPDF(project, subProjects)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-secondary transition-colors"
+              title="Print Report"
+            >
+              <FileText className="h-4 w-4" />
+            </button>
+          </div>
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-5 space-y-4 pb-20">
