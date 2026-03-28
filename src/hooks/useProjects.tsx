@@ -305,7 +305,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
     // Sync tasks if provided
     if (partial.tasks !== undefined) {
-      const oldProject = projects.find(p => p.id === id);
+      const oldProject = projectsRef.current.find(p => p.id === id);
       const oldTasks = oldProject?.tasks || [];
       await syncTasks(id, partial.tasks);
       // Detect changes for logging
@@ -325,7 +325,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
     // Sync photos if provided
     if (partial.photos !== undefined) {
-      const oldPhotos = projects.find(p => p.id === id)?.photos || [];
+      const oldPhotos = projectsRef.current.find(p => p.id === id)?.photos || [];
       await syncPhotos(id, partial.photos);
       const addedPhotos = partial.photos.filter(p => !oldPhotos.find(o => o.id === p.id));
       for (const p of addedPhotos) {
@@ -335,7 +335,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
     // Sync blueprints if provided
     if (partial.blueprints !== undefined) {
-      const oldBlueprints = projects.find(p => p.id === id)?.blueprints || [];
+      const oldBlueprints = projectsRef.current.find(p => p.id === id)?.blueprints || [];
       await syncBlueprints(id, partial.blueprints);
       const addedBp = partial.blueprints.filter(b => !oldBlueprints.find(o => o.id === b.id));
       for (const b of addedBp) {
@@ -345,7 +345,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
     // Sync change orders if provided
     if (partial.changeOrders !== undefined) {
-      const oldOrders = projects.find(p => p.id === id)?.changeOrders || [];
+      const oldOrders = projectsRef.current.find(p => p.id === id)?.changeOrders || [];
       await syncChangeOrders(id, partial.changeOrders);
       const addedOrders = partial.changeOrders.filter(o => !oldOrders.find(old => old.id === o.id));
       for (const o of addedOrders) {
@@ -355,7 +355,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
     // Optimistic local update
     setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, ...partial } : p)));
-  }, [user, projects]);
+  }, [user]);
 
   const syncTasks = async (projectId: string, tasks: Task[]) => {
     // Delete existing tasks and re-insert (simple sync)
