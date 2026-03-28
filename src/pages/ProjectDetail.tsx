@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useProjects } from "@/hooks/useProjects";
+import { useProjects } from "@/hooks/useProjects.tsx";
 import ProjectDetails from "@/components/ProjectDetails";
 import BudgetSection from "@/components/BudgetSection";
 import TaskList from "@/components/TaskList";
