@@ -230,6 +230,11 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    const displayName = user.user_metadata?.display_name || user.email || "Unknown";
+    const actionType = parentId ? "sub_project_created" : "project_created";
+    const desc = parentId ? `created sub-project "${name}"` : `created project "${name}"`;
+    await logActivity(user.id, displayName, data.id, actionType, desc);
+
     await fetchProjects();
     return data.id;
   }, [user, fetchProjects]);
