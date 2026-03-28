@@ -2,6 +2,22 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
+const logActivity = async (
+  userId: string,
+  userName: string,
+  projectId: string,
+  actionType: string,
+  description: string
+) => {
+  await supabase.from("activity_logs").insert({
+    project_id: projectId,
+    user_id: userId,
+    user_name: userName,
+    action_type: actionType,
+    description,
+  });
+};
+
 // Types matching the old ProjectData shape for component compatibility
 export interface Task {
   id: string;
@@ -214,12 +230,18 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    const displayName = user.user_metadata?.display_name || user.email || "Unknown";
+    const actionType = parentId ? "sub_project_created" : "project_created";
+    const desc = parentId ? `created sub-project "${name}"` : `created project "${name}"`;
+    await logActivity(user.id, displayName, data.id, actionType, desc);
+
     await fetchProjects();
     return data.id;
   }, [user, fetchProjects]);
 
   const updateProject = useCallback(async (id: string, partial: Partial<ProjectData>) => {
     if (!user) return;
+    const displayName = user.user_metadata?.display_name || user.email || "Unknown";
 
     // Update project fields
     const projectFields: Record<string, any> = {};
@@ -232,31 +254,71 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
     if (Object.keys(projectFields).length > 0) {
       await supabase.from("projects").update(projectFields).eq("id", id);
+      // Log budget changes
+      if (partial.totalBudget !== undefined || partial.laborCosts !== undefined || partial.materialCosts !== undefined) {
+        await logActivity(user.id, displayName, id, "budget_updated", "updated budget");
+      }
+      if (partial.name !== undefined) {
+        await logActivity(user.id, displayName, id, "project_updated", `renamed project to "${partial.name}"`);
+      }
+      if (partial.startDate !== undefined || partial.endDate !== undefined) {
+        await logActivity(user.id, displayName, id, "project_updated", "updated project dates");
+      }
     }
 
     // Sync tasks if provided
     if (partial.tasks !== undefined) {
+      const oldProject = projects.find(p => p.id === id);
+      const oldTasks = oldProject?.tasks || [];
       await syncTasks(id, partial.tasks);
+      // Detect changes for logging
+      const newCompleted = partial.tasks.filter(t => t.completed && !oldTasks.find(o => o.id === t.id && o.completed));
+      const newTasks = partial.tasks.filter(t => !oldTasks.find(o => o.id === t.id));
+      if (newTasks.length > 0) {
+        for (const t of newTasks) {
+          await logActivity(user.id, displayName, id, "task_created", `added task "${t.title}"`);
+        }
+      }
+      if (newCompleted.length > 0) {
+        for (const t of newCompleted) {
+          await logActivity(user.id, displayName, id, "task_completed", `completed task "${t.title}"`);
+        }
+      }
     }
 
     // Sync photos if provided
     if (partial.photos !== undefined) {
+      const oldPhotos = projects.find(p => p.id === id)?.photos || [];
       await syncPhotos(id, partial.photos);
+      const addedPhotos = partial.photos.filter(p => !oldPhotos.find(o => o.id === p.id));
+      for (const p of addedPhotos) {
+        await logActivity(user.id, displayName, id, "photo_uploaded", `uploaded photo "${p.name}"`);
+      }
     }
 
     // Sync blueprints if provided
     if (partial.blueprints !== undefined) {
+      const oldBlueprints = projects.find(p => p.id === id)?.blueprints || [];
       await syncBlueprints(id, partial.blueprints);
+      const addedBp = partial.blueprints.filter(b => !oldBlueprints.find(o => o.id === b.id));
+      for (const b of addedBp) {
+        await logActivity(user.id, displayName, id, "blueprint_uploaded", `uploaded blueprint "${b.name}"`);
+      }
     }
 
     // Sync change orders if provided
     if (partial.changeOrders !== undefined) {
+      const oldOrders = projects.find(p => p.id === id)?.changeOrders || [];
       await syncChangeOrders(id, partial.changeOrders);
+      const addedOrders = partial.changeOrders.filter(o => !oldOrders.find(old => old.id === o.id));
+      for (const o of addedOrders) {
+        await logActivity(user.id, displayName, id, "change_order_added", `added change order`);
+      }
     }
 
     // Optimistic local update
     setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, ...partial } : p)));
-  }, [user]);
+  }, [user, projects]);
 
   const syncTasks = async (projectId: string, tasks: Task[]) => {
     // Delete existing tasks and re-insert (simple sync)
@@ -370,14 +432,9 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   }, [fetchProjects]);
 
   const addMember = useCallback(async (projectId: string, email: string, role: "editor" | "viewer") => {
-    // Find user by email in profiles - need to look up via auth
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, display_name");
-    
-    // We need to find user by email - check auth.users isn't directly accessible
-    // Instead, use a workaround: try to find from existing profiles
-    // For now, we'll use a simpler approach
+    if (!user) return { error: "Not authenticated" };
+    const displayName = user.user_metadata?.display_name || user.email || "Unknown";
+
     const { data, error } = await supabase.rpc("find_user_by_email", { _email: email });
     
     if (error || !data || (Array.isArray(data) && data.length === 0)) {
@@ -399,19 +456,30 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       return { error: insertError.message };
     }
 
+    await logActivity(user.id, displayName, projectId, "member_added", `invited ${email} as ${role}`);
     await fetchProjects();
     return { error: null };
-  }, [fetchProjects]);
+  }, [user, fetchProjects]);
 
   const removeMember = useCallback(async (projectId: string, memberId: string) => {
+    if (!user) return;
+    const displayName = user.user_metadata?.display_name || user.email || "Unknown";
+    const project = projects.find(p => p.id === projectId);
+    const member = project?.members.find(m => m.id === memberId);
     await supabase.from("project_members").delete().eq("id", memberId);
+    await logActivity(user.id, displayName, projectId, "member_removed", `removed ${member?.displayName || "a member"}`);
     await fetchProjects();
-  }, [fetchProjects]);
+  }, [user, fetchProjects, projects]);
 
   const updateMemberRole = useCallback(async (projectId: string, memberId: string, role: "editor" | "viewer") => {
+    if (!user) return;
+    const displayName = user.user_metadata?.display_name || user.email || "Unknown";
+    const project = projects.find(p => p.id === projectId);
+    const member = project?.members.find(m => m.id === memberId);
     await supabase.from("project_members").update({ role }).eq("id", memberId);
+    await logActivity(user.id, displayName, projectId, "member_updated", `changed ${member?.displayName || "a member"} role to ${role}`);
     await fetchProjects();
-  }, [fetchProjects]);
+  }, [user, fetchProjects, projects]);
 
   const userRole = useCallback((projectId: string): "editor" | "viewer" | null => {
     if (!user) return null;

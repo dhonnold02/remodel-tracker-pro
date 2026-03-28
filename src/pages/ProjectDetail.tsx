@@ -11,6 +11,7 @@ import ChangeOrdersSection from "@/components/ChangeOrdersSection";
 import EstimatedFinishDate from "@/components/EstimatedFinishDate";
 import GanttTimeline from "@/components/GanttTimeline";
 import TeamMembers from "@/components/TeamMembers";
+import ActivityLog from "@/components/ActivityLog";
 import ProgressBar from "@/components/ProgressBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -225,6 +226,7 @@ const ProjectDetailPage = () => {
         <PhotoGallery photos={project.photos} onChange={isEditor ? (photos) => update({ photos }) : () => {}} />
         <BlueprintSection blueprints={project.blueprints} onChange={isEditor ? (blueprints) => update({ blueprints }) : () => {}} />
         <ChangeOrdersSection orders={project.changeOrders} onChange={isEditor ? (changeOrders) => update({ changeOrders }) : () => {}} />
+        <ActivityLog projectId={project.id} />
       </main>
     </div>
   );
