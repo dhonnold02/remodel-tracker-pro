@@ -1,3 +1,5 @@
+export type TaskPriority = "high" | "medium" | "low";
+
 export interface Task {
   id: string;
   title: string;
@@ -5,6 +7,8 @@ export interface Task {
   completed: boolean;
   parentTaskId?: string | null;
   dueDate?: string | null;
+  priority: TaskPriority;
+  tags: string[];
 }
 
 export interface FileAttachment {
@@ -50,6 +54,17 @@ export const createProject = (name = "", parentId?: string): ProjectData => ({
   blueprints: [],
   changeOrders: [],
   createdAt: new Date().toISOString(),
+});
+
+export const createTask = (title: string, parentTaskId: string | null = null): Task => ({
+  id: crypto.randomUUID(),
+  title,
+  notes: "",
+  completed: false,
+  parentTaskId,
+  dueDate: null,
+  priority: "medium",
+  tags: [],
 });
 
 export const getProjectStats = (p: ProjectData) => {

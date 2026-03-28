@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getProjectStats, getAggregatedStats, createProject } from "@/types/project";
+import { getProjectStats, getAggregatedStats, createProject, createTask } from "@/types/project";
 
 describe("Project Creation", () => {
   it("creates a project with default values", () => {
@@ -56,9 +56,9 @@ describe("Task Completion", () => {
   it("calculates task percent correctly", () => {
     const p = createProject("Test");
     p.tasks = [
-      { id: "1", title: "Task 1", notes: "", completed: true, parentTaskId: null },
-      { id: "2", title: "Task 2", notes: "", completed: false, parentTaskId: null },
-      { id: "3", title: "Task 3", notes: "", completed: true, parentTaskId: null },
+      { ...createTask("Task 1"), id: "1", completed: true },
+      { ...createTask("Task 2"), id: "2", completed: false },
+      { ...createTask("Task 3"), id: "3", completed: true },
     ];
     const stats = getProjectStats(p);
     expect(stats.completedTasks).toBe(2);
@@ -99,12 +99,12 @@ describe("Aggregated Stats (Sub-Projects)", () => {
   it("aggregates tasks across sub-projects", () => {
     const parent = createProject("Main");
     parent.tasks = [
-      { id: "1", title: "A", notes: "", completed: true, parentTaskId: null },
+      { ...createTask("A"), id: "1", completed: true },
     ];
     const sub = createProject("Sub");
     sub.tasks = [
-      { id: "2", title: "B", notes: "", completed: false, parentTaskId: null },
-      { id: "3", title: "C", notes: "", completed: true, parentTaskId: null },
+      { ...createTask("B"), id: "2", completed: false },
+      { ...createTask("C"), id: "3", completed: true },
     ];
     const agg = getAggregatedStats(parent, [sub]);
     expect(agg.totalTasks).toBe(3);

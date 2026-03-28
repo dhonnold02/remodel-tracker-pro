@@ -19,6 +19,8 @@ const logActivity = async (
 };
 
 // Types matching the old ProjectData shape for component compatibility
+export type TaskPriority = "high" | "medium" | "low";
+
 export interface Task {
   id: string;
   title: string;
@@ -26,6 +28,8 @@ export interface Task {
   completed: boolean;
   parentTaskId?: string | null;
   dueDate?: string | null;
+  priority: TaskPriority;
+  tags: string[];
 }
 
 export interface FileAttachment {
@@ -146,7 +150,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       createdAt: p.created_at,
       tasks: tasks
         .filter((t) => t.project_id === p.id)
-        .map((t) => ({ id: t.id, title: t.title, notes: t.notes, completed: t.completed, parentTaskId: (t as any).parent_task_id || null, dueDate: (t as any).due_date || null })),
+        .map((t) => ({ id: t.id, title: t.title, notes: t.notes, completed: t.completed, parentTaskId: (t as any).parent_task_id || null, dueDate: (t as any).due_date || null, priority: ((t as any).priority || "medium") as TaskPriority, tags: (t as any).tags || [] })),
       photos: photos
         .filter((ph) => ph.project_id === p.id)
         .map((ph) => ({ id: ph.id, name: ph.name, dataUrl: ph.data_url, createdAt: ph.created_at })),
@@ -340,6 +344,8 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
             sort_order: i,
             parent_task_id: null,
             due_date: t.dueDate || null,
+            priority: t.priority || "medium",
+            tags: t.tags || [],
           }))
         );
       }
@@ -354,6 +360,8 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
             sort_order: i + parentTasks.length,
             parent_task_id: t.parentTaskId,
             due_date: t.dueDate || null,
+            priority: t.priority || "medium",
+            tags: t.tags || [],
           }))
         );
       }
