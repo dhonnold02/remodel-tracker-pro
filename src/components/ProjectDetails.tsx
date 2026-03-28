@@ -22,6 +22,17 @@ const ProjectDetails = ({ data, onChange }: ProjectDetailsProps) => {
             className="mt-1"
           />
         </div>
+        <div>
+          <Label htmlFor="address" className="text-sm text-muted-foreground">Job Address</Label>
+          <textarea
+            id="address"
+            placeholder="123 Main St&#10;Apt 4B&#10;New York, NY 10001"
+            value={(data as any).address || ""}
+            onChange={(e) => onChange({ address: e.target.value } as any)}
+            rows={2}
+            className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
+          />
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label htmlFor="start" className="text-sm text-muted-foreground">Start Date</Label>

@@ -5,7 +5,7 @@ import { getProjectStats, getAggregatedStats } from "@/types/project";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, HardHat, LogOut, Search, X, WifiOff } from "lucide-react";
+import { Plus, HardHat, LogOut, Search, X, WifiOff, MapPin, CheckCircle2, Clock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import ProjectCard from "@/components/ProjectCard";
 import ProjectTemplates from "@/components/ProjectTemplates";
@@ -13,6 +13,7 @@ import BrandingSettings from "@/components/BrandingSettings";
 import { useBranding } from "@/hooks/useBranding";
 import { useOnlineStatus } from "@/hooks/useOfflineSync";
 import { ProjectTemplate } from "@/hooks/useTemplates";
+import ProgressBar from "@/components/ProgressBar";
 
 interface DashboardProps {
   projects: ProjectData[];
@@ -31,16 +32,30 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [view, setView] = useState<"all" | "open" | "completed">("all");
 
   const filteredProjects = useMemo(() => {
-    if (!searchQuery.trim()) return projects;
-    const q = searchQuery.toLowerCase();
-    return projects.filter((p) => {
-      if (p.name.toLowerCase().includes(q)) return true;
-      if (p.tasks.some(t => t.title.toLowerCase().includes(q))) return true;
-      return false;
-    });
+    let list = projects;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter((p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.address?.toLowerCase().includes(q) ||
+        p.tasks.some(t => t.title.toLowerCase().includes(q))
+      );
+    }
+    return list;
   }, [projects, searchQuery]);
+
+  const isProjectCompleted = (p: ProjectData) => {
+    if (p.tasks.length === 0) return false;
+    return p.tasks.every(t => t.completed);
+  };
+
+  const openProjects = useMemo(() => filteredProjects.filter(p => !isProjectCompleted(p)), [filteredProjects]);
+  const completedProjects = useMemo(() => filteredProjects.filter(p => isProjectCompleted(p)), [filteredProjects]);
+
+  const displayProjects = view === "open" ? openProjects : view === "completed" ? completedProjects : filteredProjects;
 
   const handleAdd = async () => {
     if (!newName.trim() || creating) return;
@@ -61,7 +76,6 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
     setCreating(true);
     try {
       const id = await onAdd(template.name);
-      // Apply template settings
       if (onUpdateProject) {
         await onUpdateProject(id, {
           totalBudget: template.totalBudget,
@@ -119,11 +133,42 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-6 space-y-5 pb-24">
+        {/* Stats summary */}
+        {!loading && projects.length > 0 && (
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              onClick={() => setView("all")}
+              className={`rounded-xl border p-3 text-center transition-all ${view === "all" ? "border-primary bg-primary/5" : "bg-card hover:border-primary/20"}`}
+            >
+              <p className="text-2xl font-heading font-bold text-foreground">{projects.length}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">All</p>
+            </button>
+            <button
+              onClick={() => setView("open")}
+              className={`rounded-xl border p-3 text-center transition-all ${view === "open" ? "border-primary bg-primary/5" : "bg-card hover:border-primary/20"}`}
+            >
+              <p className="text-2xl font-heading font-bold text-foreground">{openProjects.length}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider flex items-center justify-center gap-1">
+                <Clock className="h-3 w-3" /> Open
+              </p>
+            </button>
+            <button
+              onClick={() => setView("completed")}
+              className={`rounded-xl border p-3 text-center transition-all ${view === "completed" ? "border-primary bg-primary/5" : "bg-card hover:border-primary/20"}`}
+            >
+              <p className="text-2xl font-heading font-bold text-foreground">{completedProjects.length}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider flex items-center justify-center gap-1">
+                <CheckCircle2 className="h-3 w-3" /> Done
+              </p>
+            </button>
+          </div>
+        )}
+
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search projects and tasks…"
+            placeholder="Search projects, tasks, addresses…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 h-10"
@@ -159,9 +204,13 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
               Loading projects…
             </div>
           </div>
-        ) : filteredProjects.length === 0 ? (
+        ) : displayProjects.length === 0 ? (
           searchQuery ? (
             <p className="text-sm text-muted-foreground text-center py-8">No projects match "{searchQuery}"</p>
+          ) : view !== "all" ? (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              No {view === "completed" ? "completed" : "open"} projects.
+            </p>
           ) : (
             <div className="text-center py-20 space-y-3">
               <div className="mx-auto w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center">
@@ -172,7 +221,7 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
           )
         ) : (
           <div className="space-y-3">
-            {filteredProjects.map((project) => (
+            {displayProjects.map((project) => (
               <ProjectCard
                 key={project.id}
                 project={project}

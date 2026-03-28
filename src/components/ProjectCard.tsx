@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ProjectData } from "@/hooks/useProjects";
 import { getProjectStats, getAggregatedStats } from "@/types/project";
-import { Trash2, ChevronRight, ChevronDown, FolderOpen } from "lucide-react";
+import { Trash2, ChevronRight, ChevronDown, FolderOpen, MapPin, CheckCircle2 } from "lucide-react";
 import ProgressBar from "@/components/ProgressBar";
 
 interface ProjectCardProps {
@@ -27,13 +27,14 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false }
   const remaining = stats.remaining;
   const budgetPercent = stats.budgetPercent;
   const taskPercent = stats.taskPercent;
+  const isCompleted = project.tasks.length > 0 && project.tasks.every(t => t.completed);
 
   return (
     <div className={isSubProject ? "ml-4 border-l-2 border-primary/15 pl-3" : ""}>
       <div
         className={`group rounded-xl border bg-card p-4 space-y-3 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary/20 ${
           isSubProject ? "bg-card/80" : ""
-        }`}
+        } ${isCompleted ? "border-l-4 border-l-green-500" : ""}`}
         onClick={() => navigate(`/project/${project.id}`)}
       >
         <div className="flex items-center justify-between">
@@ -47,8 +48,9 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false }
               </button>
             )}
             {isSubProject && <FolderOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
-            <h3 className="font-heading font-semibold text-foreground truncate">
+            <h3 className="font-heading font-semibold text-foreground truncate flex items-center gap-1.5">
               {project.name || "Untitled Project"}
+              {isCompleted && <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />}
             </h3>
             {hasSubs && (
               <span className="text-[10px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded-full shrink-0">
@@ -79,6 +81,13 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false }
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </div>
         </div>
+
+        {project.address && (
+          <p className="text-[11px] text-muted-foreground flex items-center gap-1 truncate -mt-1">
+            <MapPin className="h-3 w-3 shrink-0" />
+            {project.address.split("\n")[0]}
+          </p>
+        )}
 
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-lg bg-secondary/60 p-2.5">

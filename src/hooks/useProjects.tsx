@@ -56,9 +56,18 @@ export interface ProjectMember {
   email?: string;
 }
 
+export interface Invoice {
+  id: string;
+  type: "homeowner" | "subcontractor";
+  description: string;
+  amount: number;
+  paid: boolean;
+}
+
 export interface ProjectData {
   id: string;
   name: string;
+  address: string;
   parentId?: string;
   totalBudget: number;
   laborCosts: number;
@@ -69,6 +78,7 @@ export interface ProjectData {
   photos: FileAttachment[];
   blueprints: FileAttachment[];
   changeOrders: ChangeOrder[];
+  invoices: Invoice[];
   members: ProjectMember[];
   createdBy: string | null;
   createdAt: string;
@@ -142,12 +152,13 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     if (!projectRows) { setProjects([]); setLoading(false); return; }
 
     // Fetch related data for all projects in parallel
-    const [tasksRes, photosRes, blueprintsRes, ordersRes, membersRes] = await Promise.all([
+    const [tasksRes, photosRes, blueprintsRes, ordersRes, membersRes, invoicesRes] = await Promise.all([
       supabase.from("tasks").select("*").in("project_id", projectIds).order("sort_order"),
       supabase.from("photos").select("*").in("project_id", projectIds),
       supabase.from("blueprints").select("*").in("project_id", projectIds),
       supabase.from("change_orders").select("*").in("project_id", projectIds).order("created_at", { ascending: false }),
       supabase.from("project_members").select("id, project_id, user_id, role, profiles(display_name, avatar_url)").in("project_id", projectIds),
+      supabase.from("invoices").select("*").in("project_id", projectIds).order("created_at"),
     ]);
 
     const tasks = tasksRes.data || [];
@@ -155,10 +166,12 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     const blueprints = blueprintsRes.data || [];
     const orders = ordersRes.data || [];
     const members = membersRes.data || [];
+    const invoicesData = invoicesRes.data || [];
 
     const assembled: ProjectData[] = projectRows.map((p) => ({
       id: p.id,
       name: p.name,
+      address: (p as any).address || "",
       parentId: p.parent_id || undefined,
       totalBudget: Number(p.total_budget),
       laborCosts: Number(p.labor_costs),
@@ -179,6 +192,9 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       changeOrders: orders
         .filter((o) => o.project_id === p.id)
         .map((o) => ({ id: o.id, text: o.text, createdAt: o.created_at })),
+      invoices: invoicesData
+        .filter((inv) => inv.project_id === p.id)
+        .map((inv) => ({ id: inv.id, type: inv.type as "homeowner" | "subcontractor", description: inv.description, amount: Number(inv.amount), paid: inv.paid })),
       members: members
         .filter((m) => m.project_id === p.id)
         .map((m) => {
@@ -222,6 +238,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       .on("postgres_changes", { event: "*", schema: "public", table: "blueprints" }, debouncedFetch)
       .on("postgres_changes", { event: "*", schema: "public", table: "change_orders" }, debouncedFetch)
       .on("postgres_changes", { event: "*", schema: "public", table: "project_members" }, debouncedFetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "invoices" }, debouncedFetch)
       .subscribe();
 
     return () => {
@@ -283,6 +300,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     // Update project fields
     const projectFields: Record<string, any> = {};
     if (partial.name !== undefined) projectFields.name = partial.name;
+    if ((partial as any).address !== undefined) projectFields.address = (partial as any).address;
     if (partial.totalBudget !== undefined) projectFields.total_budget = partial.totalBudget;
     if (partial.laborCosts !== undefined) projectFields.labor_costs = partial.laborCosts;
     if (partial.materialCosts !== undefined) projectFields.material_costs = partial.materialCosts;
@@ -351,6 +369,11 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       for (const o of addedOrders) {
         await logActivity(user.id, displayName, id, "change_order_added", `added change order`);
       }
+    }
+
+    // Sync invoices if provided
+    if (partial.invoices !== undefined) {
+      await syncInvoices(id, partial.invoices);
     }
 
     // Optimistic local update
@@ -466,6 +489,42 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
           text: o.text,
         }))
       );
+    }
+  };
+
+  const syncInvoices = async (projectId: string, invoices: Invoice[]) => {
+    const existing = projectsRef.current.find((p) => p.id === projectId)?.invoices || [];
+    const existingIds = new Set(existing.map((i) => i.id));
+    const newIds = new Set(invoices.map((i) => i.id));
+
+    // Delete removed
+    const toDelete = existing.filter((i) => !newIds.has(i.id));
+    for (const i of toDelete) {
+      await supabase.from("invoices").delete().eq("id", i.id);
+    }
+
+    // Insert new
+    const toInsert = invoices.filter((i) => !existingIds.has(i.id));
+    if (toInsert.length > 0) {
+      await supabase.from("invoices").insert(
+        toInsert.map((i) => ({
+          id: i.id,
+          project_id: projectId,
+          type: i.type,
+          description: i.description,
+          amount: i.amount,
+          paid: i.paid,
+        }))
+      );
+    }
+
+    // Update existing (paid status changes)
+    const toUpdate = invoices.filter((i) => {
+      const old = existing.find((e) => e.id === i.id);
+      return old && old.paid !== i.paid;
+    });
+    for (const i of toUpdate) {
+      await supabase.from("invoices").update({ paid: i.paid }).eq("id", i.id);
     }
   };
 
