@@ -432,14 +432,9 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   }, [fetchProjects]);
 
   const addMember = useCallback(async (projectId: string, email: string, role: "editor" | "viewer") => {
-    // Find user by email in profiles - need to look up via auth
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, display_name");
-    
-    // We need to find user by email - check auth.users isn't directly accessible
-    // Instead, use a workaround: try to find from existing profiles
-    // For now, we'll use a simpler approach
+    if (!user) return { error: "Not authenticated" };
+    const displayName = user.user_metadata?.display_name || user.email || "Unknown";
+
     const { data, error } = await supabase.rpc("find_user_by_email", { _email: email });
     
     if (error || !data || (Array.isArray(data) && data.length === 0)) {
@@ -461,19 +456,30 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       return { error: insertError.message };
     }
 
+    await logActivity(user.id, displayName, projectId, "member_added", `invited ${email} as ${role}`);
     await fetchProjects();
     return { error: null };
-  }, [fetchProjects]);
+  }, [user, fetchProjects]);
 
   const removeMember = useCallback(async (projectId: string, memberId: string) => {
+    if (!user) return;
+    const displayName = user.user_metadata?.display_name || user.email || "Unknown";
+    const project = projects.find(p => p.id === projectId);
+    const member = project?.members.find(m => m.id === memberId);
     await supabase.from("project_members").delete().eq("id", memberId);
+    await logActivity(user.id, displayName, projectId, "member_removed", `removed ${member?.displayName || "a member"}`);
     await fetchProjects();
-  }, [fetchProjects]);
+  }, [user, fetchProjects, projects]);
 
   const updateMemberRole = useCallback(async (projectId: string, memberId: string, role: "editor" | "viewer") => {
+    if (!user) return;
+    const displayName = user.user_metadata?.display_name || user.email || "Unknown";
+    const project = projects.find(p => p.id === projectId);
+    const member = project?.members.find(m => m.id === memberId);
     await supabase.from("project_members").update({ role }).eq("id", memberId);
+    await logActivity(user.id, displayName, projectId, "member_updated", `changed ${member?.displayName || "a member"} role to ${role}`);
     await fetchProjects();
-  }, [fetchProjects]);
+  }, [user, fetchProjects, projects]);
 
   const userRole = useCallback((projectId: string): "editor" | "viewer" | null => {
     if (!user) return null;
