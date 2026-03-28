@@ -36,7 +36,7 @@ const BudgetSection = ({ data, onChange }: BudgetSectionProps) => {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label htmlFor="labor" className="text-sm text-muted-foreground">Labor Costs</Label>
+            <Label htmlFor="labor" className="text-sm text-muted-foreground">Labor Estimate</Label>
             <div className="relative mt-1">
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
