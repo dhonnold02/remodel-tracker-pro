@@ -274,6 +274,7 @@ export type Database = {
           created_by: string | null
           id: string
           notes: string
+          parent_task_id: string | null
           project_id: string
           sort_order: number
           title: string
@@ -284,6 +285,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           notes?: string
+          parent_task_id?: string | null
           project_id: string
           sort_order?: number
           title?: string
@@ -294,11 +296,19 @@ export type Database = {
           created_by?: string | null
           id?: string
           notes?: string
+          parent_task_id?: string | null
           project_id?: string
           sort_order?: number
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tasks_parent_task_id_fkey"
+            columns: ["parent_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tasks_project_id_fkey"
             columns: ["project_id"]
