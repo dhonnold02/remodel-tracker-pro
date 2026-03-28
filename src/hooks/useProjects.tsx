@@ -241,6 +241,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
   const updateProject = useCallback(async (id: string, partial: Partial<ProjectData>) => {
     if (!user) return;
+    const displayName = user.user_metadata?.display_name || user.email || "Unknown";
 
     // Update project fields
     const projectFields: Record<string, any> = {};
@@ -253,31 +254,71 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
     if (Object.keys(projectFields).length > 0) {
       await supabase.from("projects").update(projectFields).eq("id", id);
+      // Log budget changes
+      if (partial.totalBudget !== undefined || partial.laborCosts !== undefined || partial.materialCosts !== undefined) {
+        await logActivity(user.id, displayName, id, "budget_updated", "updated budget");
+      }
+      if (partial.name !== undefined) {
+        await logActivity(user.id, displayName, id, "project_updated", `renamed project to "${partial.name}"`);
+      }
+      if (partial.startDate !== undefined || partial.endDate !== undefined) {
+        await logActivity(user.id, displayName, id, "project_updated", "updated project dates");
+      }
     }
 
     // Sync tasks if provided
     if (partial.tasks !== undefined) {
+      const oldProject = projects.find(p => p.id === id);
+      const oldTasks = oldProject?.tasks || [];
       await syncTasks(id, partial.tasks);
+      // Detect changes for logging
+      const newCompleted = partial.tasks.filter(t => t.completed && !oldTasks.find(o => o.id === t.id && o.completed));
+      const newTasks = partial.tasks.filter(t => !oldTasks.find(o => o.id === t.id));
+      if (newTasks.length > 0) {
+        for (const t of newTasks) {
+          await logActivity(user.id, displayName, id, "task_created", `added task "${t.title}"`);
+        }
+      }
+      if (newCompleted.length > 0) {
+        for (const t of newCompleted) {
+          await logActivity(user.id, displayName, id, "task_completed", `completed task "${t.title}"`);
+        }
+      }
     }
 
     // Sync photos if provided
     if (partial.photos !== undefined) {
+      const oldPhotos = projects.find(p => p.id === id)?.photos || [];
       await syncPhotos(id, partial.photos);
+      const addedPhotos = partial.photos.filter(p => !oldPhotos.find(o => o.id === p.id));
+      for (const p of addedPhotos) {
+        await logActivity(user.id, displayName, id, "photo_uploaded", `uploaded photo "${p.name}"`);
+      }
     }
 
     // Sync blueprints if provided
     if (partial.blueprints !== undefined) {
+      const oldBlueprints = projects.find(p => p.id === id)?.blueprints || [];
       await syncBlueprints(id, partial.blueprints);
+      const addedBp = partial.blueprints.filter(b => !oldBlueprints.find(o => o.id === b.id));
+      for (const b of addedBp) {
+        await logActivity(user.id, displayName, id, "blueprint_uploaded", `uploaded blueprint "${b.name}"`);
+      }
     }
 
     // Sync change orders if provided
     if (partial.changeOrders !== undefined) {
+      const oldOrders = projects.find(p => p.id === id)?.changeOrders || [];
       await syncChangeOrders(id, partial.changeOrders);
+      const addedOrders = partial.changeOrders.filter(o => !oldOrders.find(old => old.id === o.id));
+      for (const o of addedOrders) {
+        await logActivity(user.id, displayName, id, "change_order_added", `added change order`);
+      }
     }
 
     // Optimistic local update
     setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, ...partial } : p)));
-  }, [user]);
+  }, [user, projects]);
 
   const syncTasks = async (projectId: string, tasks: Task[]) => {
     // Delete existing tasks and re-insert (simple sync)
