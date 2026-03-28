@@ -36,8 +36,10 @@ const Dashboard = ({ projects, allProjects, onAdd, onDelete, getSubProjects }: D
     const subs = getSubProjects(project.id);
     const hasSubs = subs.length > 0;
     const isExpanded = expanded[project.id];
-    const stats = hasSubs ? getAggregatedStats(project, subs) : getProjectStats(project);
-    const displayBudget = hasSubs ? stats.totalBudget : project.totalBudget;
+    const rawStats = hasSubs ? getAggregatedStats(project, subs) : getProjectStats(project);
+    const displayBudget = hasSubs ? (rawStats as any).totalBudget : project.totalBudget;
+    const displayTotalTasks = hasSubs ? (rawStats as any).totalTasks : project.tasks.length;
+    const stats = rawStats;
 
     return (
       <div key={project.id} className={isSubProject ? "ml-4 border-l-2 border-primary/20 pl-3" : ""}>
