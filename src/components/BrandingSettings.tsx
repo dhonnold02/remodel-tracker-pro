@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useBranding } from "@/hooks/useBranding";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Palette, X } from "lucide-react";
+import { Palette, X, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const PRESET_COLORS = [
