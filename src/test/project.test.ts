@@ -56,9 +56,9 @@ describe("Task Completion", () => {
   it("calculates task percent correctly", () => {
     const p = createProject("Test");
     p.tasks = [
-      { id: "1", title: "Task 1", notes: "", completed: true },
-      { id: "2", title: "Task 2", notes: "", completed: false },
-      { id: "3", title: "Task 3", notes: "", completed: true },
+      { id: "1", title: "Task 1", notes: "", completed: true, parentTaskId: null },
+      { id: "2", title: "Task 2", notes: "", completed: false, parentTaskId: null },
+      { id: "3", title: "Task 3", notes: "", completed: true, parentTaskId: null },
     ];
     const stats = getProjectStats(p);
     expect(stats.completedTasks).toBe(2);
@@ -99,12 +99,12 @@ describe("Aggregated Stats (Sub-Projects)", () => {
   it("aggregates tasks across sub-projects", () => {
     const parent = createProject("Main");
     parent.tasks = [
-      { id: "1", title: "A", notes: "", completed: true },
+      { id: "1", title: "A", notes: "", completed: true, parentTaskId: null },
     ];
     const sub = createProject("Sub");
     sub.tasks = [
-      { id: "2", title: "B", notes: "", completed: false },
-      { id: "3", title: "C", notes: "", completed: true },
+      { id: "2", title: "B", notes: "", completed: false, parentTaskId: null },
+      { id: "3", title: "C", notes: "", completed: true, parentTaskId: null },
     ];
     const agg = getAggregatedStats(parent, [sub]);
     expect(agg.totalTasks).toBe(3);
