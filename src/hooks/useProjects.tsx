@@ -56,9 +56,18 @@ export interface ProjectMember {
   email?: string;
 }
 
+export interface Invoice {
+  id: string;
+  type: "homeowner" | "subcontractor";
+  description: string;
+  amount: number;
+  paid: boolean;
+}
+
 export interface ProjectData {
   id: string;
   name: string;
+  address: string;
   parentId?: string;
   totalBudget: number;
   laborCosts: number;
@@ -69,6 +78,7 @@ export interface ProjectData {
   photos: FileAttachment[];
   blueprints: FileAttachment[];
   changeOrders: ChangeOrder[];
+  invoices: Invoice[];
   members: ProjectMember[];
   createdBy: string | null;
   createdAt: string;
@@ -142,12 +152,13 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     if (!projectRows) { setProjects([]); setLoading(false); return; }
 
     // Fetch related data for all projects in parallel
-    const [tasksRes, photosRes, blueprintsRes, ordersRes, membersRes] = await Promise.all([
+    const [tasksRes, photosRes, blueprintsRes, ordersRes, membersRes, invoicesRes] = await Promise.all([
       supabase.from("tasks").select("*").in("project_id", projectIds).order("sort_order"),
       supabase.from("photos").select("*").in("project_id", projectIds),
       supabase.from("blueprints").select("*").in("project_id", projectIds),
       supabase.from("change_orders").select("*").in("project_id", projectIds).order("created_at", { ascending: false }),
       supabase.from("project_members").select("id, project_id, user_id, role, profiles(display_name, avatar_url)").in("project_id", projectIds),
+      supabase.from("invoices").select("*").in("project_id", projectIds).order("created_at"),
     ]);
 
     const tasks = tasksRes.data || [];
@@ -155,10 +166,12 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     const blueprints = blueprintsRes.data || [];
     const orders = ordersRes.data || [];
     const members = membersRes.data || [];
+    const invoicesData = invoicesRes.data || [];
 
     const assembled: ProjectData[] = projectRows.map((p) => ({
       id: p.id,
       name: p.name,
+      address: (p as any).address || "",
       parentId: p.parent_id || undefined,
       totalBudget: Number(p.total_budget),
       laborCosts: Number(p.labor_costs),
