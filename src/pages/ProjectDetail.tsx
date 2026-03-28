@@ -7,6 +7,7 @@ import PhotoGallery from "@/components/PhotoGallery";
 import BlueprintSection from "@/components/BlueprintSection";
 import ChangeOrdersSection from "@/components/ChangeOrdersSection";
 import EstimatedFinishDate from "@/components/EstimatedFinishDate";
+import GanttTimeline from "@/components/GanttTimeline";
 import { ArrowLeft, HardHat } from "lucide-react";
 
 const ProjectDetailPage = () => {
