@@ -1,27 +1,134 @@
 import { useState } from "react";
-import { ProjectData, getProjectStats, createProject } from "@/types/project";
+import { ProjectData, getProjectStats, getAggregatedStats } from "@/types/project";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, HardHat, ChevronRight } from "lucide-react";
+import { Plus, Trash2, HardHat, ChevronRight, ChevronDown, FolderOpen } from "lucide-react";
 import ProgressBar from "@/components/ProgressBar";
 
 interface DashboardProps {
   projects: ProjectData[];
-  onAdd: (name: string) => string;
+  allProjects: ProjectData[];
+  onAdd: (name: string, parentId?: string) => string;
   onDelete: (id: string) => void;
+  getSubProjects: (parentId: string) => ProjectData[];
 }
 
-const Dashboard = ({ projects, onAdd, onDelete }: DashboardProps) => {
+const Dashboard = ({ projects, allProjects, onAdd, onDelete, getSubProjects }: DashboardProps) => {
   const navigate = useNavigate();
   const [newName, setNewName] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const handleAdd = () => {
     if (!newName.trim()) return;
     const id = onAdd(newName.trim());
     setNewName("");
     navigate(`/project/${id}`);
+  };
+
+  const toggleExpanded = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const renderProjectCard = (project: ProjectData, isSubProject = false) => {
+    const subs = getSubProjects(project.id);
+    const hasSubs = subs.length > 0;
+    const isExpanded = expanded[project.id];
+    const rawStats = hasSubs ? getAggregatedStats(project, subs) : getProjectStats(project);
+    const displayBudget = hasSubs ? (rawStats as any).totalBudget : project.totalBudget;
+    const displayTotalTasks = hasSubs ? (rawStats as any).totalTasks : project.tasks.length;
+    const stats = rawStats;
+
+    return (
+      <div key={project.id} className={isSubProject ? "ml-4 border-l-2 border-primary/20 pl-3" : ""}>
+        <div
+          className={`rounded-xl border bg-card p-4 space-y-3 cursor-pointer hover:border-primary/30 transition-colors ${
+            isSubProject ? "bg-card/60" : ""
+          }`}
+          onClick={() => navigate(`/project/${project.id}`)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              {hasSubs && (
+                <button
+                  onClick={(e) => toggleExpanded(project.id, e)}
+                  className="p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                >
+                  {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                </button>
+              )}
+              {isSubProject && <FolderOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+              <h3 className="font-heading font-semibold text-foreground truncate">
+                {project.name || "Untitled Project"}
+              </h3>
+              {hasSubs && (
+                <span className="text-[10px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded-full shrink-0">
+                  {subs.length} sub
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirmDelete === project.id) {
+                    onDelete(project.id);
+                    setConfirmDelete(null);
+                  } else {
+                    setConfirmDelete(project.id);
+                    setTimeout(() => setConfirmDelete(null), 3000);
+                  }
+                }}
+                className={`p-1.5 rounded transition-colors ${
+                  confirmDelete === project.id
+                    ? "text-destructive bg-destructive/10"
+                    : "text-muted-foreground hover:text-destructive"
+                }`}
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 gap-2">
+            <div className="text-center">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Budget</p>
+              <p className="text-xs font-heading font-bold text-foreground">${displayBudget.toLocaleString()}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Spent</p>
+              <p className="text-xs font-heading font-bold text-foreground">${stats.totalSpent.toLocaleString()}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Left</p>
+              <p className={`text-xs font-heading font-bold ${stats.remaining < 0 ? "text-destructive" : "text-foreground"}`}>
+                ${stats.remaining.toLocaleString()}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Tasks</p>
+              <p className="text-xs font-heading font-bold text-foreground">
+                {stats.completedTasks}/{displayTotalTasks}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <ProgressBar label="Budget" value={stats.budgetPercent} variant="budget" />
+            <ProgressBar label="Tasks" value={stats.taskPercent} variant="completion" />
+          </div>
+        </div>
+
+        {hasSubs && isExpanded && (
+          <div className="mt-2 space-y-2">
+            {subs.map((sub) => renderProjectCard(sub, true))}
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -36,7 +143,6 @@ const Dashboard = ({ projects, onAdd, onDelete }: DashboardProps) => {
       </header>
 
       <main className="mx-auto max-w-lg px-4 py-5 space-y-4 pb-20">
-        {/* New project */}
         <div className="flex gap-2">
           <Input
             placeholder="New project name…"
@@ -58,73 +164,7 @@ const Dashboard = ({ projects, onAdd, onDelete }: DashboardProps) => {
           </div>
         ) : (
           <div className="space-y-3">
-            {projects.map((project) => {
-              const stats = getProjectStats(project);
-              return (
-                <div
-                  key={project.id}
-                  className="rounded-xl border bg-card p-4 space-y-3 cursor-pointer hover:border-primary/30 transition-colors"
-                  onClick={() => navigate(`/project/${project.id}`)}
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-heading font-semibold text-foreground truncate flex-1">
-                      {project.name || "Untitled Project"}
-                    </h3>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (confirmDelete === project.id) {
-                            onDelete(project.id);
-                            setConfirmDelete(null);
-                          } else {
-                            setConfirmDelete(project.id);
-                            setTimeout(() => setConfirmDelete(null), 3000);
-                          }
-                        }}
-                        className={`p-1.5 rounded transition-colors ${
-                          confirmDelete === project.id
-                            ? "text-destructive bg-destructive/10"
-                            : "text-muted-foreground hover:text-destructive"
-                        }`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </div>
-
-                  {/* Summary stats */}
-                  <div className="grid grid-cols-4 gap-2">
-                    <div className="text-center">
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Budget</p>
-                      <p className="text-xs font-heading font-bold text-foreground">${project.totalBudget.toLocaleString()}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Spent</p>
-                      <p className="text-xs font-heading font-bold text-foreground">${stats.totalSpent.toLocaleString()}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Left</p>
-                      <p className={`text-xs font-heading font-bold ${stats.remaining < 0 ? "text-destructive" : "text-foreground"}`}>
-                        ${stats.remaining.toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Tasks</p>
-                      <p className="text-xs font-heading font-bold text-foreground">
-                        {stats.completedTasks}/{project.tasks.length}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <ProgressBar label="Budget" value={stats.budgetPercent} variant="budget" />
-                    <ProgressBar label="Tasks" value={stats.taskPercent} variant="completion" />
-                  </div>
-                </div>
-              );
-            })}
+            {projects.map((project) => renderProjectCard(project))}
           </div>
         )}
       </main>

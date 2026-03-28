@@ -3,10 +3,12 @@ import { ProjectData, createProject } from "@/types/project";
 
 interface ProjectsContextType {
   projects: ProjectData[];
-  addProject: (name: string) => string;
+  addProject: (name: string, parentId?: string) => string;
   updateProject: (id: string, partial: Partial<ProjectData>) => void;
   deleteProject: (id: string) => void;
   getProject: (id: string) => ProjectData | undefined;
+  getSubProjects: (parentId: string) => ProjectData[];
+  getTopLevelProjects: () => ProjectData[];
 }
 
 const ProjectsContext = createContext<ProjectsContextType | null>(null);
@@ -33,8 +35,8 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     }
   }, [projects]);
 
-  const addProject = useCallback((name: string) => {
-    const p = createProject(name);
+  const addProject = useCallback((name: string, parentId?: string) => {
+    const p = createProject(name, parentId);
     setProjects((prev) => [...prev, p]);
     return p.id;
   }, []);
@@ -46,7 +48,16 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const deleteProject = useCallback((id: string) => {
-    setProjects((prev) => prev.filter((p) => p.id !== id));
+    // Delete project and all its sub-projects
+    setProjects((prev) => {
+      const idsToDelete = new Set<string>();
+      const collectIds = (pid: string) => {
+        idsToDelete.add(pid);
+        prev.filter((p) => p.parentId === pid).forEach((p) => collectIds(p.id));
+      };
+      collectIds(id);
+      return prev.filter((p) => !idsToDelete.has(p.id));
+    });
   }, []);
 
   const getProject = useCallback(
@@ -54,8 +65,18 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     [projects]
   );
 
+  const getSubProjects = useCallback(
+    (parentId: string) => projects.filter((p) => p.parentId === parentId),
+    [projects]
+  );
+
+  const getTopLevelProjects = useCallback(
+    () => projects.filter((p) => !p.parentId),
+    [projects]
+  );
+
   return (
-    <ProjectsContext.Provider value={{ projects, addProject, updateProject, deleteProject, getProject }}>
+    <ProjectsContext.Provider value={{ projects, addProject, updateProject, deleteProject, getProject, getSubProjects, getTopLevelProjects }}>
       {children}
     </ProjectsContext.Provider>
   );
