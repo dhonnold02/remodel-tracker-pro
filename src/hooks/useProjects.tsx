@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { cacheProjects, getCachedProjects } from "@/hooks/useOfflineSync";
@@ -96,15 +96,22 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(true);
+  const projectsRef = useRef<ProjectData[]>([]);
+  // Keep ref in sync for stable callbacks
+  projectsRef.current = projects;
+
+  const initialLoadDone = useRef(false);
 
   // Fetch all projects the user is a member of
   const fetchProjects = useCallback(async () => {
     if (!user) { setProjects([]); setLoading(false); return; }
 
-    // Load from cache first for instant display
-    const cached = getCachedProjects();
-    if (cached && loading) {
-      setProjects(cached.projects as ProjectData[]);
+    // Load from cache first for instant display (only on first load)
+    if (!initialLoadDone.current) {
+      const cached = getCachedProjects();
+      if (cached) {
+        setProjects(cached.projects as ProjectData[]);
+      }
     }
     
     if (!navigator.onLine) {
@@ -188,6 +195,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
     // Cache for offline use
     cacheProjects(assembled);
+    initialLoadDone.current = true;
     setProjects(assembled);
     setLoading(false);
   }, [user]);
@@ -196,22 +204,31 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     fetchProjects();
   }, [fetchProjects]);
 
-  // Real-time subscriptions
+  // Debounced real-time subscriptions to avoid refetch storms
+  const refetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debouncedFetch = useCallback(() => {
+    if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
+    refetchTimerRef.current = setTimeout(() => fetchProjects(), 500);
+  }, [fetchProjects]);
+
   useEffect(() => {
     if (!user) return;
 
     const channel = supabase
       .channel("project-changes")
-      .on("postgres_changes", { event: "*", schema: "public", table: "projects" }, () => fetchProjects())
-      .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, () => fetchProjects())
-      .on("postgres_changes", { event: "*", schema: "public", table: "photos" }, () => fetchProjects())
-      .on("postgres_changes", { event: "*", schema: "public", table: "blueprints" }, () => fetchProjects())
-      .on("postgres_changes", { event: "*", schema: "public", table: "change_orders" }, () => fetchProjects())
-      .on("postgres_changes", { event: "*", schema: "public", table: "project_members" }, () => fetchProjects())
+      .on("postgres_changes", { event: "*", schema: "public", table: "projects" }, debouncedFetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, debouncedFetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "photos" }, debouncedFetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "blueprints" }, debouncedFetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "change_orders" }, debouncedFetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "project_members" }, debouncedFetch)
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
-  }, [user, fetchProjects]);
+    return () => {
+      if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
+      supabase.removeChannel(channel);
+    };
+  }, [user, debouncedFetch]);
 
   const addProject = useCallback(async (name: string, parentId?: string) => {
     if (!user) throw new Error("Not authenticated");
@@ -288,7 +305,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
     // Sync tasks if provided
     if (partial.tasks !== undefined) {
-      const oldProject = projects.find(p => p.id === id);
+      const oldProject = projectsRef.current.find(p => p.id === id);
       const oldTasks = oldProject?.tasks || [];
       await syncTasks(id, partial.tasks);
       // Detect changes for logging
@@ -308,7 +325,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
     // Sync photos if provided
     if (partial.photos !== undefined) {
-      const oldPhotos = projects.find(p => p.id === id)?.photos || [];
+      const oldPhotos = projectsRef.current.find(p => p.id === id)?.photos || [];
       await syncPhotos(id, partial.photos);
       const addedPhotos = partial.photos.filter(p => !oldPhotos.find(o => o.id === p.id));
       for (const p of addedPhotos) {
@@ -318,7 +335,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
     // Sync blueprints if provided
     if (partial.blueprints !== undefined) {
-      const oldBlueprints = projects.find(p => p.id === id)?.blueprints || [];
+      const oldBlueprints = projectsRef.current.find(p => p.id === id)?.blueprints || [];
       await syncBlueprints(id, partial.blueprints);
       const addedBp = partial.blueprints.filter(b => !oldBlueprints.find(o => o.id === b.id));
       for (const b of addedBp) {
@@ -328,7 +345,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
     // Sync change orders if provided
     if (partial.changeOrders !== undefined) {
-      const oldOrders = projects.find(p => p.id === id)?.changeOrders || [];
+      const oldOrders = projectsRef.current.find(p => p.id === id)?.changeOrders || [];
       await syncChangeOrders(id, partial.changeOrders);
       const addedOrders = partial.changeOrders.filter(o => !oldOrders.find(old => old.id === o.id));
       for (const o of addedOrders) {
@@ -338,7 +355,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
     // Optimistic local update
     setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, ...partial } : p)));
-  }, [user, projects]);
+  }, [user]);
 
   const syncTasks = async (projectId: string, tasks: Task[]) => {
     // Delete existing tasks and re-insert (simple sync)
@@ -383,7 +400,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   };
 
   const syncPhotos = async (projectId: string, photos: FileAttachment[]) => {
-    const existing = projects.find((p) => p.id === projectId)?.photos || [];
+    const existing = projectsRef.current.find((p) => p.id === projectId)?.photos || [];
     const existingIds = new Set(existing.map((p) => p.id));
     const newIds = new Set(photos.map((p) => p.id));
 
@@ -408,7 +425,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   };
 
   const syncBlueprints = async (projectId: string, blueprints: FileAttachment[]) => {
-    const existing = projects.find((p) => p.id === projectId)?.blueprints || [];
+    const existing = projectsRef.current.find((p) => p.id === projectId)?.blueprints || [];
     const existingIds = new Set(existing.map((b) => b.id));
     const newIds = new Set(blueprints.map((b) => b.id));
 
@@ -431,7 +448,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   };
 
   const syncChangeOrders = async (projectId: string, orders: ChangeOrder[]) => {
-    const existing = projects.find((p) => p.id === projectId)?.changeOrders || [];
+    const existing = projectsRef.current.find((p) => p.id === projectId)?.changeOrders || [];
     const existingIds = new Set(existing.map((o) => o.id));
     const newIds = new Set(orders.map((o) => o.id));
 
@@ -509,22 +526,22 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   const removeMember = useCallback(async (projectId: string, memberId: string) => {
     if (!user) return;
     const displayName = user.user_metadata?.display_name || user.email || "Unknown";
-    const project = projects.find(p => p.id === projectId);
+    const project = projectsRef.current.find(p => p.id === projectId);
     const member = project?.members.find(m => m.id === memberId);
     await supabase.from("project_members").delete().eq("id", memberId);
     await logActivity(user.id, displayName, projectId, "member_removed", `removed ${member?.displayName || "a member"}`);
     await fetchProjects();
-  }, [user, fetchProjects, projects]);
+  }, [user, fetchProjects]);
 
   const updateMemberRole = useCallback(async (projectId: string, memberId: string, role: "editor" | "viewer") => {
     if (!user) return;
     const displayName = user.user_metadata?.display_name || user.email || "Unknown";
-    const project = projects.find(p => p.id === projectId);
+    const project = projectsRef.current.find(p => p.id === projectId);
     const member = project?.members.find(m => m.id === memberId);
     await supabase.from("project_members").update({ role }).eq("id", memberId);
     await logActivity(user.id, displayName, projectId, "member_updated", `changed ${member?.displayName || "a member"} role to ${role}`);
     await fetchProjects();
-  }, [user, fetchProjects, projects]);
+  }, [user, fetchProjects]);
 
   const userRole = useCallback((projectId: string): "editor" | "viewer" | null => {
     if (!user) return null;

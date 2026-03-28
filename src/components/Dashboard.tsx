@@ -159,27 +159,27 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
               Loading projects…
             </div>
           </div>
-        ) : projects.length === 0 ? (
-          <div className="text-center py-20 space-y-3">
-            <div className="mx-auto w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center">
-              <HardHat className="h-8 w-8 text-muted-foreground/50" />
+        ) : filteredProjects.length === 0 ? (
+          searchQuery ? (
+            <p className="text-sm text-muted-foreground text-center py-8">No projects match "{searchQuery}"</p>
+          ) : (
+            <div className="text-center py-20 space-y-3">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center">
+                <HardHat className="h-8 w-8 text-muted-foreground/50" />
+              </div>
+              <p className="text-muted-foreground text-sm">No projects yet. Create one above.</p>
             </div>
-            <p className="text-muted-foreground text-sm">No projects yet. Create one above.</p>
-          </div>
+          )
         ) : (
           <div className="space-y-3">
-            {filteredProjects.length === 0 && searchQuery ? (
-              <p className="text-sm text-muted-foreground text-center py-8">No projects match "{searchQuery}"</p>
-            ) : (
-              filteredProjects.map((project) => (
-                <ProjectCard
-                  key={project.id}
-                  project={project}
-                  getSubProjects={getSubProjects}
-                  onDelete={onDelete}
-                />
-              ))
-            )}
+            {filteredProjects.map((project) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                getSubProjects={getSubProjects}
+                onDelete={onDelete}
+              />
+            ))}
           </div>
         )}
       </main>
