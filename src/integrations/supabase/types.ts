@@ -157,6 +157,9 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          brand_color: string | null
+          brand_logo_url: string | null
+          brand_name: string | null
           created_at: string
           display_name: string | null
           id: string
@@ -164,6 +167,9 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          brand_color?: string | null
+          brand_logo_url?: string | null
+          brand_name?: string | null
           created_at?: string
           display_name?: string | null
           id: string
@@ -171,6 +177,9 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          brand_color?: string | null
+          brand_logo_url?: string | null
+          brand_name?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
@@ -216,6 +225,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      project_templates: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          labor_costs: number
+          material_costs: number
+          name: string
+          tasks: Json
+          total_budget: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          id?: string
+          labor_costs?: number
+          material_costs?: number
+          name?: string
+          tasks?: Json
+          total_budget?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          labor_costs?: number
+          material_costs?: number
+          name?: string
+          tasks?: Json
+          total_budget?: number
+          user_id?: string
+        }
+        Relationships: []
       }
       projects: {
         Row: {
