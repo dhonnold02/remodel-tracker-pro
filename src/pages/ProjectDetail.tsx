@@ -57,6 +57,7 @@ const ProjectDetailPage = () => {
         <BudgetSection data={project} onChange={update} />
         <TaskList tasks={project.tasks} onChange={(tasks) => update({ tasks })} />
         <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} />
+        <GanttTimeline tasks={project.tasks} startDate={project.startDate} />
         <PhotoGallery photos={project.photos} onChange={(photos) => update({ photos })} />
         <BlueprintSection blueprints={project.blueprints} onChange={(blueprints) => update({ blueprints })} />
         <ChangeOrdersSection orders={project.changeOrders} onChange={(changeOrders) => update({ changeOrders })} />
