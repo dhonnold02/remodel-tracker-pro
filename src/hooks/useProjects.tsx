@@ -378,13 +378,13 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     // We need to find user by email - check auth.users isn't directly accessible
     // Instead, use a workaround: try to find from existing profiles
     // For now, we'll use a simpler approach
-    const { data, error } = await supabase.rpc("find_user_by_email" as any, { _email: email });
+    const { data, error } = await supabase.rpc("find_user_by_email", { _email: email });
     
-    if (error || !data) {
+    if (error || !data || (Array.isArray(data) && data.length === 0)) {
       return { error: "User not found. They must have an account first." };
     }
 
-    const userId = (data as any)?.[0]?.id || data;
+    const userId = Array.isArray(data) ? data[0]?.id : (data as any)?.id;
 
     const { error: insertError } = await supabase.from("project_members").insert({
       project_id: projectId,
