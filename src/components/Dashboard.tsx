@@ -32,6 +32,9 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects }: Dashb
       const id = await onAdd(newName.trim());
       setNewName("");
       navigate(`/project/${id}`);
+    } catch (err: any) {
+      console.error("Failed to create project:", err);
+      toast.error(err?.message || "Failed to create project");
     } finally {
       setCreating(false);
     }
