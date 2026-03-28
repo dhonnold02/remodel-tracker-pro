@@ -10,8 +10,10 @@ import BlueprintSection from "@/components/BlueprintSection";
 import ChangeOrdersSection from "@/components/ChangeOrdersSection";
 import EstimatedFinishDate from "@/components/EstimatedFinishDate";
 import GanttTimeline from "@/components/GanttTimeline";
+import CalendarView from "@/components/CalendarView";
 import TeamMembers from "@/components/TeamMembers";
 import ActivityLog from "@/components/ActivityLog";
+import ProjectTemplates from "@/components/ProjectTemplates";
 import ProgressBar from "@/components/ProgressBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -216,9 +218,27 @@ const ProjectDetailPage = () => {
         <TaskList tasks={project.tasks} onChange={isEditor ? (tasks) => update({ tasks }) : () => {}} />
         <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} />
         <GanttTimeline tasks={project.tasks} startDate={project.startDate} />
+        <CalendarView tasks={project.tasks} projectName={project.name} />
         <PhotoGallery photos={project.photos} onChange={isEditor ? (photos) => update({ photos }) : () => {}} />
         <BlueprintSection blueprints={project.blueprints} onChange={isEditor ? (blueprints) => update({ blueprints }) : () => {}} />
         <ChangeOrdersSection orders={project.changeOrders} onChange={isEditor ? (changeOrders) => update({ changeOrders }) : () => {}} />
+
+        {/* Save as Template */}
+        {isEditor && (
+          <ProjectTemplates
+            currentProject={project}
+            onCreateFromTemplate={async (template) => {
+              const subId = await addProject(template.name, project.id);
+              await updateProject(subId, {
+                totalBudget: template.totalBudget,
+                laborCosts: template.laborCosts,
+                materialCosts: template.materialCosts,
+                tasks: template.tasks.map((t) => ({ ...t, id: crypto.randomUUID(), completed: false })) as any,
+              });
+              navigate(`/project/${subId}`);
+            }}
+          />
+        )}
 
         {/* Team Members — collapsible */}
         <Collapsible open={teamOpen} onOpenChange={setTeamOpen}>
