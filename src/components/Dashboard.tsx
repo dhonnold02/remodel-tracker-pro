@@ -5,9 +5,14 @@ import { getProjectStats, getAggregatedStats } from "@/types/project";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, HardHat, LogOut, Search, X } from "lucide-react";
+import { Plus, HardHat, LogOut, Search, X, WifiOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import ProjectCard from "@/components/ProjectCard";
+import ProjectTemplates from "@/components/ProjectTemplates";
+import BrandingSettings from "@/components/BrandingSettings";
+import { useBranding } from "@/hooks/useBranding";
+import { useOnlineStatus } from "@/hooks/useOfflineSync";
+import { ProjectTemplate } from "@/hooks/useTemplates";
 
 interface DashboardProps {
   projects: ProjectData[];
@@ -15,11 +20,14 @@ interface DashboardProps {
   onAdd: (name: string, parentId?: string) => Promise<string>;
   onDelete: (id: string) => Promise<void>;
   getSubProjects: (parentId: string) => ProjectData[];
+  onUpdateProject?: (id: string, partial: Partial<ProjectData>) => Promise<void>;
 }
 
-const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects }: DashboardProps) => {
+const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdateProject }: DashboardProps) => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const { brand } = useBranding();
+  const isOnline = useOnlineStatus();
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,23 +57,64 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects }: Dashb
     }
   };
 
+  const handleCreateFromTemplate = async (template: ProjectTemplate) => {
+    setCreating(true);
+    try {
+      const id = await onAdd(template.name);
+      // Apply template settings
+      if (onUpdateProject) {
+        await onUpdateProject(id, {
+          totalBudget: template.totalBudget,
+          laborCosts: template.laborCosts,
+          materialCosts: template.materialCosts,
+          tasks: template.tasks.map((t) => ({
+            ...t,
+            id: crypto.randomUUID(),
+            completed: false,
+          })) as any,
+        });
+      }
+      toast.success(`Created project from "${template.name}" template`);
+      navigate(`/project/${id}`);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to create from template");
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-10 border-b bg-card/90 backdrop-blur-md">
         <div className="mx-auto max-w-2xl px-4 py-4 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-sm">
-            <HardHat className="h-5 w-5 text-primary-foreground" />
-          </div>
+          {brand.brandLogoUrl ? (
+            <img src={brand.brandLogoUrl} alt="Logo" className="h-10 w-10 rounded-xl object-contain" />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-sm">
+              <HardHat className="h-5 w-5 text-primary-foreground" />
+            </div>
+          )}
           <div className="flex-1">
-            <h1 className="font-heading text-lg font-bold text-foreground">Remodel Tracker</h1>
+            <h1 className="font-heading text-lg font-bold text-foreground">
+              {brand.brandName || "Remodel Tracker"}
+            </h1>
             <p className="text-xs text-muted-foreground">Manage your renovation projects</p>
           </div>
-          <button
-            onClick={signOut}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg hover:bg-secondary"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            {!isOnline && (
+              <span className="flex items-center gap-1 text-[10px] text-amber-600 bg-amber-500/10 px-2 py-1 rounded-md font-medium">
+                <WifiOff className="h-3 w-3" />
+                Offline
+              </span>
+            )}
+            <BrandingSettings />
+            <button
+              onClick={signOut}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg hover:bg-secondary"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -99,6 +148,9 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects }: Dashb
             Create
           </Button>
         </div>
+
+        {/* Templates */}
+        <ProjectTemplates onCreateFromTemplate={handleCreateFromTemplate} />
 
         {loading ? (
           <div className="text-center py-20">
