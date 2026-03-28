@@ -400,7 +400,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   };
 
   const syncPhotos = async (projectId: string, photos: FileAttachment[]) => {
-    const existing = projects.find((p) => p.id === projectId)?.photos || [];
+    const existing = projectsRef.current.find((p) => p.id === projectId)?.photos || [];
     const existingIds = new Set(existing.map((p) => p.id));
     const newIds = new Set(photos.map((p) => p.id));
 
@@ -425,7 +425,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   };
 
   const syncBlueprints = async (projectId: string, blueprints: FileAttachment[]) => {
-    const existing = projects.find((p) => p.id === projectId)?.blueprints || [];
+    const existing = projectsRef.current.find((p) => p.id === projectId)?.blueprints || [];
     const existingIds = new Set(existing.map((b) => b.id));
     const newIds = new Set(blueprints.map((b) => b.id));
 
@@ -448,7 +448,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   };
 
   const syncChangeOrders = async (projectId: string, orders: ChangeOrder[]) => {
-    const existing = projects.find((p) => p.id === projectId)?.changeOrders || [];
+    const existing = projectsRef.current.find((p) => p.id === projectId)?.changeOrders || [];
     const existingIds = new Set(existing.map((o) => o.id));
     const newIds = new Set(orders.map((o) => o.id));
 
