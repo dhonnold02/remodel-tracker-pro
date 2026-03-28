@@ -82,6 +82,13 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false }
           </div>
         </div>
 
+        {project.address && (
+          <p className="text-[11px] text-muted-foreground flex items-center gap-1 truncate -mt-1">
+            <MapPin className="h-3 w-3 shrink-0" />
+            {project.address.split("\n")[0]}
+          </p>
+        )}
+
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-lg bg-secondary/60 p-2.5">
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Spent / Budget</p>
