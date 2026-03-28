@@ -1,63 +1,353 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
-import { ProjectData, createProject } from "@/types/project";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+
+// Types matching the old ProjectData shape for component compatibility
+export interface Task {
+  id: string;
+  title: string;
+  notes: string;
+  completed: boolean;
+}
+
+export interface FileAttachment {
+  id: string;
+  name: string;
+  dataUrl: string;
+  createdAt: string;
+}
+
+export interface ChangeOrder {
+  id: string;
+  text: string;
+  createdAt: string;
+  createdByName?: string;
+}
+
+export interface ProjectMember {
+  id: string;
+  userId: string;
+  role: "editor" | "viewer";
+  displayName: string | null;
+  avatarUrl: string | null;
+  email?: string;
+}
+
+export interface ProjectData {
+  id: string;
+  name: string;
+  parentId?: string;
+  totalBudget: number;
+  laborCosts: number;
+  materialCosts: number;
+  startDate: string;
+  endDate: string;
+  tasks: Task[];
+  photos: FileAttachment[];
+  blueprints: FileAttachment[];
+  changeOrders: ChangeOrder[];
+  members: ProjectMember[];
+  createdBy: string | null;
+  createdAt: string;
+}
 
 interface ProjectsContextType {
   projects: ProjectData[];
-  addProject: (name: string, parentId?: string) => string;
-  updateProject: (id: string, partial: Partial<ProjectData>) => void;
-  deleteProject: (id: string) => void;
+  loading: boolean;
+  addProject: (name: string, parentId?: string) => Promise<string>;
+  updateProject: (id: string, partial: Partial<ProjectData>) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
   getProject: (id: string) => ProjectData | undefined;
   getSubProjects: (parentId: string) => ProjectData[];
   getTopLevelProjects: () => ProjectData[];
+  refreshProject: (id: string) => Promise<void>;
+  addMember: (projectId: string, email: string, role: "editor" | "viewer") => Promise<{ error: string | null }>;
+  removeMember: (projectId: string, memberId: string) => Promise<void>;
+  updateMemberRole: (projectId: string, memberId: string, role: "editor" | "viewer") => Promise<void>;
+  userRole: (projectId: string) => "editor" | "viewer" | null;
 }
 
 const ProjectsContext = createContext<ProjectsContextType | null>(null);
 
-const STORAGE_KEY = "remodel-projects";
-
-function loadProjects(): ProjectData[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
 export function ProjectsProvider({ children }: { children: ReactNode }) {
-  const [projects, setProjects] = useState<ProjectData[]>(loadProjects);
+  const { user } = useAuth();
+  const [projects, setProjects] = useState<ProjectData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch all projects the user is a member of
+  const fetchProjects = useCallback(async () => {
+    if (!user) { setProjects([]); setLoading(false); return; }
+    
+    // Get project IDs user is member of
+    const { data: memberships } = await supabase
+      .from("project_members")
+      .select("project_id")
+      .eq("user_id", user.id);
+    
+    if (!memberships || memberships.length === 0) {
+      setProjects([]);
+      setLoading(false);
+      return;
+    }
+
+    const projectIds = memberships.map((m) => m.project_id);
+
+    // Fetch projects
+    const { data: projectRows } = await supabase
+      .from("projects")
+      .select("*")
+      .in("id", projectIds);
+
+    if (!projectRows) { setProjects([]); setLoading(false); return; }
+
+    // Fetch related data for all projects in parallel
+    const [tasksRes, photosRes, blueprintsRes, ordersRes, membersRes] = await Promise.all([
+      supabase.from("tasks").select("*").in("project_id", projectIds).order("sort_order"),
+      supabase.from("photos").select("*").in("project_id", projectIds),
+      supabase.from("blueprints").select("*").in("project_id", projectIds),
+      supabase.from("change_orders").select("*").in("project_id", projectIds).order("created_at", { ascending: false }),
+      supabase.from("project_members").select("id, project_id, user_id, role, profiles(display_name, avatar_url)").in("project_id", projectIds),
+    ]);
+
+    const tasks = tasksRes.data || [];
+    const photos = photosRes.data || [];
+    const blueprints = blueprintsRes.data || [];
+    const orders = ordersRes.data || [];
+    const members = membersRes.data || [];
+
+    const assembled: ProjectData[] = projectRows.map((p) => ({
+      id: p.id,
+      name: p.name,
+      parentId: p.parent_id || undefined,
+      totalBudget: Number(p.total_budget),
+      laborCosts: Number(p.labor_costs),
+      materialCosts: Number(p.material_costs),
+      startDate: p.start_date,
+      endDate: p.end_date,
+      createdBy: p.created_by,
+      createdAt: p.created_at,
+      tasks: tasks
+        .filter((t) => t.project_id === p.id)
+        .map((t) => ({ id: t.id, title: t.title, notes: t.notes, completed: t.completed })),
+      photos: photos
+        .filter((ph) => ph.project_id === p.id)
+        .map((ph) => ({ id: ph.id, name: ph.name, dataUrl: ph.data_url, createdAt: ph.created_at })),
+      blueprints: blueprints
+        .filter((b) => b.project_id === p.id)
+        .map((b) => ({ id: b.id, name: b.name, dataUrl: b.data_url, createdAt: b.created_at })),
+      changeOrders: orders
+        .filter((o) => o.project_id === p.id)
+        .map((o) => ({ id: o.id, text: o.text, createdAt: o.created_at })),
+      members: members
+        .filter((m) => m.project_id === p.id)
+        .map((m) => {
+          const profile = m.profiles as any;
+          return {
+            id: m.id,
+            userId: m.user_id,
+            role: m.role as "editor" | "viewer",
+            displayName: profile?.display_name || null,
+            avatarUrl: profile?.avatar_url || null,
+          };
+        }),
+    }));
+
+    setProjects(assembled);
+    setLoading(false);
+  }, [user]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
-    } catch {
-      // ignore
-    }
-  }, [projects]);
+    fetchProjects();
+  }, [fetchProjects]);
 
-  const addProject = useCallback((name: string, parentId?: string) => {
-    const p = createProject(name, parentId);
-    setProjects((prev) => [...prev, p]);
-    return p.id;
-  }, []);
+  // Real-time subscriptions
+  useEffect(() => {
+    if (!user) return;
 
-  const updateProject = useCallback((id: string, partial: Partial<ProjectData>) => {
-    setProjects((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, ...partial } : p))
-    );
-  }, []);
+    const channel = supabase
+      .channel("project-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "projects" }, () => fetchProjects())
+      .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, () => fetchProjects())
+      .on("postgres_changes", { event: "*", schema: "public", table: "photos" }, () => fetchProjects())
+      .on("postgres_changes", { event: "*", schema: "public", table: "blueprints" }, () => fetchProjects())
+      .on("postgres_changes", { event: "*", schema: "public", table: "change_orders" }, () => fetchProjects())
+      .on("postgres_changes", { event: "*", schema: "public", table: "project_members" }, () => fetchProjects())
+      .subscribe();
 
-  const deleteProject = useCallback((id: string) => {
-    // Delete project and all its sub-projects
-    setProjects((prev) => {
-      const idsToDelete = new Set<string>();
-      const collectIds = (pid: string) => {
-        idsToDelete.add(pid);
-        prev.filter((p) => p.parentId === pid).forEach((p) => collectIds(p.id));
-      };
-      collectIds(id);
-      return prev.filter((p) => !idsToDelete.has(p.id));
+    return () => { supabase.removeChannel(channel); };
+  }, [user, fetchProjects]);
+
+  const addProject = useCallback(async (name: string, parentId?: string) => {
+    if (!user) throw new Error("Not authenticated");
+    
+    const { data, error } = await supabase
+      .from("projects")
+      .insert({ name, parent_id: parentId || null, created_by: user.id })
+      .select()
+      .single();
+    
+    if (error) throw error;
+
+    // Add creator as editor
+    await supabase.from("project_members").insert({
+      project_id: data.id,
+      user_id: user.id,
+      role: "editor",
     });
+
+    // If sub-project, inherit parent's members
+    if (parentId) {
+      const { data: parentMembers } = await supabase
+        .from("project_members")
+        .select("user_id, role")
+        .eq("project_id", parentId)
+        .neq("user_id", user.id);
+      
+      if (parentMembers && parentMembers.length > 0) {
+        await supabase.from("project_members").insert(
+          parentMembers.map((m) => ({
+            project_id: data.id,
+            user_id: m.user_id,
+            role: m.role,
+          }))
+        );
+      }
+    }
+
+    await fetchProjects();
+    return data.id;
+  }, [user, fetchProjects]);
+
+  const updateProject = useCallback(async (id: string, partial: Partial<ProjectData>) => {
+    if (!user) return;
+
+    // Update project fields
+    const projectFields: Record<string, any> = {};
+    if (partial.name !== undefined) projectFields.name = partial.name;
+    if (partial.totalBudget !== undefined) projectFields.total_budget = partial.totalBudget;
+    if (partial.laborCosts !== undefined) projectFields.labor_costs = partial.laborCosts;
+    if (partial.materialCosts !== undefined) projectFields.material_costs = partial.materialCosts;
+    if (partial.startDate !== undefined) projectFields.start_date = partial.startDate;
+    if (partial.endDate !== undefined) projectFields.end_date = partial.endDate;
+
+    if (Object.keys(projectFields).length > 0) {
+      await supabase.from("projects").update(projectFields).eq("id", id);
+    }
+
+    // Sync tasks if provided
+    if (partial.tasks !== undefined) {
+      await syncTasks(id, partial.tasks);
+    }
+
+    // Sync photos if provided
+    if (partial.photos !== undefined) {
+      await syncPhotos(id, partial.photos);
+    }
+
+    // Sync blueprints if provided
+    if (partial.blueprints !== undefined) {
+      await syncBlueprints(id, partial.blueprints);
+    }
+
+    // Sync change orders if provided
+    if (partial.changeOrders !== undefined) {
+      await syncChangeOrders(id, partial.changeOrders);
+    }
+
+    // Optimistic local update
+    setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, ...partial } : p)));
+  }, [user]);
+
+  const syncTasks = async (projectId: string, tasks: Task[]) => {
+    // Delete existing tasks and re-insert (simple sync)
+    await supabase.from("tasks").delete().eq("project_id", projectId);
+    if (tasks.length > 0) {
+      await supabase.from("tasks").insert(
+        tasks.map((t, i) => ({
+          id: t.id,
+          project_id: projectId,
+          title: t.title,
+          notes: t.notes,
+          completed: t.completed,
+          sort_order: i,
+        }))
+      );
+    }
+  };
+
+  const syncPhotos = async (projectId: string, photos: FileAttachment[]) => {
+    const existing = projects.find((p) => p.id === projectId)?.photos || [];
+    const existingIds = new Set(existing.map((p) => p.id));
+    const newIds = new Set(photos.map((p) => p.id));
+
+    // Delete removed
+    const toDelete = existing.filter((p) => !newIds.has(p.id));
+    for (const p of toDelete) {
+      await supabase.from("photos").delete().eq("id", p.id);
+    }
+
+    // Insert new
+    const toInsert = photos.filter((p) => !existingIds.has(p.id));
+    if (toInsert.length > 0) {
+      await supabase.from("photos").insert(
+        toInsert.map((p) => ({
+          id: p.id,
+          project_id: projectId,
+          name: p.name,
+          data_url: p.dataUrl,
+        }))
+      );
+    }
+  };
+
+  const syncBlueprints = async (projectId: string, blueprints: FileAttachment[]) => {
+    const existing = projects.find((p) => p.id === projectId)?.blueprints || [];
+    const existingIds = new Set(existing.map((b) => b.id));
+    const newIds = new Set(blueprints.map((b) => b.id));
+
+    const toDelete = existing.filter((b) => !newIds.has(b.id));
+    for (const b of toDelete) {
+      await supabase.from("blueprints").delete().eq("id", b.id);
+    }
+
+    const toInsert = blueprints.filter((b) => !existingIds.has(b.id));
+    if (toInsert.length > 0) {
+      await supabase.from("blueprints").insert(
+        toInsert.map((b) => ({
+          id: b.id,
+          project_id: projectId,
+          name: b.name,
+          data_url: b.dataUrl,
+        }))
+      );
+    }
+  };
+
+  const syncChangeOrders = async (projectId: string, orders: ChangeOrder[]) => {
+    const existing = projects.find((p) => p.id === projectId)?.changeOrders || [];
+    const existingIds = new Set(existing.map((o) => o.id));
+    const newIds = new Set(orders.map((o) => o.id));
+
+    const toDelete = existing.filter((o) => !newIds.has(o.id));
+    for (const o of toDelete) {
+      await supabase.from("change_orders").delete().eq("id", o.id);
+    }
+
+    const toInsert = orders.filter((o) => !existingIds.has(o.id));
+    if (toInsert.length > 0) {
+      await supabase.from("change_orders").insert(
+        toInsert.map((o) => ({
+          id: o.id,
+          project_id: projectId,
+          text: o.text,
+        }))
+      );
+    }
+  };
+
+  const deleteProject = useCallback(async (id: string) => {
+    await supabase.from("projects").delete().eq("id", id);
+    setProjects((prev) => prev.filter((p) => p.id !== id && p.parentId !== id));
   }, []);
 
   const getProject = useCallback(
@@ -75,8 +365,67 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     [projects]
   );
 
+  const refreshProject = useCallback(async (id: string) => {
+    await fetchProjects();
+  }, [fetchProjects]);
+
+  const addMember = useCallback(async (projectId: string, email: string, role: "editor" | "viewer") => {
+    // Find user by email in profiles - need to look up via auth
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, display_name");
+    
+    // We need to find user by email - check auth.users isn't directly accessible
+    // Instead, use a workaround: try to find from existing profiles
+    // For now, we'll use a simpler approach
+    const { data, error } = await supabase.rpc("find_user_by_email" as any, { _email: email });
+    
+    if (error || !data) {
+      return { error: "User not found. They must have an account first." };
+    }
+
+    const userId = (data as any)?.[0]?.id || data;
+
+    const { error: insertError } = await supabase.from("project_members").insert({
+      project_id: projectId,
+      user_id: userId,
+      role,
+    });
+
+    if (insertError) {
+      if (insertError.message.includes("duplicate")) {
+        return { error: "User is already a member of this project." };
+      }
+      return { error: insertError.message };
+    }
+
+    await fetchProjects();
+    return { error: null };
+  }, [fetchProjects]);
+
+  const removeMember = useCallback(async (projectId: string, memberId: string) => {
+    await supabase.from("project_members").delete().eq("id", memberId);
+    await fetchProjects();
+  }, [fetchProjects]);
+
+  const updateMemberRole = useCallback(async (projectId: string, memberId: string, role: "editor" | "viewer") => {
+    await supabase.from("project_members").update({ role }).eq("id", memberId);
+    await fetchProjects();
+  }, [fetchProjects]);
+
+  const userRole = useCallback((projectId: string): "editor" | "viewer" | null => {
+    if (!user) return null;
+    const project = projects.find((p) => p.id === projectId);
+    const member = project?.members.find((m) => m.userId === user.id);
+    return member?.role || null;
+  }, [user, projects]);
+
   return (
-    <ProjectsContext.Provider value={{ projects, addProject, updateProject, deleteProject, getProject, getSubProjects, getTopLevelProjects }}>
+    <ProjectsContext.Provider value={{
+      projects, loading, addProject, updateProject, deleteProject,
+      getProject, getSubProjects, getTopLevelProjects, refreshProject,
+      addMember, removeMember, updateMemberRole, userRole,
+    }}>
       {children}
     </ProjectsContext.Provider>
   );
