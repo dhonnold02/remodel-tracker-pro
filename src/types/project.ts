@@ -4,6 +4,7 @@ export interface Task {
   notes: string;
   completed: boolean;
   parentTaskId?: string | null;
+  dueDate?: string | null;
 }
 
 export interface FileAttachment {
