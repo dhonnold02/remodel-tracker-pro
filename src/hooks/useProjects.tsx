@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { cacheProjects, getCachedProjects } from "@/hooks/useOfflineSync";
@@ -97,14 +97,18 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const initialLoadDone = useRef(false);
+
   // Fetch all projects the user is a member of
   const fetchProjects = useCallback(async () => {
     if (!user) { setProjects([]); setLoading(false); return; }
 
-    // Load from cache first for instant display
-    const cached = getCachedProjects();
-    if (cached && loading) {
-      setProjects(cached.projects as ProjectData[]);
+    // Load from cache first for instant display (only on first load)
+    if (!initialLoadDone.current) {
+      const cached = getCachedProjects();
+      if (cached) {
+        setProjects(cached.projects as ProjectData[]);
+      }
     }
     
     if (!navigator.onLine) {
@@ -188,6 +192,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
     // Cache for offline use
     cacheProjects(assembled);
+    initialLoadDone.current = true;
     setProjects(assembled);
     setLoading(false);
   }, [user]);
@@ -196,22 +201,31 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     fetchProjects();
   }, [fetchProjects]);
 
-  // Real-time subscriptions
+  // Debounced real-time subscriptions to avoid refetch storms
+  const refetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debouncedFetch = useCallback(() => {
+    if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
+    refetchTimerRef.current = setTimeout(() => fetchProjects(), 500);
+  }, [fetchProjects]);
+
   useEffect(() => {
     if (!user) return;
 
     const channel = supabase
       .channel("project-changes")
-      .on("postgres_changes", { event: "*", schema: "public", table: "projects" }, () => fetchProjects())
-      .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, () => fetchProjects())
-      .on("postgres_changes", { event: "*", schema: "public", table: "photos" }, () => fetchProjects())
-      .on("postgres_changes", { event: "*", schema: "public", table: "blueprints" }, () => fetchProjects())
-      .on("postgres_changes", { event: "*", schema: "public", table: "change_orders" }, () => fetchProjects())
-      .on("postgres_changes", { event: "*", schema: "public", table: "project_members" }, () => fetchProjects())
+      .on("postgres_changes", { event: "*", schema: "public", table: "projects" }, debouncedFetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, debouncedFetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "photos" }, debouncedFetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "blueprints" }, debouncedFetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "change_orders" }, debouncedFetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "project_members" }, debouncedFetch)
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
-  }, [user, fetchProjects]);
+    return () => {
+      if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
+      supabase.removeChannel(channel);
+    };
+  }, [user, debouncedFetch]);
 
   const addProject = useCallback(async (name: string, parentId?: string) => {
     if (!user) throw new Error("Not authenticated");
