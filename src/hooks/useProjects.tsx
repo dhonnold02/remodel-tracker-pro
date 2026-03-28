@@ -182,7 +182,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     
     const { data, error } = await supabase
       .from("projects")
-      .insert({ name, parent_id: parentId || null, created_by: user.id } as any)
+      .insert({ name, parent_id: parentId || null, created_by: user.id })
       .select()
       .single();
     
