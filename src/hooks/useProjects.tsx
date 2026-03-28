@@ -25,6 +25,7 @@ export interface Task {
   notes: string;
   completed: boolean;
   parentTaskId?: string | null;
+  dueDate?: string | null;
 }
 
 export interface FileAttachment {
@@ -145,7 +146,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       createdAt: p.created_at,
       tasks: tasks
         .filter((t) => t.project_id === p.id)
-        .map((t) => ({ id: t.id, title: t.title, notes: t.notes, completed: t.completed, parentTaskId: (t as any).parent_task_id || null })),
+        .map((t) => ({ id: t.id, title: t.title, notes: t.notes, completed: t.completed, parentTaskId: (t as any).parent_task_id || null, dueDate: (t as any).due_date || null })),
       photos: photos
         .filter((ph) => ph.project_id === p.id)
         .map((ph) => ({ id: ph.id, name: ph.name, dataUrl: ph.data_url, createdAt: ph.created_at })),
@@ -338,6 +339,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
             completed: t.completed,
             sort_order: i,
             parent_task_id: null,
+            due_date: t.dueDate || null,
           }))
         );
       }
@@ -351,6 +353,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
             completed: t.completed,
             sort_order: i + parentTasks.length,
             parent_task_id: t.parentTaskId,
+            due_date: t.dueDate || null,
           }))
         );
       }

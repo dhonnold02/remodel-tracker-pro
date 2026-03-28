@@ -272,6 +272,7 @@ export type Database = {
           completed: boolean
           created_at: string
           created_by: string | null
+          due_date: string | null
           id: string
           notes: string
           parent_task_id: string | null
@@ -283,6 +284,7 @@ export type Database = {
           completed?: boolean
           created_at?: string
           created_by?: string | null
+          due_date?: string | null
           id?: string
           notes?: string
           parent_task_id?: string | null
@@ -294,6 +296,7 @@ export type Database = {
           completed?: boolean
           created_at?: string
           created_by?: string | null
+          due_date?: string | null
           id?: string
           notes?: string
           parent_task_id?: string | null

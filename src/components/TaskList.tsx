@@ -3,10 +3,14 @@ import { Task } from "@/hooks/useProjects";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import ProgressBar from "./ProgressBar";
+import { format, isPast, isToday, parseISO } from "date-fns";
+import { cn } from "@/lib/utils";
 import {
   Plus, Trash2, ChevronDown, ChevronUp, ChevronRight,
-  GripVertical, ListTree,
+  GripVertical, ListTree, CalendarIcon, AlertTriangle,
 } from "lucide-react";
 import {
   DndContext, closestCenter, PointerSensor, TouchSensor,
@@ -22,6 +26,76 @@ interface TaskListProps {
   onChange: (tasks: Task[]) => void;
 }
 
+/* ─── Due date helpers ─── */
+const getDueDateStatus = (dueDate?: string | null, completed?: boolean) => {
+  if (!dueDate || completed) return null;
+  try {
+    const date = parseISO(dueDate);
+    if (isPast(date) && !isToday(date)) return "overdue";
+    if (isToday(date)) return "today";
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+/* ─── Due date picker inline ─── */
+const DueDatePicker = ({
+  dueDate,
+  completed,
+  onChange,
+}: {
+  dueDate?: string | null;
+  completed: boolean;
+  onChange: (date: string | null) => void;
+}) => {
+  const status = getDueDateStatus(dueDate, completed);
+  const parsed = dueDate ? parseISO(dueDate) : undefined;
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          className={cn(
+            "flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md transition-colors shrink-0",
+            status === "overdue"
+              ? "text-destructive bg-destructive/10 font-medium"
+              : status === "today"
+              ? "text-amber-600 bg-amber-500/10 font-medium"
+              : dueDate
+              ? "text-muted-foreground hover:text-foreground"
+              : "text-muted-foreground/50 hover:text-muted-foreground"
+          )}
+        >
+          {status === "overdue" && <AlertTriangle className="h-3 w-3" />}
+          <CalendarIcon className="h-3 w-3" />
+          {dueDate ? format(parsed!, "MMM d") : "Due"}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="end">
+        <Calendar
+          mode="single"
+          selected={parsed}
+          onSelect={(d) => onChange(d ? format(d, "yyyy-MM-dd") : null)}
+          className={cn("p-3 pointer-events-auto")}
+        />
+        {dueDate && (
+          <div className="px-3 pb-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full text-xs h-7 text-muted-foreground"
+              onClick={() => onChange(null)}
+            >
+              Clear due date
+            </Button>
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+};
+
 /* ─── Sortable single task row ─── */
 interface SortableTaskProps {
   task: Task;
@@ -35,13 +109,14 @@ interface SortableTaskProps {
   onRemove: () => void;
   onUpdateTitle: (title: string) => void;
   onUpdateNotes: (notes: string) => void;
+  onUpdateDueDate: (date: string | null) => void;
   onAddSubtask: () => void;
 }
 
 const SortableTask = ({
   task, isExpanded, indent, hasSubtasks, subtasksOpen,
   onToggleSubtasks, onToggleExpand, onToggleComplete,
-  onRemove, onUpdateTitle, onUpdateNotes, onAddSubtask,
+  onRemove, onUpdateTitle, onUpdateNotes, onUpdateDueDate, onAddSubtask,
 }: SortableTaskProps) => {
   const {
     attributes, listeners, setNodeRef, transform, transition, isDragging,
@@ -54,11 +129,17 @@ const SortableTask = ({
     zIndex: isDragging ? 10 : undefined,
   };
 
+  const status = getDueDateStatus(task.dueDate, task.completed);
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`rounded-lg border bg-background p-3 space-y-2 ${indent ? "ml-6 border-l-2 border-l-primary/20" : ""}`}
+      className={cn(
+        "rounded-lg border bg-background p-3 space-y-2",
+        indent && "ml-6 border-l-2 border-l-primary/20",
+        status === "overdue" && "border-destructive/40",
+      )}
     >
       <div className="flex items-center gap-2">
         <button
@@ -69,7 +150,6 @@ const SortableTask = ({
           <GripVertical className="h-4 w-4" />
         </button>
 
-        {/* Subtask expand/collapse toggle for parent tasks */}
         {!indent && hasSubtasks && (
           <button
             onClick={onToggleSubtasks}
@@ -83,12 +163,19 @@ const SortableTask = ({
         <input
           value={task.title}
           onChange={(e) => onUpdateTitle(e.target.value)}
-          className={`flex-1 bg-transparent text-sm outline-none font-body min-w-0 ${
-            task.completed ? "line-through text-muted-foreground" : "text-foreground"
-          }`}
+          placeholder={indent ? "Subtask title…" : "Task title…"}
+          className={cn(
+            "flex-1 bg-transparent text-sm outline-none font-body min-w-0",
+            task.completed ? "line-through text-muted-foreground" : "text-foreground",
+          )}
         />
 
-        {/* Add subtask button — only for top-level tasks */}
+        <DueDatePicker
+          dueDate={task.dueDate}
+          completed={task.completed}
+          onChange={onUpdateDueDate}
+        />
+
         {!indent && (
           <button
             onClick={onAddSubtask}
@@ -130,18 +217,17 @@ const TaskList = ({ tasks, onChange }: TaskListProps) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [openParents, setOpenParents] = useState<Set<string>>(new Set());
 
-  // Separate parent tasks and subtasks
   const parentTasks = tasks.filter((t) => !t.parentTaskId);
   const getSubtasks = (parentId: string) => tasks.filter((t) => t.parentTaskId === parentId);
 
-  // For progress: count all leaf tasks (subtasks if present, else the parent itself)
   const allLeafTasks = tasks.filter(t => {
-    if (t.parentTaskId) return true; // subtask counts
-    // parent counts only if it has no subtasks
+    if (t.parentTaskId) return true;
     return !tasks.some(sub => sub.parentTaskId === t.id);
   });
   const completedCount = allLeafTasks.filter((t) => t.completed).length;
   const completionPercent = allLeafTasks.length > 0 ? (completedCount / allLeafTasks.length) * 100 : 0;
+
+  const overdueCount = tasks.filter(t => getDueDateStatus(t.dueDate, t.completed) === "overdue").length;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -152,22 +238,17 @@ const TaskList = ({ tasks, onChange }: TaskListProps) => {
     if (!newTask.trim()) return;
     onChange([
       ...tasks,
-      { id: crypto.randomUUID(), title: newTask.trim(), notes: "", completed: false, parentTaskId: null },
+      { id: crypto.randomUUID(), title: newTask.trim(), notes: "", completed: false, parentTaskId: null, dueDate: null },
     ]);
     setNewTask("");
   };
 
   const addSubtask = (parentId: string) => {
-    const newSub: Task = {
-      id: crypto.randomUUID(),
-      title: "",
-      notes: "",
-      completed: false,
-      parentTaskId: parentId,
-    };
-    onChange([...tasks, newSub]);
+    onChange([
+      ...tasks,
+      { id: crypto.randomUUID(), title: "", notes: "", completed: false, parentTaskId: parentId, dueDate: null },
+    ]);
     setOpenParents((prev) => new Set(prev).add(parentId));
-    setExpandedId(null);
   };
 
   const toggleComplete = (taskId: string) => {
@@ -176,19 +257,14 @@ const TaskList = ({ tasks, onChange }: TaskListProps) => {
 
     let updated = tasks.map((t) => (t.id === taskId ? { ...t, completed: !t.completed } : t));
 
-    // If completing a subtask, check if all sibling subtasks are done → auto-complete parent
     if (task.parentTaskId) {
       const siblings = updated.filter((t) => t.parentTaskId === task.parentTaskId);
       const allDone = siblings.every((t) => t.completed);
-      if (allDone) {
-        updated = updated.map((t) => (t.id === task.parentTaskId ? { ...t, completed: true } : t));
-      } else {
-        // If uncompleting, make sure parent is not completed
-        updated = updated.map((t) => (t.id === task.parentTaskId ? { ...t, completed: false } : t));
-      }
+      updated = updated.map((t) =>
+        t.id === task.parentTaskId ? { ...t, completed: allDone } : t
+      );
     }
 
-    // If toggling a parent task, cascade to all subtasks
     if (!task.parentTaskId) {
       const newVal = !task.completed;
       const subtaskIds = new Set(tasks.filter((t) => t.parentTaskId === taskId).map((t) => t.id));
@@ -199,7 +275,6 @@ const TaskList = ({ tasks, onChange }: TaskListProps) => {
   };
 
   const removeTask = (taskId: string) => {
-    // Remove task and all its subtasks
     onChange(tasks.filter((t) => t.id !== taskId && t.parentTaskId !== taskId));
   };
 
@@ -210,7 +285,6 @@ const TaskList = ({ tasks, onChange }: TaskListProps) => {
       const newIndex = parentTasks.findIndex((t) => t.id === over.id);
       if (oldIndex >= 0 && newIndex >= 0) {
         const reordered = arrayMove(parentTasks, oldIndex, newIndex);
-        // Rebuild full list: reordered parents with their subtasks interleaved
         const result: Task[] = [];
         for (const p of reordered) {
           result.push(p);
@@ -233,9 +307,17 @@ const TaskList = ({ tasks, onChange }: TaskListProps) => {
     <div className="rounded-xl border bg-card p-5 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-heading text-lg font-semibold text-foreground">Tasks</h2>
-        <span className="text-sm text-muted-foreground">
-          {completedCount}/{allLeafTasks.length}
-        </span>
+        <div className="flex items-center gap-2">
+          {overdueCount > 0 && (
+            <span className="flex items-center gap-1 text-[10px] text-destructive font-medium bg-destructive/10 px-1.5 py-0.5 rounded-md">
+              <AlertTriangle className="h-3 w-3" />
+              {overdueCount} overdue
+            </span>
+          )}
+          <span className="text-sm text-muted-foreground">
+            {completedCount}/{allLeafTasks.length}
+          </span>
+        </div>
       </div>
 
       <ProgressBar label="Completion" value={completionPercent} variant="completion" />
@@ -285,10 +367,12 @@ const TaskList = ({ tasks, onChange }: TaskListProps) => {
                     onUpdateNotes={(notes) =>
                       onChange(tasks.map((t) => (t.id === task.id ? { ...t, notes } : t)))
                     }
+                    onUpdateDueDate={(dueDate) =>
+                      onChange(tasks.map((t) => (t.id === task.id ? { ...t, dueDate } : t)))
+                    }
                     onAddSubtask={() => addSubtask(task.id)}
                   />
 
-                  {/* Subtask count badge when collapsed */}
                   {subtasks.length > 0 && !isParentOpen && (
                     <button
                       onClick={() => toggleParentOpen(task.id)}
@@ -299,7 +383,6 @@ const TaskList = ({ tasks, onChange }: TaskListProps) => {
                     </button>
                   )}
 
-                  {/* Expanded subtasks */}
                   {isParentOpen && subtasks.map((sub) => (
                     <SortableTask
                       key={sub.id}
@@ -317,6 +400,9 @@ const TaskList = ({ tasks, onChange }: TaskListProps) => {
                       }
                       onUpdateNotes={(notes) =>
                         onChange(tasks.map((t) => (t.id === sub.id ? { ...t, notes } : t)))
+                      }
+                      onUpdateDueDate={(dueDate) =>
+                        onChange(tasks.map((t) => (t.id === sub.id ? { ...t, dueDate } : t)))
                       }
                       onAddSubtask={() => {}}
                     />
