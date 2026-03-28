@@ -492,7 +492,42 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const deleteProject = useCallback(async (id: string) => {
+  const syncInvoices = async (projectId: string, invoices: Invoice[]) => {
+    const existing = projectsRef.current.find((p) => p.id === projectId)?.invoices || [];
+    const existingIds = new Set(existing.map((i) => i.id));
+    const newIds = new Set(invoices.map((i) => i.id));
+
+    // Delete removed
+    const toDelete = existing.filter((i) => !newIds.has(i.id));
+    for (const i of toDelete) {
+      await supabase.from("invoices").delete().eq("id", i.id);
+    }
+
+    // Insert new
+    const toInsert = invoices.filter((i) => !existingIds.has(i.id));
+    if (toInsert.length > 0) {
+      await supabase.from("invoices").insert(
+        toInsert.map((i) => ({
+          id: i.id,
+          project_id: projectId,
+          type: i.type,
+          description: i.description,
+          amount: i.amount,
+          paid: i.paid,
+        }))
+      );
+    }
+
+    // Update existing (paid status changes)
+    const toUpdate = invoices.filter((i) => {
+      const old = existing.find((e) => e.id === i.id);
+      return old && old.paid !== i.paid;
+    });
+    for (const i of toUpdate) {
+      await supabase.from("invoices").update({ paid: i.paid }).eq("id", i.id);
+    }
+  };
+
     await supabase.from("projects").delete().eq("id", id);
     setProjects((prev) => prev.filter((p) => p.id !== id && p.parentId !== id));
   }, []);

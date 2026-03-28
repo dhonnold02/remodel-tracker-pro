@@ -4,6 +4,7 @@ import { useProjects } from "@/hooks/useProjects";
 import { getAggregatedStats } from "@/types/project";
 import ProjectDetails from "@/components/ProjectDetails";
 import BudgetSection from "@/components/BudgetSection";
+import InvoicesSection from "@/components/InvoicesSection";
 import TaskList from "@/components/TaskList";
 import PhotoGallery from "@/components/PhotoGallery";
 import BlueprintSection from "@/components/BlueprintSection";
@@ -18,7 +19,7 @@ import ProgressBar from "@/components/ProgressBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ArrowLeft, HardHat, Plus, FolderOpen, ChevronRight, ChevronDown, Users, Activity, Download, FileText } from "lucide-react";
+import { ArrowLeft, HardHat, Plus, FolderOpen, ChevronRight, ChevronDown, Users, Activity, Download, FileText, MapPin } from "lucide-react";
 import { exportProjectCSV, exportProjectPDF } from "@/lib/exportProject";
 
 const ProjectDetailPage = () => {
@@ -106,6 +107,12 @@ const ProjectDetailPage = () => {
             <h1 className="font-heading text-base font-bold text-foreground truncate">
               {project.name || "Untitled Project"}
             </h1>
+            {project.address && (
+              <p className="text-[10px] text-muted-foreground flex items-center gap-0.5 truncate">
+                <MapPin className="h-2.5 w-2.5 shrink-0" />
+                {project.address.split("\n")[0]}
+              </p>
+            )}
           </div>
           {!isEditor && (
             <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
@@ -215,6 +222,13 @@ const ProjectDetailPage = () => {
         {/* Core sections */}
         <ProjectDetails data={project as any} onChange={isEditor ? update : () => {}} />
         <BudgetSection data={project as any} onChange={isEditor ? update : () => {}} />
+        <InvoicesSection
+          invoices={project.invoices}
+          onChange={isEditor ? (invoices) => update({ invoices }) : () => {}}
+          totalBudget={project.totalBudget}
+          totalSpent={project.laborCosts + project.materialCosts}
+          readOnly={!isEditor}
+        />
         <TaskList tasks={project.tasks} onChange={isEditor ? (tasks) => update({ tasks }) : () => {}} />
         <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} />
         <GanttTimeline tasks={project.tasks} startDate={project.startDate} />
