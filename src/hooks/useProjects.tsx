@@ -192,6 +192,9 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       changeOrders: orders
         .filter((o) => o.project_id === p.id)
         .map((o) => ({ id: o.id, text: o.text, createdAt: o.created_at })),
+      invoices: invoicesData
+        .filter((inv) => inv.project_id === p.id)
+        .map((inv) => ({ id: inv.id, type: inv.type as "homeowner" | "subcontractor", description: inv.description, amount: Number(inv.amount), paid: inv.paid })),
       members: members
         .filter((m) => m.project_id === p.id)
         .map((m) => {
