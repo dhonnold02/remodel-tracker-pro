@@ -276,8 +276,10 @@ export type Database = {
           id: string
           notes: string
           parent_task_id: string | null
+          priority: string
           project_id: string
           sort_order: number
+          tags: string[]
           title: string
         }
         Insert: {
@@ -288,8 +290,10 @@ export type Database = {
           id?: string
           notes?: string
           parent_task_id?: string | null
+          priority?: string
           project_id: string
           sort_order?: number
+          tags?: string[]
           title?: string
         }
         Update: {
@@ -300,8 +304,10 @@ export type Database = {
           id?: string
           notes?: string
           parent_task_id?: string | null
+          priority?: string
           project_id?: string
           sort_order?: number
+          tags?: string[]
           title?: string
         }
         Relationships: [
