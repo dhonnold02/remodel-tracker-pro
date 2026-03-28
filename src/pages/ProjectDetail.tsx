@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useProjects } from "@/hooks/useProjects.tsx";
-import { getAggregatedStats } from "@/types/project";
+import { useProjects } from "@/hooks/useProjects";
+import { getAggregatedStats, getProjectStats } from "@/types/project";
 import ProjectDetails from "@/components/ProjectDetails";
 import BudgetSection from "@/components/BudgetSection";
 import TaskList from "@/components/TaskList";
@@ -10,6 +10,7 @@ import BlueprintSection from "@/components/BlueprintSection";
 import ChangeOrdersSection from "@/components/ChangeOrdersSection";
 import EstimatedFinishDate from "@/components/EstimatedFinishDate";
 import GanttTimeline from "@/components/GanttTimeline";
+import TeamMembers from "@/components/TeamMembers";
 import ProgressBar from "@/components/ProgressBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,10 +19,19 @@ import { ArrowLeft, HardHat, Plus, FolderOpen, ChevronRight } from "lucide-react
 const ProjectDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getProject, updateProject, addProject, getSubProjects } = useProjects();
+  const { getProject, updateProject, addProject, getSubProjects, userRole, loading } = useProjects();
   const project = getProject(id || "");
   const [newSubName, setNewSubName] = useState("");
   const [showSubForm, setShowSubForm] = useState(false);
+  const [creatingSubProject, setCreatingSubProject] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground text-sm">Loading…</p>
+      </div>
+    );
+  }
 
   if (!project) {
     return (
@@ -36,21 +46,33 @@ const ProjectDetailPage = () => {
     );
   }
 
+  const role = userRole(project.id);
+  const isEditor = role === "editor";
   const update = (partial: Partial<typeof project>) => updateProject(project.id, partial);
   const subProjects = getSubProjects(project.id);
   const parentProject = project.parentId ? getProject(project.parentId) : undefined;
   const hasSubs = subProjects.length > 0;
 
-  const handleAddSub = () => {
-    if (!newSubName.trim()) return;
-    const subId = addProject(newSubName.trim(), project.id);
-    setNewSubName("");
-    setShowSubForm(false);
-    navigate(`/project/${subId}`);
+  const handleAddSub = async () => {
+    if (!newSubName.trim() || creatingSubProject) return;
+    setCreatingSubProject(true);
+    try {
+      const subId = await addProject(newSubName.trim(), project.id);
+      setNewSubName("");
+      setShowSubForm(false);
+      navigate(`/project/${subId}`);
+    } finally {
+      setCreatingSubProject(false);
+    }
   };
 
-  // Aggregated stats for display
-  const aggregated = hasSubs ? getAggregatedStats(project, subProjects) : null;
+  // Build aggregated stats using compatible shape
+  const projectForStats = {
+    ...project,
+    tasks: project.tasks,
+  } as any;
+  const subsForStats = subProjects.map((s) => ({ ...s })) as any[];
+  const aggregated = hasSubs ? getAggregatedStats(projectForStats, subsForStats) : null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -81,6 +103,11 @@ const ProjectDetailPage = () => {
               {project.name || "Untitled Project"}
             </h1>
           </div>
+          {!isEditor && (
+            <span className="ml-auto text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+              View only
+            </span>
+          )}
         </div>
       </header>
 
@@ -129,15 +156,17 @@ const ProjectDetailPage = () => {
                 <FolderOpen className="h-4 w-4 text-primary" />
                 Sub-Projects
               </h2>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setShowSubForm(!showSubForm)}
-                className="h-7 text-xs"
-              >
-                <Plus className="h-3.5 w-3.5 mr-1" />
-                Add
-              </Button>
+              {isEditor && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setShowSubForm(!showSubForm)}
+                  className="h-7 text-xs"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Add
+                </Button>
+              )}
             </div>
 
             {showSubForm && (
@@ -150,7 +179,7 @@ const ProjectDetailPage = () => {
                   className="flex-1 h-8 text-sm"
                   autoFocus
                 />
-                <Button onClick={handleAddSub} size="sm" className="h-8 text-xs">
+                <Button onClick={handleAddSub} size="sm" className="h-8 text-xs" disabled={creatingSubProject}>
                   Create
                 </Button>
               </div>
@@ -162,40 +191,40 @@ const ProjectDetailPage = () => {
               </p>
             ) : (
               <div className="space-y-2">
-                {subProjects.map((sub) => {
-                  const stats = getAggregatedStats(sub, getSubProjects(sub.id));
-                  return (
-                    <button
-                      key={sub.id}
-                      onClick={() => navigate(`/project/${sub.id}`)}
-                      className="w-full text-left rounded-lg border bg-background p-3 hover:border-primary/30 transition-colors space-y-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-heading font-semibold text-foreground truncate">
-                          {sub.name || "Untitled"}
-                        </span>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                      </div>
-                      <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
-                        <span>{sub.tasks.filter((t) => t.completed).length}/{sub.tasks.length} tasks</span>
-                        <span>${(sub.laborCosts + sub.materialCosts).toLocaleString()} spent</span>
-                      </div>
-                    </button>
-                  );
-                })}
+                {subProjects.map((sub) => (
+                  <button
+                    key={sub.id}
+                    onClick={() => navigate(`/project/${sub.id}`)}
+                    className="w-full text-left rounded-lg border bg-background p-3 hover:border-primary/30 transition-colors space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-heading font-semibold text-foreground truncate">
+                        {sub.name || "Untitled"}
+                      </span>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                    </div>
+                    <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
+                      <span>{sub.tasks.filter((t) => t.completed).length}/{sub.tasks.length} tasks</span>
+                      <span>${(sub.laborCosts + sub.materialCosts).toLocaleString()} spent</span>
+                    </div>
+                  </button>
+                ))}
               </div>
             )}
           </div>
         )}
 
-        <ProjectDetails data={project} onChange={update} />
-        <BudgetSection data={project} onChange={update} />
-        <TaskList tasks={project.tasks} onChange={(tasks) => update({ tasks })} />
+        {/* Team Members */}
+        <TeamMembers projectId={project.id} members={project.members} isEditor={isEditor} />
+
+        <ProjectDetails data={project as any} onChange={isEditor ? update : () => {}} />
+        <BudgetSection data={project as any} onChange={isEditor ? update : () => {}} />
+        <TaskList tasks={project.tasks} onChange={isEditor ? (tasks) => update({ tasks }) : () => {}} />
         <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} />
         <GanttTimeline tasks={project.tasks} startDate={project.startDate} />
-        <PhotoGallery photos={project.photos} onChange={(photos) => update({ photos })} />
-        <BlueprintSection blueprints={project.blueprints} onChange={(blueprints) => update({ blueprints })} />
-        <ChangeOrdersSection orders={project.changeOrders} onChange={(changeOrders) => update({ changeOrders })} />
+        <PhotoGallery photos={project.photos} onChange={isEditor ? (photos) => update({ photos }) : () => {}} />
+        <BlueprintSection blueprints={project.blueprints} onChange={isEditor ? (blueprints) => update({ blueprints }) : () => {}} />
+        <ChangeOrdersSection orders={project.changeOrders} onChange={isEditor ? (changeOrders) => update({ changeOrders }) : () => {}} />
       </main>
     </div>
   );

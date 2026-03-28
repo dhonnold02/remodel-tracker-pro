@@ -268,6 +268,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_user_by_email: {
+        Args: { _email: string }
+        Returns: {
+          id: string
+        }[]
+      }
       is_project_editor: {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean

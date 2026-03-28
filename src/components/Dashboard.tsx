@@ -1,30 +1,39 @@
 import { useState } from "react";
-import { ProjectData, getProjectStats, getAggregatedStats } from "@/types/project";
+import { ProjectData } from "@/hooks/useProjects";
+import { getProjectStats, getAggregatedStats } from "@/types/project";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, HardHat, ChevronRight, ChevronDown, FolderOpen } from "lucide-react";
+import { Plus, Trash2, HardHat, ChevronRight, ChevronDown, FolderOpen, LogOut } from "lucide-react";
 import ProgressBar from "@/components/ProgressBar";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DashboardProps {
   projects: ProjectData[];
-  allProjects: ProjectData[];
-  onAdd: (name: string, parentId?: string) => string;
-  onDelete: (id: string) => void;
+  loading: boolean;
+  onAdd: (name: string, parentId?: string) => Promise<string>;
+  onDelete: (id: string) => Promise<void>;
   getSubProjects: (parentId: string) => ProjectData[];
 }
 
-const Dashboard = ({ projects, allProjects, onAdd, onDelete, getSubProjects }: DashboardProps) => {
+const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects }: DashboardProps) => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const [newName, setNewName] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [creating, setCreating] = useState(false);
 
-  const handleAdd = () => {
-    if (!newName.trim()) return;
-    const id = onAdd(newName.trim());
-    setNewName("");
-    navigate(`/project/${id}`);
+  const handleAdd = async () => {
+    if (!newName.trim() || creating) return;
+    setCreating(true);
+    try {
+      const id = await onAdd(newName.trim());
+      setNewName("");
+      navigate(`/project/${id}`);
+    } finally {
+      setCreating(false);
+    }
   };
 
   const toggleExpanded = (id: string, e: React.MouseEvent) => {
@@ -36,10 +45,20 @@ const Dashboard = ({ projects, allProjects, onAdd, onDelete, getSubProjects }: D
     const subs = getSubProjects(project.id);
     const hasSubs = subs.length > 0;
     const isExpanded = expanded[project.id];
-    const rawStats = hasSubs ? getAggregatedStats(project, subs) : getProjectStats(project);
+
+    const projectForStats = {
+      ...project,
+      tasks: project.tasks.map((t) => ({ ...t })),
+    } as any;
+
+    const subsForStats = subs.map((s) => ({
+      ...s,
+      tasks: s.tasks.map((t) => ({ ...t })),
+    })) as any[];
+
+    const rawStats = hasSubs ? getAggregatedStats(projectForStats, subsForStats) : getProjectStats(projectForStats);
     const displayBudget = hasSubs ? (rawStats as any).totalBudget : project.totalBudget;
     const displayTotalTasks = hasSubs ? (rawStats as any).totalTasks : project.tasks.length;
-    const stats = rawStats;
 
     return (
       <div key={project.id} className={isSubProject ? "ml-4 border-l-2 border-primary/20 pl-3" : ""}>
@@ -66,6 +85,11 @@ const Dashboard = ({ projects, allProjects, onAdd, onDelete, getSubProjects }: D
               {hasSubs && (
                 <span className="text-[10px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded-full shrink-0">
                   {subs.length} sub
+                </span>
+              )}
+              {project.members.length > 1 && (
+                <span className="text-[10px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded-full shrink-0">
+                  {project.members.length} members
                 </span>
               )}
             </div>
@@ -100,25 +124,25 @@ const Dashboard = ({ projects, allProjects, onAdd, onDelete, getSubProjects }: D
             </div>
             <div className="text-center">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Spent</p>
-              <p className="text-xs font-heading font-bold text-foreground">${stats.totalSpent.toLocaleString()}</p>
+              <p className="text-xs font-heading font-bold text-foreground">${rawStats.totalSpent.toLocaleString()}</p>
             </div>
             <div className="text-center">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Left</p>
-              <p className={`text-xs font-heading font-bold ${stats.remaining < 0 ? "text-destructive" : "text-foreground"}`}>
-                ${stats.remaining.toLocaleString()}
+              <p className={`text-xs font-heading font-bold ${rawStats.remaining < 0 ? "text-destructive" : "text-foreground"}`}>
+                ${rawStats.remaining.toLocaleString()}
               </p>
             </div>
             <div className="text-center">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Tasks</p>
               <p className="text-xs font-heading font-bold text-foreground">
-                {stats.completedTasks}/{displayTotalTasks}
+                {rawStats.completedTasks}/{displayTotalTasks}
               </p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <ProgressBar label="Budget" value={stats.budgetPercent} variant="budget" />
-            <ProgressBar label="Tasks" value={stats.taskPercent} variant="completion" />
+            <ProgressBar label="Budget" value={rawStats.budgetPercent} variant="budget" />
+            <ProgressBar label="Tasks" value={rawStats.taskPercent} variant="completion" />
           </div>
         </div>
 
@@ -138,7 +162,13 @@ const Dashboard = ({ projects, allProjects, onAdd, onDelete, getSubProjects }: D
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
             <HardHat className="h-5 w-5 text-primary-foreground" />
           </div>
-          <h1 className="font-heading text-lg font-bold text-foreground">Remodel Tracker Pro</h1>
+          <h1 className="font-heading text-lg font-bold text-foreground flex-1">Remodel Tracker Pro</h1>
+          <button
+            onClick={signOut}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
         </div>
       </header>
 
@@ -151,13 +181,17 @@ const Dashboard = ({ projects, allProjects, onAdd, onDelete, getSubProjects }: D
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             className="flex-1"
           />
-          <Button onClick={handleAdd} className="shrink-0">
+          <Button onClick={handleAdd} className="shrink-0" disabled={creating}>
             <Plus className="h-4 w-4 mr-1.5" />
             Create
           </Button>
         </div>
 
-        {projects.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16">
+            <p className="text-muted-foreground text-sm">Loading projects…</p>
+          </div>
+        ) : projects.length === 0 ? (
           <div className="text-center py-16 space-y-2">
             <HardHat className="h-12 w-12 mx-auto text-muted-foreground/40" />
             <p className="text-muted-foreground text-sm">No projects yet. Create one above.</p>
