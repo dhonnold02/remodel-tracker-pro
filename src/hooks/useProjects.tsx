@@ -24,6 +24,7 @@ export interface Task {
   title: string;
   notes: string;
   completed: boolean;
+  parentTaskId?: string | null;
 }
 
 export interface FileAttachment {
@@ -144,7 +145,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       createdAt: p.created_at,
       tasks: tasks
         .filter((t) => t.project_id === p.id)
-        .map((t) => ({ id: t.id, title: t.title, notes: t.notes, completed: t.completed })),
+        .map((t) => ({ id: t.id, title: t.title, notes: t.notes, completed: t.completed, parentTaskId: (t as any).parent_task_id || null })),
       photos: photos
         .filter((ph) => ph.project_id === p.id)
         .map((ph) => ({ id: ph.id, name: ph.name, dataUrl: ph.data_url, createdAt: ph.created_at })),
@@ -322,18 +323,37 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
   const syncTasks = async (projectId: string, tasks: Task[]) => {
     // Delete existing tasks and re-insert (simple sync)
+    // Insert parent tasks first (no parentTaskId), then subtasks
     await supabase.from("tasks").delete().eq("project_id", projectId);
     if (tasks.length > 0) {
-      await supabase.from("tasks").insert(
-        tasks.map((t, i) => ({
-          id: t.id,
-          project_id: projectId,
-          title: t.title,
-          notes: t.notes,
-          completed: t.completed,
-          sort_order: i,
-        }))
-      );
+      const parentTasks = tasks.filter(t => !t.parentTaskId);
+      const subTasks = tasks.filter(t => t.parentTaskId);
+      if (parentTasks.length > 0) {
+        await supabase.from("tasks").insert(
+          parentTasks.map((t, i) => ({
+            id: t.id,
+            project_id: projectId,
+            title: t.title,
+            notes: t.notes,
+            completed: t.completed,
+            sort_order: i,
+            parent_task_id: null,
+          }))
+        );
+      }
+      if (subTasks.length > 0) {
+        await supabase.from("tasks").insert(
+          subTasks.map((t, i) => ({
+            id: t.id,
+            project_id: projectId,
+            title: t.title,
+            notes: t.notes,
+            completed: t.completed,
+            sort_order: i + parentTasks.length,
+            parent_task_id: t.parentTaskId,
+          }))
+        );
+      }
     }
   };
 
