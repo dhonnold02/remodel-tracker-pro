@@ -6,6 +6,7 @@ import TaskList from "@/components/TaskList";
 import PhotoGallery from "@/components/PhotoGallery";
 import BlueprintSection from "@/components/BlueprintSection";
 import ChangeOrdersSection from "@/components/ChangeOrdersSection";
+import EstimatedFinishDate from "@/components/EstimatedFinishDate";
 import { ArrowLeft, HardHat } from "lucide-react";
 
 const ProjectDetailPage = () => {
@@ -54,6 +55,7 @@ const ProjectDetailPage = () => {
         <ProjectDetails data={project} onChange={update} />
         <BudgetSection data={project} onChange={update} />
         <TaskList tasks={project.tasks} onChange={(tasks) => update({ tasks })} />
+        <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} />
         <PhotoGallery photos={project.photos} onChange={(photos) => update({ photos })} />
         <BlueprintSection blueprints={project.blueprints} onChange={(blueprints) => update({ blueprints })} />
         <ChangeOrdersSection orders={project.changeOrders} onChange={(changeOrders) => update({ changeOrders })} />
