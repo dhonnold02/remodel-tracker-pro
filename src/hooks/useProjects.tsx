@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { cacheProjects, getCachedProjects } from "@/hooks/useOfflineSync";
 
 const logActivity = async (
   userId: string,
@@ -99,6 +100,17 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   // Fetch all projects the user is a member of
   const fetchProjects = useCallback(async () => {
     if (!user) { setProjects([]); setLoading(false); return; }
+
+    // Load from cache first for instant display
+    const cached = getCachedProjects();
+    if (cached && loading) {
+      setProjects(cached.projects as ProjectData[]);
+    }
+    
+    if (!navigator.onLine) {
+      setLoading(false);
+      return;
+    }
     
     // Get project IDs user is member of
     const { data: memberships } = await supabase
@@ -174,6 +186,8 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
         }),
     }));
 
+    // Cache for offline use
+    cacheProjects(assembled);
     setProjects(assembled);
     setLoading(false);
   }, [user]);

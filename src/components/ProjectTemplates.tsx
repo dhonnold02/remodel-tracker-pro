@@ -1,0 +1,117 @@
+import { useState } from "react";
+import { useTemplates, ProjectTemplate } from "@/hooks/useTemplates";
+import { ProjectData, Task } from "@/hooks/useProjects";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { BookTemplate, Plus, Trash2, FileDown, FileUp } from "lucide-react";
+import { toast } from "sonner";
+
+interface Props {
+  onCreateFromTemplate: (template: ProjectTemplate) => void;
+  currentProject?: ProjectData;
+}
+
+const ProjectTemplates = ({ onCreateFromTemplate, currentProject }: Props) => {
+  const { templates, loading, saveTemplate, deleteTemplate } = useTemplates();
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templateDesc, setTemplateDesc] = useState("");
+
+  const handleSaveAsTemplate = async () => {
+    if (!templateName.trim() || !currentProject) return;
+    await saveTemplate({
+      name: templateName.trim(),
+      description: templateDesc.trim(),
+      totalBudget: currentProject.totalBudget,
+      laborCosts: currentProject.laborCosts,
+      materialCosts: currentProject.materialCosts,
+      tasks: currentProject.tasks.map(({ id, ...rest }) => rest),
+    });
+    setTemplateName("");
+    setTemplateDesc("");
+    setSaveOpen(false);
+    toast.success("Template saved!");
+  };
+
+  return (
+    <div className="rounded-xl border bg-card p-5 space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="font-heading text-lg font-semibold text-foreground flex items-center gap-2">
+          <BookTemplate className="h-5 w-5 text-primary" />
+          Templates
+        </h2>
+        {currentProject && (
+          <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="h-7 text-xs">
+                <FileDown className="h-3.5 w-3.5 mr-1" />
+                Save as Template
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Save Project as Template</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3 pt-2">
+                <Input
+                  placeholder="Template name…"
+                  value={templateName}
+                  onChange={(e) => setTemplateName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSaveAsTemplate()}
+                />
+                <Input
+                  placeholder="Description (optional)…"
+                  value={templateDesc}
+                  onChange={(e) => setTemplateDesc(e.target.value)}
+                />
+                <Button onClick={handleSaveAsTemplate} className="w-full" disabled={!templateName.trim()}>
+                  Save Template
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+
+      {loading ? (
+        <p className="text-sm text-muted-foreground">Loading templates…</p>
+      ) : templates.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No templates yet. Save a project as a template to reuse it.</p>
+      ) : (
+        <div className="space-y-2">
+          {templates.map((t) => (
+            <div key={t.id} className="flex items-center justify-between rounded-lg border bg-background p-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-foreground truncate">{t.name}</p>
+                {t.description && <p className="text-[10px] text-muted-foreground truncate">{t.description}</p>}
+                <p className="text-[10px] text-muted-foreground">
+                  {t.tasks.length} tasks · ${t.totalBudget.toLocaleString()} budget
+                </p>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => onCreateFromTemplate(t)}
+                >
+                  <FileUp className="h-3.5 w-3.5 mr-1" />
+                  Use
+                </Button>
+                <button
+                  onClick={() => deleteTemplate(t.id)}
+                  className="p-1.5 text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ProjectTemplates;
