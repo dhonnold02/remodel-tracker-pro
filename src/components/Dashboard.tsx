@@ -111,7 +111,7 @@ const Dashboard = ({ projects, allProjects, onAdd, onDelete, getSubProjects }: D
             <div className="text-center">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Tasks</p>
               <p className="text-xs font-heading font-bold text-foreground">
-                {stats.completedTasks}/{hasSubs ? (stats as any).totalTasks : project.tasks.length}
+                {stats.completedTasks}/{displayTotalTasks}
               </p>
             </div>
           </div>
