@@ -1,12 +1,12 @@
-import { useProjects } from "@/hooks/useProjects.tsx";
+import { useProjects } from "@/hooks/useProjects";
 import Dashboard from "@/components/Dashboard";
 
 const Index = () => {
-  const { projects, addProject, deleteProject, getSubProjects, getTopLevelProjects } = useProjects();
+  const { projects, loading, addProject, deleteProject, getSubProjects, getTopLevelProjects } = useProjects();
   return (
     <Dashboard
       projects={getTopLevelProjects()}
-      allProjects={projects}
+      loading={loading}
       onAdd={addProject}
       onDelete={deleteProject}
       getSubProjects={getSubProjects}
