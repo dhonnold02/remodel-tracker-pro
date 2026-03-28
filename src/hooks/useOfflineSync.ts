@@ -109,7 +109,6 @@ export function useOfflineSync() {
 
 // Hook to track online status reactively
 export function useOnlineStatus() {
-  const { useEffect, useState } = require("react");
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
