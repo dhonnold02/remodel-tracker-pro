@@ -96,6 +96,9 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(true);
+  const projectsRef = useRef<ProjectData[]>([]);
+  // Keep ref in sync for stable callbacks
+  projectsRef.current = projects;
 
   const initialLoadDone = useRef(false);
 
