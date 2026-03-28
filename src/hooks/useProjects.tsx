@@ -238,6 +238,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       .on("postgres_changes", { event: "*", schema: "public", table: "blueprints" }, debouncedFetch)
       .on("postgres_changes", { event: "*", schema: "public", table: "change_orders" }, debouncedFetch)
       .on("postgres_changes", { event: "*", schema: "public", table: "project_members" }, debouncedFetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "invoices" }, debouncedFetch)
       .subscribe();
 
     return () => {
@@ -299,6 +300,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     // Update project fields
     const projectFields: Record<string, any> = {};
     if (partial.name !== undefined) projectFields.name = partial.name;
+    if ((partial as any).address !== undefined) projectFields.address = (partial as any).address;
     if (partial.totalBudget !== undefined) projectFields.total_budget = partial.totalBudget;
     if (partial.laborCosts !== undefined) projectFields.labor_costs = partial.laborCosts;
     if (partial.materialCosts !== undefined) projectFields.material_costs = partial.materialCosts;
@@ -367,6 +369,11 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       for (const o of addedOrders) {
         await logActivity(user.id, displayName, id, "change_order_added", `added change order`);
       }
+    }
+
+    // Sync invoices if provided
+    if (partial.invoices !== undefined) {
+      await syncInvoices(id, partial.invoices);
     }
 
     // Optimistic local update
