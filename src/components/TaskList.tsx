@@ -325,7 +325,7 @@ const TaskList = ({ tasks, onChange }: TaskListProps) => {
   return (
     <div className="premium-card p-6 space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-heading text-lg font-semibold text-foreground">Tasks</h2>
+        <h2 className="section-title">Tasks</h2>
         <div className="flex items-center gap-2">
           {overdueCount > 0 && (
             <span className="flex items-center gap-1 text-[10px] text-destructive font-medium bg-destructive/10 px-1.5 py-0.5 rounded-md">
