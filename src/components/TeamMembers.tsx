@@ -37,34 +37,34 @@ const TeamMembers = ({ projectId, members, isEditor }: TeamMembersProps) => {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {isEditor && (
         <div className="flex justify-end">
-          <Button size="sm" variant="ghost" onClick={() => setShowInvite(!showInvite)} className="h-7 text-xs">
+          <Button size="sm" variant="ghost" onClick={() => setShowInvite(!showInvite)} className="h-8 text-xs rounded-xl">
             <Plus className="h-3.5 w-3.5 mr-1" /> Invite
           </Button>
         </div>
       )}
 
       {showInvite && (
-        <div className="space-y-2 rounded-lg border bg-background p-3">
-          <Input placeholder="Email address" type="email" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleInvite()} className="h-8 text-sm" autoFocus />
+        <div className="space-y-2 rounded-xl border bg-background p-4">
+          <Input placeholder="Email address" type="email" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleInvite()} className="h-9 text-sm rounded-xl" autoFocus />
           <div className="flex items-center gap-2">
-            <select value={role} onChange={(e) => setRole(e.target.value as "editor" | "viewer")} className="flex-1 h-8 rounded-md border bg-background px-2 text-sm text-foreground">
+            <select value={role} onChange={(e) => setRole(e.target.value as "editor" | "viewer")} className="flex-1 h-9 rounded-xl border bg-background px-3 text-sm text-foreground">
               <option value="editor">Editor</option>
               <option value="viewer">Viewer</option>
             </select>
-            <Button onClick={handleInvite} size="sm" className="h-8 text-xs" disabled={inviting}>{inviting ? "…" : "Add"}</Button>
+            <Button onClick={handleInvite} size="sm" className="h-9 text-xs rounded-xl" disabled={inviting}>{inviting ? "…" : "Add"}</Button>
           </div>
           {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
       )}
 
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         {members.map((member) => (
-          <div key={member.id} className="flex items-center gap-3 rounded-lg bg-background p-2.5">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="text-xs bg-primary/10 text-primary">{getInitials(member.displayName)}</AvatarFallback>
+          <div key={member.id} className="flex items-center gap-3 rounded-xl bg-background border p-3 hover:shadow-sm transition-shadow duration-150">
+            <Avatar className="h-9 w-9">
+              <AvatarFallback className="text-xs bg-accent text-accent-foreground font-medium">{getInitials(member.displayName)}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">
@@ -74,9 +74,9 @@ const TeamMembers = ({ projectId, members, isEditor }: TeamMembersProps) => {
             </div>
             <div className="flex items-center gap-1.5">
               {member.role === "editor" ? (
-                <span className="flex items-center gap-1 text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded-full"><Shield className="h-3 w-3" /> Editor</span>
+                <span className="flex items-center gap-1 text-[10px] text-accent-foreground bg-accent px-2.5 py-0.5 rounded-full font-medium"><Shield className="h-3 w-3" /> Editor</span>
               ) : (
-                <span className="flex items-center gap-1 text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full"><Eye className="h-3 w-3" /> Viewer</span>
+                <span className="flex items-center gap-1 text-[10px] text-muted-foreground bg-secondary px-2.5 py-0.5 rounded-full"><Eye className="h-3 w-3" /> Viewer</span>
               )}
               {isEditor && member.userId !== user?.id && (
                 <div className="flex items-center gap-1">

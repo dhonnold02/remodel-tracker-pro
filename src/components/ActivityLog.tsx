@@ -73,14 +73,14 @@ const ActivityLog = ({ projectId }: ActivityLogProps) => {
   const filtered = logs.filter((l) => matchesFilter(l.action_type, filter));
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Filter chips */}
       <div className="flex flex-wrap gap-1.5">
         {(Object.keys(ACTION_CATEGORIES) as CategoryKey[]).map((key) => (
           <button
             key={key}
             onClick={() => setFilter(key)}
-            className={`text-[10px] px-2.5 py-1 rounded-full transition-all duration-150 ${
+            className={`text-[10px] px-3 py-1.5 rounded-full transition-all duration-150 font-medium ${
               filter === key
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
@@ -91,32 +91,37 @@ const ActivityLog = ({ projectId }: ActivityLogProps) => {
         ))}
       </div>
 
-      {/* Log entries */}
-      <div className="space-y-0.5 max-h-72 overflow-y-auto">
+      {/* Timeline-style log entries */}
+      <div className="relative max-h-80 overflow-y-auto">
         {loading ? (
-          <p className="text-xs text-muted-foreground py-4 text-center">Loading…</p>
+          <p className="text-xs text-muted-foreground py-6 text-center">Loading…</p>
         ) : filtered.length === 0 ? (
-          <p className="text-xs text-muted-foreground py-4 text-center">No activity yet.</p>
+          <p className="text-xs text-muted-foreground py-6 text-center">No activity yet.</p>
         ) : (
-          filtered.map((log) => {
-            const Icon = getActionIcon(log.action_type);
-            return (
-              <div key={log.id} className="flex items-start gap-2.5 py-2 border-b border-border/40 last:border-0">
-                <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary">
-                  <Icon className="h-3 w-3 text-muted-foreground" />
+          <div className="relative pl-6">
+            {/* Vertical timeline line */}
+            <div className="absolute left-[11px] top-2 bottom-2 w-px bg-border" />
+
+            {filtered.map((log) => {
+              const Icon = getActionIcon(log.action_type);
+              return (
+                <div key={log.id} className="relative flex items-start gap-3 pb-4 last:pb-0">
+                  <div className="absolute -left-6 mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-card border shadow-sm z-10">
+                    <Icon className="h-3 w-3 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0 pt-0.5">
+                    <p className="text-xs text-foreground leading-relaxed">
+                      <span className="font-medium">{log.user_name}</span>{" "}
+                      <span className="text-muted-foreground">{log.description}</span>
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {format(new Date(log.created_at), "MMM d, h:mm a")}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-foreground leading-relaxed">
-                    <span className="font-medium">{log.user_name}</span>{" "}
-                    <span className="text-muted-foreground">{log.description}</span>
-                  </p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
-                    {format(new Date(log.created_at), "MMM d, h:mm a")}
-                  </p>
-                </div>
-              </div>
-            );
-          })
+              );
+            })}
+          </div>
         )}
       </div>
     </div>
