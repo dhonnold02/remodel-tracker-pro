@@ -4,7 +4,7 @@ import { ProjectData, Task } from "@/hooks/useProjects";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { BookTemplate, Plus, Trash2, FileDown, FileUp } from "lucide-react";
+import { BookTemplate, Trash2, FileDown, FileUp } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props {
@@ -35,16 +35,16 @@ const ProjectTemplates = ({ onCreateFromTemplate, currentProject }: Props) => {
   };
 
   return (
-    <div className="rounded-xl border bg-card p-5 space-y-4">
+    <div className="premium-card p-6 space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-heading text-lg font-semibold text-foreground flex items-center gap-2">
-          <BookTemplate className="h-5 w-5 text-primary" />
+        <h2 className="section-title flex items-center gap-2">
+          <BookTemplate className="h-4 w-4 text-primary" />
           Templates
         </h2>
         {currentProject && (
           <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7 text-xs">
+              <Button variant="outline" size="sm" className="h-8 text-xs rounded-xl">
                 <FileDown className="h-3.5 w-3.5 mr-1" />
                 Save as Template
               </Button>
@@ -59,13 +59,15 @@ const ProjectTemplates = ({ onCreateFromTemplate, currentProject }: Props) => {
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSaveAsTemplate()}
+                  className="rounded-xl"
                 />
                 <Input
                   placeholder="Description (optional)…"
                   value={templateDesc}
                   onChange={(e) => setTemplateDesc(e.target.value)}
+                  className="rounded-xl"
                 />
-                <Button onClick={handleSaveAsTemplate} className="w-full" disabled={!templateName.trim()}>
+                <Button onClick={handleSaveAsTemplate} className="w-full rounded-xl" disabled={!templateName.trim()}>
                   Save Template
                 </Button>
               </div>
@@ -81,28 +83,19 @@ const ProjectTemplates = ({ onCreateFromTemplate, currentProject }: Props) => {
       ) : (
         <div className="space-y-2">
           {templates.map((t) => (
-            <div key={t.id} className="flex items-center justify-between rounded-lg border bg-background p-3">
+            <div key={t.id} className="flex items-center justify-between rounded-xl border bg-background p-4 hover:shadow-sm transition-shadow duration-150">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground truncate">{t.name}</p>
                 {t.description && <p className="text-[10px] text-muted-foreground truncate">{t.description}</p>}
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[10px] text-muted-foreground mt-0.5">
                   {t.tasks.length} tasks · ${t.totalBudget.toLocaleString()} budget
                 </p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={() => onCreateFromTemplate(t)}
-                >
-                  <FileUp className="h-3.5 w-3.5 mr-1" />
-                  Use
+                <Button variant="ghost" size="sm" className="h-8 text-xs rounded-xl" onClick={() => onCreateFromTemplate(t)}>
+                  <FileUp className="h-3.5 w-3.5 mr-1" /> Use
                 </Button>
-                <button
-                  onClick={() => deleteTemplate(t.id)}
-                  className="p-1.5 text-muted-foreground hover:text-destructive transition-colors"
-                >
+                <button onClick={() => deleteTemplate(t.id)} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors">
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </div>
