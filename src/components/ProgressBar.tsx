@@ -11,7 +11,7 @@ const ProgressBar = ({ label, value, variant = "budget" }: ProgressBarProps) => 
   const isOverBudget = variant === "budget" && value > 90;
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-muted-foreground">{label}</span>
         <span className={cn(

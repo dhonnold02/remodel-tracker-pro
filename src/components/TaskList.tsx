@@ -159,7 +159,7 @@ const SortableTask = ({
 
   return (
     <div ref={setNodeRef} style={style} className={cn(
-      "rounded-lg border bg-background p-3 space-y-2",
+      "rounded-xl border bg-background p-3.5 space-y-2 transition-shadow duration-150 hover:shadow-sm",
       indent && "ml-6 border-l-2 border-l-primary/20",
       status === "overdue" && "border-destructive/40",
     )}>
@@ -323,9 +323,9 @@ const TaskList = ({ tasks, onChange }: TaskListProps) => {
   const hasActiveFilters = filterStatus !== "all" || filterPriority !== "all" || searchQuery !== "";
 
   return (
-    <div className="rounded-xl border bg-card p-5 space-y-4">
+    <div className="premium-card p-6 space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-heading text-lg font-semibold text-foreground">Tasks</h2>
+        <h2 className="section-title">Tasks</h2>
         <div className="flex items-center gap-2">
           {overdueCount > 0 && (
             <span className="flex items-center gap-1 text-[10px] text-destructive font-medium bg-destructive/10 px-1.5 py-0.5 rounded-md">

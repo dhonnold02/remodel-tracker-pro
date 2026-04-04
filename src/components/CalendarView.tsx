@@ -4,7 +4,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { parseISO, format, isSameDay } from "date-fns";
-import { CalendarDays, AlertTriangle } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -13,9 +13,9 @@ interface Props {
 }
 
 const PRIORITY_DOT: Record<string, string> = {
-  high: "bg-red-500",
-  medium: "bg-amber-500",
-  low: "bg-blue-500",
+  high: "bg-destructive",
+  medium: "bg-warning",
+  low: "bg-primary",
 };
 
 const CalendarView = ({ tasks, projectName }: Props) => {
@@ -44,7 +44,6 @@ const CalendarView = ({ tasks, projectName }: Props) => {
     return dateMap.get(key) || [];
   }, [selectedDate, dateMap]);
 
-  // Highlight dates that have tasks
   const modifiers = useMemo(() => {
     const dates = Array.from(dateMap.keys()).map((d) => parseISO(d));
     return { hasTasks: dates };
@@ -61,10 +60,10 @@ const CalendarView = ({ tasks, projectName }: Props) => {
 
   if (tasks.filter((t) => t.dueDate).length === 0) {
     return (
-      <div className="rounded-xl border bg-card p-5 space-y-3">
+      <div className="premium-card p-6 space-y-3">
         <div className="flex items-center gap-2">
-          <CalendarDays className="h-5 w-5 text-primary" />
-          <h2 className="font-heading text-lg font-semibold text-foreground">Calendar</h2>
+          <CalendarDays className="h-4 w-4 text-primary" />
+          <h2 className="section-title">Calendar</h2>
         </div>
         <p className="text-sm text-muted-foreground">Add due dates to tasks to see them on the calendar.</p>
       </div>
@@ -72,14 +71,14 @@ const CalendarView = ({ tasks, projectName }: Props) => {
   }
 
   return (
-    <div className="rounded-xl border bg-card p-5 space-y-4">
+    <div className="premium-card p-6 space-y-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <CalendarDays className="h-5 w-5 text-primary" />
-          <h2 className="font-heading text-lg font-semibold text-foreground">Calendar</h2>
+          <CalendarDays className="h-4 w-4 text-primary" />
+          <h2 className="section-title">Calendar</h2>
         </div>
         <Select value={filterPriority} onValueChange={setFilterPriority}>
-          <SelectTrigger className="w-[100px] h-7 text-xs"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-[100px] h-8 text-xs rounded-xl"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
             <SelectItem value="high">🔴 High</SelectItem>
@@ -89,14 +88,14 @@ const CalendarView = ({ tasks, projectName }: Props) => {
         </Select>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-5">
         <Calendar
           mode="single"
           selected={selectedDate}
           onSelect={setSelectedDate}
           modifiers={modifiers}
           modifiersStyles={modifiersStyles}
-          className="p-3 pointer-events-auto rounded-lg border"
+          className="p-3 pointer-events-auto rounded-xl border"
         />
 
         <div className="flex-1 min-w-0 space-y-2">
@@ -110,8 +109,8 @@ const CalendarView = ({ tasks, projectName }: Props) => {
             <div
               key={t.id}
               className={cn(
-                "rounded-lg border p-2.5 space-y-1",
-                t.completed ? "bg-secondary/50 opacity-70" : "bg-background"
+                "rounded-xl border p-3 space-y-1 transition-shadow duration-150 hover:shadow-sm",
+                t.completed ? "bg-muted/30 opacity-70" : "bg-background"
               )}
             >
               <div className="flex items-center gap-2">
