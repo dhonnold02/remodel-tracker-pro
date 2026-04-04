@@ -159,7 +159,7 @@ const SortableTask = ({
 
   return (
     <div ref={setNodeRef} style={style} className={cn(
-      "rounded-lg border bg-background p-3 space-y-2",
+      "rounded-xl border bg-background p-3.5 space-y-2 transition-shadow duration-150 hover:shadow-sm",
       indent && "ml-6 border-l-2 border-l-primary/20",
       status === "overdue" && "border-destructive/40",
     )}>
