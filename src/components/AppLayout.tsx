@@ -12,7 +12,6 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/" },
-  { label: "Calendar", icon: Calendar, path: "/#calendar" },
   { label: "Templates", icon: BookTemplate, path: "/#templates" },
 ];
 
