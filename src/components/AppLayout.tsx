@@ -91,10 +91,10 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
           {NAV_ITEMS.map((item) => (
             <button
               key={item.path}
-              onClick={() => { navigate(item.path.split("#")[0]); setSidebarOpen(false); }}
+              onClick={() => handleNav(item.path)}
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
-                isActive(item.path.split("#")[0])
+                isActive(item.path)
                   ? "bg-accent text-accent-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary"
               )}
