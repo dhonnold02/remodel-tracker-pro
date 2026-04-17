@@ -5,14 +5,13 @@ import { useBranding } from "@/hooks/useBranding";
 import { useOnlineStatus } from "@/hooks/useOfflineSync";
 import BrandingSettings from "@/components/BrandingSettings";
 import {
-  LayoutDashboard, FolderKanban, Calendar, BookTemplate, Settings,
+  LayoutDashboard, BookTemplate,
   LogOut, WifiOff, HardHat, Menu, X, ChevronLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/" },
-  { label: "Calendar", icon: Calendar, path: "/#calendar" },
   { label: "Templates", icon: BookTemplate, path: "/#templates" },
 ];
 
@@ -32,9 +31,24 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
   const isOnline = useOnlineStatus();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const currentHash = location.hash;
   const isActive = (path: string) => {
-    if (path === "/") return location.pathname === "/";
-    return location.pathname.startsWith(path);
+    const [p, h] = path.split("#");
+    if (h) return location.pathname === p && currentHash === `#${h}`;
+    if (p === "/") return location.pathname === "/" && !currentHash;
+    return location.pathname.startsWith(p);
+  };
+
+  const handleNav = (path: string) => {
+    const [p, h] = path.split("#");
+    navigate(h ? `${p}#${h}` : p);
+    setSidebarOpen(false);
+    if (h) {
+      setTimeout(() => {
+        const el = document.getElementById(h);
+        el?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 50);
+    }
   };
 
   return (
@@ -76,10 +90,10 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
           {NAV_ITEMS.map((item) => (
             <button
               key={item.path}
-              onClick={() => { navigate(item.path.split("#")[0]); setSidebarOpen(false); }}
+              onClick={() => handleNav(item.path)}
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
-                isActive(item.path.split("#")[0])
+                isActive(item.path)
                   ? "bg-accent text-accent-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary"
               )}
