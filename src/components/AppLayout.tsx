@@ -5,7 +5,7 @@ import { useBranding } from "@/hooks/useBranding";
 import { useOnlineStatus } from "@/hooks/useOfflineSync";
 import BrandingSettings from "@/components/BrandingSettings";
 import {
-  LayoutDashboard, FolderKanban, Calendar, BookTemplate, Settings,
+  LayoutDashboard, BookTemplate,
   LogOut, WifiOff, HardHat, Menu, X, ChevronLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
