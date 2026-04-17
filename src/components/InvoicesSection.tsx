@@ -54,26 +54,26 @@ const InvoicesSection = ({ invoices, onChange, totalBudget, totalSpent, readOnly
       </h2>
 
       {/* Financial summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        <div className="stat-card bg-secondary rounded-xl">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Budget</p>
-          <p className="font-heading text-sm font-bold text-foreground mt-1">${totalBudget.toLocaleString()}</p>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="rounded-xl border bg-card p-4">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Budget</p>
+          <p className="font-heading text-lg font-bold text-foreground mt-1.5">${totalBudget.toLocaleString()}</p>
         </div>
-        <div className="stat-card bg-secondary rounded-xl">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Spent</p>
-          <p className="font-heading text-sm font-bold text-foreground mt-1">${totalSpent.toLocaleString()}</p>
+        <div className="rounded-xl border bg-card p-4">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Spent</p>
+          <p className="font-heading text-lg font-bold text-foreground mt-1.5">${totalSpent.toLocaleString()}</p>
         </div>
-        <div className="stat-card bg-secondary rounded-xl">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Remaining</p>
-          <p className={`font-heading text-sm font-bold mt-1 ${remaining < 0 ? "text-destructive" : "text-foreground"}`}>${remaining.toLocaleString()}</p>
+        <div className="rounded-xl border bg-card p-4">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Remaining</p>
+          <p className={`font-heading text-lg font-bold mt-1.5 ${remaining < 0 ? "text-destructive" : "text-foreground"}`}>${remaining.toLocaleString()}</p>
         </div>
-        <div className="stat-card bg-accent rounded-xl">
-          <p className="text-[10px] text-accent-foreground/60 uppercase tracking-wider">Owed by HO</p>
-          <p className="font-heading text-sm font-bold text-accent-foreground mt-1">${owedByHomeowner.toLocaleString()}</p>
+        <div className="rounded-xl border border-primary/20 bg-accent/50 p-4">
+          <p className="text-[10px] text-accent-foreground/70 uppercase tracking-wider font-medium">Owed by HO</p>
+          <p className="font-heading text-lg font-bold text-accent-foreground mt-1.5">${owedByHomeowner.toLocaleString()}</p>
         </div>
-        <div className="stat-card bg-warning/10 rounded-xl">
-          <p className="text-[10px] text-warning uppercase tracking-wider">Owed to Subs</p>
-          <p className="font-heading text-sm font-bold text-warning mt-1">${owedToSubs.toLocaleString()}</p>
+        <div className="rounded-xl border border-warning/30 bg-warning/5 p-4">
+          <p className="text-[10px] text-warning uppercase tracking-wider font-medium">Owed to Subs</p>
+          <p className="font-heading text-lg font-bold text-warning mt-1.5">${owedToSubs.toLocaleString()}</p>
         </div>
       </div>
 

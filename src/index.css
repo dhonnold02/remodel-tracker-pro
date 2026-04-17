@@ -117,4 +117,7 @@
   .stat-card {
     @apply rounded-xl p-4 text-center transition-all duration-200;
   }
+  .task-row {
+    @apply transition-all duration-200 hover:shadow-sm hover:-translate-y-px;
+  }
 }

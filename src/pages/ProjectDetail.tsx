@@ -124,44 +124,44 @@ const ProjectDetailPage = () => {
       backTo={backTo}
       actions={headerActions}
     >
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Project stats header */}
-        <div className="premium-card p-6 space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="flex-1 min-w-0">
+      <div className="max-w-5xl mx-auto space-y-8">
+        {/* Project hero header */}
+        <div className="premium-card p-6 sm:p-8 space-y-6">
+          <div className="flex flex-col lg:flex-row lg:items-start gap-6">
+            <div className="flex-1 min-w-0 space-y-2">
               {parentProject && (
                 <button
                   onClick={() => navigate(`/project/${parentProject.id}`)}
-                  className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 mb-1"
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
                 >
                   {parentProject.name} <ChevronRight className="h-3 w-3" />
                 </button>
               )}
-              <h2 className="font-heading text-2xl font-bold text-foreground">
+              <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground tracking-tight leading-tight">
                 {project.name || "Untitled Project"}
               </h2>
               {project.address && (
-                <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-1">
-                  <MapPin className="h-3.5 w-3.5 shrink-0" />
-                  {project.address}
+                <p className="text-sm text-muted-foreground flex items-start gap-1.5 mt-1">
+                  <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                  <span className="leading-relaxed">{project.address}</span>
                 </p>
               )}
             </div>
 
-            {/* Quick stats */}
+            {/* Stat pills — subtle, premium */}
             <div className="flex gap-3 shrink-0">
-              <div className="stat-card bg-accent rounded-xl px-5 py-3">
-                <p className="text-xs text-muted-foreground">Budget Used</p>
-                <p className="text-xl font-heading font-bold text-foreground">{Math.round(budgetPercent)}%</p>
+              <div className="rounded-xl border bg-card px-5 py-3 min-w-[120px]">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Budget Used</p>
+                <p className="text-2xl font-heading font-bold text-foreground mt-0.5">{Math.round(budgetPercent)}<span className="text-base text-muted-foreground font-medium">%</span></p>
               </div>
-              <div className="stat-card bg-accent rounded-xl px-5 py-3">
-                <p className="text-xs text-muted-foreground">Tasks Done</p>
-                <p className="text-xl font-heading font-bold text-foreground">{Math.round(taskPercent)}%</p>
+              <div className="rounded-xl border bg-card px-5 py-3 min-w-[120px]">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Tasks Done</p>
+                <p className="text-2xl font-heading font-bold text-foreground mt-0.5">{Math.round(taskPercent)}<span className="text-base text-muted-foreground font-medium">%</span></p>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
             <ProgressBar label="Budget" value={budgetPercent} variant="budget" />
             <ProgressBar label="Tasks" value={taskPercent} variant="completion" />
           </div>
