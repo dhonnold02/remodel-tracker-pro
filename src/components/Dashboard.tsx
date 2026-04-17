@@ -152,8 +152,9 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
         </div>
 
         {/* Templates */}
-        <ProjectTemplates onCreateFromTemplate={handleCreateFromTemplate} />
-
+        <div id="templates" className="scroll-mt-20">
+          <ProjectTemplates onCreateFromTemplate={handleCreateFromTemplate} />
+        </div>
         {/* Project grid */}
         {loading ? (
           <div className="text-center py-24">
