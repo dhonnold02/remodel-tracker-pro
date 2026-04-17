@@ -32,9 +32,24 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
   const isOnline = useOnlineStatus();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const currentHash = location.hash;
   const isActive = (path: string) => {
-    if (path === "/") return location.pathname === "/";
-    return location.pathname.startsWith(path);
+    const [p, h] = path.split("#");
+    if (h) return location.pathname === p && currentHash === `#${h}`;
+    if (p === "/") return location.pathname === "/" && !currentHash;
+    return location.pathname.startsWith(p);
+  };
+
+  const handleNav = (path: string) => {
+    const [p, h] = path.split("#");
+    navigate(h ? `${p}#${h}` : p);
+    setSidebarOpen(false);
+    if (h) {
+      setTimeout(() => {
+        const el = document.getElementById(h);
+        el?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 50);
+    }
   };
 
   return (
