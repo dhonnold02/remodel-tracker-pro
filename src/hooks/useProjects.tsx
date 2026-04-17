@@ -308,7 +308,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     if (partial.endDate !== undefined) projectFields.end_date = partial.endDate;
 
     if (Object.keys(projectFields).length > 0) {
-      await supabase.from("projects").update(projectFields).eq("id", id);
+      await supabase.from("projects").update(projectFields as any).eq("id", id);
       // Log budget changes
       if (partial.totalBudget !== undefined || partial.laborCosts !== undefined || partial.materialCosts !== undefined) {
         await logActivity(user.id, displayName, id, "budget_updated", "updated budget");
