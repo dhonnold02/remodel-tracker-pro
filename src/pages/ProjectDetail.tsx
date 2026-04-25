@@ -108,6 +108,20 @@ const ProjectDetailPage = () => {
     .filter((i: any) => i.status !== "paid")
     .reduce((sum: number, i: any) => sum + (Number(i.amount) || 0), 0);
 
+  // Project status — derived from task progress
+  const projectStatus: { label: string; tone: "active" | "complete" | "planning" } =
+    project.tasks.length === 0
+      ? { label: "Planning", tone: "planning" }
+      : completedTasks === project.tasks.length
+        ? { label: "Completed", tone: "complete" }
+        : { label: "Active", tone: "active" };
+  const statusToneCls =
+    projectStatus.tone === "complete"
+      ? "text-success bg-success/10 ring-success/20"
+      : projectStatus.tone === "planning"
+        ? "text-muted-foreground bg-secondary ring-border"
+        : "text-primary bg-primary/10 ring-primary/20";
+
   const headerActions = (
     <div className="flex items-center gap-1">
       {!isEditor && (
