@@ -20,6 +20,7 @@ import ProgressBar from "@/components/ProgressBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,8 +36,9 @@ import {
   Plus, FolderOpen, ChevronRight, ChevronDown, Users, Activity,
   Download, FileText, MapPin, Receipt, ClipboardList, ImageIcon, CalendarRange, Trash2,
 } from "lucide-react";
-import { Wallet, ListChecks, CalendarDays, FileImage, DollarSign, Target, TrendingUp, CheckCircle2 } from "lucide-react";
+import { Wallet, ListChecks, CalendarDays, FileImage, DollarSign, Target, TrendingUp, CheckCircle2, Camera, FilePlus2, BookTemplate, Circle } from "lucide-react";
 import { exportProjectCSV, exportProjectPDF } from "@/lib/exportProject";
+import { cn } from "@/lib/utils";
 
 const ProjectDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -107,6 +109,20 @@ const ProjectDetailPage = () => {
     .filter((i: any) => i.status !== "paid")
     .reduce((sum: number, i: any) => sum + (Number(i.amount) || 0), 0);
 
+  // Project status — derived from task progress
+  const projectStatus: { label: string; tone: "active" | "complete" | "planning" } =
+    project.tasks.length === 0
+      ? { label: "Planning", tone: "planning" }
+      : completedTasks === project.tasks.length
+        ? { label: "Completed", tone: "complete" }
+        : { label: "Active", tone: "active" };
+  const statusToneCls =
+    projectStatus.tone === "complete"
+      ? "text-success bg-success/10 ring-success/20"
+      : projectStatus.tone === "planning"
+        ? "text-muted-foreground bg-secondary ring-border"
+        : "text-primary bg-primary/10 ring-primary/20";
+
   const headerActions = (
     <div className="flex items-center gap-1">
       {!isEditor && (
@@ -152,9 +168,20 @@ const ProjectDetailPage = () => {
                 {parentProject.name} <ChevronRight className="h-3 w-3" />
               </button>
             )}
-            <h1 className="font-heading text-3xl sm:text-4xl font-bold text-foreground tracking-tight leading-[1.1]">
-              {project.name || "Untitled Project"}
-            </h1>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="font-heading text-3xl sm:text-4xl font-bold text-foreground tracking-tight leading-[1.1]">
+                {project.name || "Untitled Project"}
+              </h1>
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ring-1",
+                  statusToneCls,
+                )}
+              >
+                <Circle className="h-2 w-2 fill-current" />
+                {projectStatus.label}
+              </span>
+            </div>
             {project.address && (
               <p className="text-sm text-muted-foreground flex items-start gap-1.5 max-w-2xl">
                 <MapPin className="h-3.5 w-3.5 shrink-0 mt-[3px]" />
@@ -381,44 +408,6 @@ const ProjectDetailPage = () => {
                 projectAddress={project.address}
               />
             </section>
-
-            {/* PLANNING MODULE */}
-            <section className="space-y-4">
-              <header className="flex items-center gap-2.5 px-1">
-                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <CalendarDays className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <h2 className="font-heading text-lg font-bold text-foreground tracking-tight">Planning</h2>
-                  <p className="text-xs text-muted-foreground">Timeline & key milestones</p>
-                </div>
-              </header>
-              <div className="space-y-6">
-                <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} />
-                <GanttTimeline tasks={project.tasks} startDate={project.startDate} phases={project.taskPhases} />
-                <CalendarView tasks={project.tasks} projectName={project.name} phases={project.taskPhases} />
-              </div>
-            </section>
-
-            {/* DOCUMENTATION MODULE */}
-            <section className="space-y-4">
-              <header className="flex items-center gap-2.5 px-1">
-                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <FileImage className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <h2 className="font-heading text-lg font-bold text-foreground tracking-tight">Documentation</h2>
-                  <p className="text-xs text-muted-foreground">Photos, blueprints & change orders</p>
-                </div>
-              </header>
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                  <PhotoGallery photos={project.photos} onChange={isEditor ? (photos) => update({ photos }) : () => {}} />
-                  <BlueprintSection blueprints={project.blueprints} onChange={isEditor ? (blueprints) => update({ blueprints }) : () => {}} />
-                </div>
-                <ChangeOrdersSection orders={project.changeOrders} onChange={isEditor ? (changeOrders) => update({ changeOrders }) : () => {}} />
-              </div>
-            </section>
           </div>
 
           {/* SECONDARY column — Control sidebar (independent scroll on desktop) */}
@@ -501,22 +490,80 @@ const ProjectDetailPage = () => {
           </aside>
         </div>
 
-        {/* Templates — minimized tertiary */}
-        {isEditor && (
-          <ProjectTemplates
-            currentProject={project}
-            onCreateFromTemplate={async (template) => {
-              const subId = await addProject(template.name, project.id);
-              await updateProject(subId, {
-                totalBudget: template.totalBudget,
-                laborCosts: template.laborCosts,
-                materialCosts: template.materialCosts,
-                tasks: template.tasks.map((t) => ({ ...t, id: crypto.randomUUID(), completed: false })) as any,
-              });
-              navigate(`/project/${subId}`);
-            }}
-          />
-        )}
+        {/* TERTIARY — Tabbed workspace (Timeline, Photos, Plans, Notes, Files) */}
+        <section className="space-y-4">
+          <header className="flex items-center gap-2.5 px-1">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <FileImage className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h2 className="font-heading text-lg font-bold text-foreground tracking-tight">Project Workspace</h2>
+              <p className="text-xs text-muted-foreground">Timeline, photos, plans, notes & files</p>
+            </div>
+          </header>
+
+          <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-4 sm:p-6 shadow-sm">
+            <Tabs defaultValue="timeline" className="space-y-5">
+              <TabsList className="bg-muted/60 h-10 p-1 rounded-xl">
+                <TabsTrigger value="timeline" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                  <CalendarDays className="h-3.5 w-3.5" /> Timeline
+                </TabsTrigger>
+                <TabsTrigger value="photos" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                  <Camera className="h-3.5 w-3.5" /> Photos
+                </TabsTrigger>
+                <TabsTrigger value="plans" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                  <FileImage className="h-3.5 w-3.5" /> Plans
+                </TabsTrigger>
+                <TabsTrigger value="notes" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                  <ClipboardList className="h-3.5 w-3.5" /> Notes
+                </TabsTrigger>
+                <TabsTrigger value="files" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                  <BookTemplate className="h-3.5 w-3.5" /> Files
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="timeline" className="space-y-6 mt-0 focus-visible:outline-none">
+                <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} />
+                <GanttTimeline tasks={project.tasks} startDate={project.startDate} phases={project.taskPhases} />
+                <CalendarView tasks={project.tasks} projectName={project.name} phases={project.taskPhases} />
+              </TabsContent>
+
+              <TabsContent value="photos" className="mt-0 focus-visible:outline-none">
+                <PhotoGallery photos={project.photos} onChange={isEditor ? (photos) => update({ photos }) : () => {}} />
+              </TabsContent>
+
+              <TabsContent value="plans" className="mt-0 focus-visible:outline-none">
+                <BlueprintSection blueprints={project.blueprints} onChange={isEditor ? (blueprints) => update({ blueprints }) : () => {}} />
+              </TabsContent>
+
+              <TabsContent value="notes" className="mt-0 focus-visible:outline-none">
+                <ChangeOrdersSection orders={project.changeOrders} onChange={isEditor ? (changeOrders) => update({ changeOrders }) : () => {}} />
+              </TabsContent>
+
+              <TabsContent value="files" className="mt-0 focus-visible:outline-none">
+                {isEditor ? (
+                  <ProjectTemplates
+                    currentProject={project}
+                    onCreateFromTemplate={async (template) => {
+                      const subId = await addProject(template.name, project.id);
+                      await updateProject(subId, {
+                        totalBudget: template.totalBudget,
+                        laborCosts: template.laborCosts,
+                        materialCosts: template.materialCosts,
+                        tasks: template.tasks.map((t) => ({ ...t, id: crypto.randomUUID(), completed: false })) as any,
+                      });
+                      navigate(`/project/${subId}`);
+                    }}
+                  />
+                ) : (
+                  <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                    Templates and reusable files are available to editors.
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
+        </section>
       </div>
     </AppLayout>
   );
