@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { HardHat, ArrowLeft } from "lucide-react";
+import { ArrowLeft, HardHat, CheckCircle2, Calendar, Users } from "lucide-react";
 
 const AuthPage = () => {
   const { signIn, signUp } = useAuth();
@@ -21,7 +21,10 @@ const AuthPage = () => {
     e.preventDefault();
     setError("");
     setConfirmMessage("");
-    if (!email.trim()) { setError("Enter your email address."); return; }
+    if (!email.trim()) {
+      setError("Enter your email address.");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
@@ -36,7 +39,6 @@ const AuthPage = () => {
     setError("");
     setConfirmMessage("");
     setLoading(true);
-
     if (isSignUp) {
       const { error } = await signUp(email, password, displayName || email);
       if (error) setError(error.message);
@@ -48,124 +50,259 @@ const AuthPage = () => {
     setLoading(false);
   };
 
+  const features = [
+    { icon: CheckCircle2, text: "Budget & cost tracking per project" },
+    { icon: Calendar, text: "Gantt timelines & milestone planning" },
+    { icon: Users, text: "Real-time team collaboration" },
+    { icon: HardHat, text: "Photo logs, blueprints & change orders" },
+  ];
+
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="text-center space-y-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary mx-auto">
-            <HardHat className="h-7 w-7 text-primary-foreground" />
+    <div className="min-h-screen flex bg-background">
+      {/* Left panel — brand */}
+      <div className="relative hidden lg:flex flex-col justify-between w-1/2 p-12 bg-card border-r overflow-hidden">
+        {/* Subtle grid texture */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage:
+              "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+        <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+
+        <div className="relative space-y-12">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-sm">
+              <HardHat className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <span className="font-heading text-lg font-semibold text-foreground">
+              RemodelPro
+            </span>
           </div>
-          <h1 className="font-heading text-2xl font-bold text-foreground">Remodel Tracker Pro</h1>
-          <p className="text-sm text-muted-foreground">
-            {isForgotPassword
-              ? "Enter your email to reset password"
-              : isSignUp
-              ? "Create your account"
-              : "Sign in to your account"}
-          </p>
+
+          <div className="space-y-5 max-w-md">
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
+              Construction Project Management
+            </p>
+            <h1 className="font-heading text-4xl xl:text-5xl font-bold text-foreground leading-[1.05] tracking-tight">
+              Every job, tracked
+              <br />
+              from groundbreak
+              <br />
+              to punch list.
+            </h1>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Built for contractors and remodelers who need a command center,
+              not a spreadsheet.
+            </p>
+          </div>
+
+          <ul className="space-y-3 max-w-md">
+            {features.map(({ icon: Icon, text }) => (
+              <li key={text} className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+                  <Icon className="h-4 w-4 text-primary" />
+                </div>
+                <span className="text-sm text-foreground">{text}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
-        {isForgotPassword ? (
-          <>
-            <form onSubmit={handleForgotPassword} className="space-y-4">
-              <div>
-                <Label htmlFor="email" className="text-sm text-muted-foreground">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="mt-1"
-                  autoFocus
-                />
+        <div className="relative">
+          <p className="text-xs text-muted-foreground">
+            © {new Date().getFullYear()} RemodelPro. Built for the field.
+          </p>
+        </div>
+      </div>
+
+      {/* Right panel — form */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
+        <div className="w-full max-w-sm space-y-8">
+          {/* Mobile logo */}
+          <div className="flex items-center gap-2.5 lg:hidden">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm">
+              <HardHat className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <span className="font-heading text-base font-semibold text-foreground">
+              RemodelPro
+            </span>
+          </div>
+
+          {isForgotPassword ? (
+            <>
+              <div className="space-y-2">
+                <h2 className="font-heading text-2xl font-bold text-foreground tracking-tight">
+                  Reset password
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Enter your email to receive a reset link.
+                </p>
               </div>
-              {error && <p className="text-sm text-destructive">{error}</p>}
-              {confirmMessage && <p className="text-sm text-primary">{confirmMessage}</p>}
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Sending…" : "Send Reset Link"}
-              </Button>
-            </form>
-            <button
-              onClick={() => { setIsForgotPassword(false); setError(""); setConfirmMessage(""); }}
-              className="flex items-center gap-1 text-sm text-primary hover:underline mx-auto"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" /> Back to sign in
-            </button>
-          </>
-        ) : (
-          <>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {isSignUp && (
-                <div>
-                  <Label htmlFor="name" className="text-sm text-muted-foreground">Display Name</Label>
+
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="email" className="text-xs font-medium">
+                    Email
+                  </Label>
                   <Input
-                    id="name"
-                    placeholder="Your name"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    className="mt-1"
+                    id="email"
+                    type="email"
+                    placeholder="you@company.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="h-11 rounded-xl"
+                    autoFocus
                   />
                 </div>
-              )}
-              <div>
-                <Label htmlFor="email" className="text-sm text-muted-foreground">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="password" className="text-sm text-muted-foreground">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="mt-1"
-                />
-              </div>
 
-              {!isSignUp && (
-                <div className="text-right">
-                  <button
-                    type="button"
-                    onClick={() => { setIsForgotPassword(true); setError(""); setConfirmMessage(""); }}
-                    className="text-xs text-primary hover:underline"
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-              )}
+                {error && (
+                  <p className="text-xs text-destructive">{error}</p>
+                )}
+                {confirmMessage && (
+                  <p className="text-xs text-success">{confirmMessage}</p>
+                )}
 
-              {error && <p className="text-sm text-destructive">{error}</p>}
-              {confirmMessage && <p className="text-sm text-primary">{confirmMessage}</p>}
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-11 rounded-xl"
+                >
+                  {loading ? "Sending…" : "Send Reset Link"}
+                </Button>
+              </form>
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Please wait…" : isSignUp ? "Create Account" : "Sign In"}
-              </Button>
-            </form>
-
-            <p className="text-center text-sm text-muted-foreground">
-              {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
               <button
-                onClick={() => { setIsSignUp(!isSignUp); setError(""); setConfirmMessage(""); }}
-                className="text-primary hover:underline font-medium"
+                type="button"
+                onClick={() => {
+                  setIsForgotPassword(false);
+                  setError("");
+                  setConfirmMessage("");
+                }}
+                className="flex items-center gap-1.5 text-sm text-primary hover:underline"
               >
-                {isSignUp ? "Sign in" : "Sign up"}
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Back to sign in
               </button>
-            </p>
-          </>
-        )}
+            </>
+          ) : (
+            <>
+              <div className="space-y-2">
+                <h2 className="font-heading text-2xl font-bold text-foreground tracking-tight">
+                  {isSignUp ? "Create account" : "Welcome back"}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {isSignUp
+                    ? "Start managing your projects today."
+                    : "Sign in to your project dashboard."}
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {isSignUp && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="displayName" className="text-xs font-medium">
+                      Display Name
+                    </Label>
+                    <Input
+                      id="displayName"
+                      type="text"
+                      placeholder="Your name"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      className="h-11 rounded-xl"
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="email" className="text-xs font-medium">
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@company.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="h-11 rounded-xl"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password" className="text-xs font-medium">
+                      Password
+                    </Label>
+                    {!isSignUp && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsForgotPassword(true);
+                          setError("");
+                          setConfirmMessage("");
+                        }}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Forgot password?
+                      </button>
+                    )}
+                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    className="h-11 rounded-xl"
+                  />
+                </div>
+
+                {error && (
+                  <p className="text-xs text-destructive">{error}</p>
+                )}
+                {confirmMessage && (
+                  <p className="text-xs text-success">{confirmMessage}</p>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-11 rounded-xl"
+                >
+                  {loading
+                    ? "Please wait…"
+                    : isSignUp
+                    ? "Create Account"
+                    : "Sign In"}
+                </Button>
+              </form>
+
+              <p className="text-sm text-muted-foreground text-center">
+                {isSignUp
+                  ? "Already have an account?"
+                  : "Don't have an account?"}{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSignUp(!isSignUp);
+                    setError("");
+                    setConfirmMessage("");
+                  }}
+                  className="text-primary hover:underline font-medium"
+                >
+                  {isSignUp ? "Sign in" : "Sign up"}
+                </button>
+              </p>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
