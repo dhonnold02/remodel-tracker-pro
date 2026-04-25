@@ -174,7 +174,7 @@ const ProjectDetailPage = () => {
               </h1>
               <span
                 className={cn(
-                  "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ring-1",
+                  "inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full font-medium ring-1",
                   statusToneCls,
                 )}
               >
@@ -199,7 +199,7 @@ const ProjectDetailPage = () => {
                   <TrendingUp className="h-3 w-3" /> Budget Used
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className={`text-xl font-heading font-bold tabular-nums ${budgetPercent > 100 ? "text-destructive" : "text-foreground"}`}>
+                  <span className={`text-2xl sm:text-3xl font-heading font-bold tabular-nums ${budgetPercent > 100 ? "text-destructive" : "text-foreground"}`}>
                     {Math.round(budgetPercent)}%
                   </span>
                   <span className="text-[11px] text-muted-foreground tabular-nums">${totalSpent.toLocaleString()}</span>
@@ -218,7 +218,7 @@ const ProjectDetailPage = () => {
                   <CheckCircle2 className="h-3 w-3" /> Tasks Done
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-xl font-heading font-bold text-foreground tabular-nums">{Math.round(taskPercent)}%</span>
+                  <span className="text-2xl sm:text-3xl font-heading font-bold text-foreground tabular-nums">{Math.round(taskPercent)}%</span>
                   <span className="text-[11px] text-muted-foreground tabular-nums">{completedTasks}/{project.tasks.length}</span>
                 </div>
                 <div className="h-1 w-full rounded-full bg-secondary overflow-hidden">
@@ -235,7 +235,7 @@ const ProjectDetailPage = () => {
                   <Wallet className="h-3 w-3" /> Remaining
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className={`text-xl font-heading font-bold tabular-nums ${remainingBudget < 0 ? "text-destructive" : "text-foreground"}`}>
+                  <span className={`text-2xl sm:text-3xl font-heading font-bold tabular-nums ${remainingBudget < 0 ? "text-destructive" : "text-foreground"}`}>
                     ${Math.abs(remainingBudget).toLocaleString()}
                   </span>
                 </div>
@@ -250,7 +250,7 @@ const ProjectDetailPage = () => {
                   <Receipt className="h-3 w-3" /> Outstanding
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-xl font-heading font-bold text-foreground tabular-nums">
+                  <span className="text-2xl sm:text-3xl font-heading font-bold text-foreground tabular-nums">
                     ${invoicesOutstanding.toLocaleString()}
                   </span>
                 </div>
@@ -294,7 +294,7 @@ const ProjectDetailPage = () => {
         {/* Sub-projects */}
         {(hasSubs || !project.parentId) && (
           <Collapsible open={subProjectsOpen} onOpenChange={setSubProjectsOpen}>
-            <div className="premium-card p-6 space-y-4">
+            <div className={cn("premium-card space-y-4", subProjects.length === 0 ? "p-4" : "p-6")}>
               <div className="flex items-center justify-between">
                 <CollapsibleTrigger className="flex items-center gap-2 section-title hover:text-primary transition-colors">
                   {subProjectsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
