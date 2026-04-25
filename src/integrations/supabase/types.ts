@@ -87,10 +87,49 @@ export type Database = {
           },
         ]
       }
+      change_order_comments: {
+        Row: {
+          change_order_id: string
+          created_at: string
+          created_by: string | null
+          created_by_name: string
+          id: string
+          project_id: string
+          text: string
+        }
+        Insert: {
+          change_order_id: string
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string
+          id?: string
+          project_id: string
+          text?: string
+        }
+        Update: {
+          change_order_id?: string
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string
+          id?: string
+          project_id?: string
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_order_comments_change_order_id_fkey"
+            columns: ["change_order_id"]
+            isOneToOne: false
+            referencedRelation: "change_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       change_orders: {
         Row: {
           created_at: string
           created_by: string | null
+          created_by_name: string
           id: string
           project_id: string
           text: string
@@ -98,6 +137,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          created_by_name?: string
           id?: string
           project_id: string
           text: string
@@ -105,6 +145,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          created_by_name?: string
           id?: string
           project_id?: string
           text?: string

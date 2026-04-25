@@ -19,6 +19,15 @@ const logActivity = async (
   });
 };
 
+/** Build initials from a display name (max 2 chars). */
+export const getInitials = (name?: string | null): string => {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
+
 // Types matching the old ProjectData shape for component compatibility
 export type TaskPriority = "high" | "medium" | "low";
 
@@ -45,7 +54,20 @@ export interface ChangeOrder {
   id: string;
   text: string;
   createdAt: string;
-  createdByName?: string;
+  authorName: string;
+  authorInitials: string;
+  createdBy?: string | null;
+  comments: ChangeOrderComment[];
+}
+
+export interface ChangeOrderComment {
+  id: string;
+  changeOrderId: string;
+  text: string;
+  authorName: string;
+  authorInitials: string;
+  createdBy?: string | null;
+  createdAt: string;
 }
 
 export interface ProjectMember {
@@ -154,13 +176,14 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     if (!projectRows) { setProjects([]); setLoading(false); return; }
 
     // Fetch related data for all projects in parallel
-    const [tasksRes, photosRes, blueprintsRes, ordersRes, membersRes, invoicesRes] = await Promise.all([
+    const [tasksRes, photosRes, blueprintsRes, ordersRes, membersRes, invoicesRes, commentsRes] = await Promise.all([
       supabase.from("tasks").select("*").in("project_id", projectIds).order("sort_order"),
       supabase.from("photos").select("*").in("project_id", projectIds),
       supabase.from("blueprints").select("*").in("project_id", projectIds),
       supabase.from("change_orders").select("*").in("project_id", projectIds).order("created_at", { ascending: false }),
       supabase.from("project_members").select("id, project_id, user_id, role, profiles(display_name, avatar_url)").in("project_id", projectIds),
       supabase.from("invoices").select("*").in("project_id", projectIds).order("created_at"),
+      supabase.from("change_order_comments").select("*").in("project_id", projectIds).order("created_at"),
     ]);
 
     const tasks = tasksRes.data || [];
@@ -169,6 +192,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     const orders = ordersRes.data || [];
     const members = membersRes.data || [];
     const invoicesData = invoicesRes.data || [];
+    const commentsData = commentsRes.data || [];
 
     const assembled: ProjectData[] = projectRows.map((p) => ({
       id: p.id,
@@ -193,7 +217,25 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
         .map((b) => ({ id: b.id, name: b.name, dataUrl: b.data_url, createdAt: b.created_at })),
       changeOrders: orders
         .filter((o) => o.project_id === p.id)
-        .map((o) => ({ id: o.id, text: o.text, createdAt: o.created_at })),
+        .map((o) => ({
+          id: o.id,
+          text: o.text,
+          createdAt: o.created_at,
+          authorName: (o as any).created_by_name || "Unknown",
+          authorInitials: getInitials((o as any).created_by_name),
+          createdBy: (o as any).created_by || null,
+          comments: commentsData
+            .filter((c) => c.change_order_id === o.id)
+            .map((c) => ({
+              id: c.id,
+              changeOrderId: c.change_order_id,
+              text: c.text,
+              authorName: c.created_by_name || "Unknown",
+              authorInitials: getInitials(c.created_by_name),
+              createdBy: c.created_by,
+              createdAt: c.created_at,
+            })),
+        })),
       invoices: invoicesData
         .filter((inv) => inv.project_id === p.id)
         .map((inv) => ({ id: inv.id, type: inv.type as "homeowner" | "subcontractor", description: inv.description, amount: Number(inv.amount), paid: inv.paid })),
@@ -240,6 +282,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       .on("postgres_changes", { event: "*", schema: "public", table: "photos" }, debouncedFetch)
       .on("postgres_changes", { event: "*", schema: "public", table: "blueprints" }, debouncedFetch)
       .on("postgres_changes", { event: "*", schema: "public", table: "change_orders" }, debouncedFetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "change_order_comments" }, debouncedFetch)
       .on("postgres_changes", { event: "*", schema: "public", table: "project_members" }, debouncedFetch)
       .on("postgres_changes", { event: "*", schema: "public", table: "invoices" }, debouncedFetch)
       .subscribe();
@@ -493,8 +536,41 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
           id: o.id,
           project_id: projectId,
           text: o.text,
+          created_by: o.createdBy ?? null,
+          created_by_name: o.authorName || "",
         }))
       );
+    }
+
+    // Sync comments per change order (insert new only; deletions are handled on the parent order via cascade)
+    const existingCommentIds = new Set(
+      existing.flatMap((o) => (o.comments || []).map((c) => c.id))
+    );
+    const newComments = orders.flatMap((o) =>
+      (o.comments || [])
+        .filter((c) => !existingCommentIds.has(c.id))
+        .map((c) => ({
+          id: c.id,
+          change_order_id: o.id,
+          project_id: projectId,
+          text: c.text,
+          created_by: c.createdBy ?? null,
+          created_by_name: c.authorName || "",
+        }))
+    );
+    if (newComments.length > 0) {
+      await supabase.from("change_order_comments").insert(newComments);
+    }
+
+    // Delete removed comments (within still-existing orders)
+    const stillExistingOrderIds = new Set(orders.map((o) => o.id));
+    const newCommentIds = new Set(orders.flatMap((o) => (o.comments || []).map((c) => c.id)));
+    const commentsToDelete = existing
+      .filter((o) => stillExistingOrderIds.has(o.id))
+      .flatMap((o) => (o.comments || []))
+      .filter((c) => !newCommentIds.has(c.id));
+    for (const c of commentsToDelete) {
+      await supabase.from("change_order_comments").delete().eq("id", c.id);
     }
   };
 
