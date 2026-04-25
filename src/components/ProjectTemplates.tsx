@@ -35,12 +35,12 @@ const ProjectTemplates = ({ onCreateFromTemplate, currentProject }: Props) => {
   };
 
   return (
-    <div className="premium-card p-6 space-y-5">
+    <div className="rounded-2xl border border-border/60 bg-muted/30 p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="section-title flex items-center gap-2">
-          <BookTemplate className="h-4 w-4 text-primary" />
-          Templates
-        </h2>
+        <div className="flex items-center gap-2">
+          <BookTemplate className="h-3.5 w-3.5 text-muted-foreground" />
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Templates</h2>
+        </div>
         {currentProject && (
           <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
             <DialogTrigger asChild>
