@@ -522,7 +522,14 @@ const ProjectDetailPage = () => {
               <TabsContent value="timeline" className="space-y-6 mt-0 focus-visible:outline-none">
                 <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} />
                 <GanttTimeline tasks={project.tasks} startDate={project.startDate} phases={project.taskPhases} />
-                <CalendarView tasks={project.tasks} projectName={project.name} phases={project.taskPhases} />
+                <CalendarView
+                  tasks={project.tasks}
+                  projectName={project.name}
+                  phases={project.taskPhases}
+                  events={project.events || []}
+                  onEventsChange={isEditor ? (events) => update({ events } as any) : undefined}
+                  canEdit={isEditor}
+                />
               </TabsContent>
 
               <TabsContent value="photos" className="mt-0 focus-visible:outline-none">

@@ -87,6 +87,16 @@ export interface Invoice {
   paid: boolean;
 }
 
+export type ProjectEventType = "inspection" | "walkthrough" | "delivery" | "meeting" | "milestone" | "other";
+
+export interface ProjectEvent {
+  id: string;
+  title: string;
+  type: ProjectEventType;
+  date: string; // yyyy-MM-dd
+  time?: string | null;
+}
+
 export interface ProjectData {
   id: string;
   name: string;
@@ -106,6 +116,7 @@ export interface ProjectData {
   createdBy: string | null;
   createdAt: string;
   taskPhases: string[];
+  events: ProjectEvent[];
 }
 
 interface ProjectsContextType {
@@ -176,7 +187,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     if (!projectRows) { setProjects([]); setLoading(false); return; }
 
     // Fetch related data for all projects in parallel
-    const [tasksRes, photosRes, blueprintsRes, ordersRes, membersRes, invoicesRes, commentsRes] = await Promise.all([
+    const [tasksRes, photosRes, blueprintsRes, ordersRes, membersRes, invoicesRes, commentsRes, eventsRes] = await Promise.all([
       supabase.from("tasks").select("*").in("project_id", projectIds).order("sort_order"),
       supabase.from("photos").select("*").in("project_id", projectIds),
       supabase.from("blueprints").select("*").in("project_id", projectIds),
@@ -184,6 +195,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       supabase.from("project_members").select("id, project_id, user_id, role, profiles(display_name, avatar_url)").in("project_id", projectIds),
       supabase.from("invoices").select("*").in("project_id", projectIds).order("created_at"),
       supabase.from("change_order_comments").select("*").in("project_id", projectIds).order("created_at"),
+      supabase.from("project_events").select("*").in("project_id", projectIds).order("date"),
     ]);
 
     const tasks = tasksRes.data || [];
@@ -193,6 +205,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     const members = membersRes.data || [];
     const invoicesData = invoicesRes.data || [];
     const commentsData = commentsRes.data || [];
+    const eventsData = eventsRes.data || [];
 
     const assembled: ProjectData[] = projectRows.map((p) => ({
       id: p.id,
@@ -252,6 +265,15 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
           };
         }),
       taskPhases: ((p as any).task_phases as string[]) || ["Demo", "Framing", "Electrical", "Plumbing", "Finish"],
+      events: eventsData
+        .filter((e) => e.project_id === p.id)
+        .map((e) => ({
+          id: e.id,
+          title: e.title,
+          type: (e.type || "other") as ProjectEventType,
+          date: e.date,
+          time: e.time || null,
+        })),
     }));
 
     // Cache for offline use
@@ -285,6 +307,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       .on("postgres_changes", { event: "*", schema: "public", table: "change_order_comments" }, debouncedFetch)
       .on("postgres_changes", { event: "*", schema: "public", table: "project_members" }, debouncedFetch)
       .on("postgres_changes", { event: "*", schema: "public", table: "invoices" }, debouncedFetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "project_events" }, debouncedFetch)
       .subscribe();
 
     return () => {
@@ -421,6 +444,11 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     // Sync invoices if provided
     if (partial.invoices !== undefined) {
       await syncInvoices(id, partial.invoices);
+    }
+
+    // Sync events if provided
+    if ((partial as any).events !== undefined) {
+      await syncEvents(id, (partial as any).events as ProjectEvent[]);
     }
 
     // Optimistic local update
@@ -607,6 +635,32 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     });
     for (const i of toUpdate) {
       await supabase.from("invoices").update({ paid: i.paid }).eq("id", i.id);
+    }
+  };
+
+  const syncEvents = async (projectId: string, events: ProjectEvent[]) => {
+    const existing = projectsRef.current.find((p) => p.id === projectId)?.events || [];
+    const existingIds = new Set(existing.map((e) => e.id));
+    const newIds = new Set(events.map((e) => e.id));
+
+    const toDelete = existing.filter((e) => !newIds.has(e.id));
+    for (const e of toDelete) {
+      await supabase.from("project_events").delete().eq("id", e.id);
+    }
+
+    const toInsert = events.filter((e) => !existingIds.has(e.id));
+    if (toInsert.length > 0) {
+      await supabase.from("project_events").insert(
+        toInsert.map((e) => ({
+          id: e.id,
+          project_id: projectId,
+          title: e.title,
+          type: e.type,
+          date: e.date,
+          time: e.time || null,
+          created_by: user?.id ?? null,
+        }))
+      );
     }
   };
 
