@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ProjectData } from "@/hooks/useProjects";
 import { getProjectStats, getAggregatedStats } from "@/types/project";
-import { Trash2, ChevronRight, FolderOpen, MapPin, CheckCircle2 } from "lucide-react";
+import { Trash2, MapPin, CheckCircle2 } from "lucide-react";
 import ProgressBar from "@/components/ProgressBar";
 
 interface ProjectCardProps {
@@ -90,13 +90,6 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false }
       <div className="space-y-2.5">
         <ProgressBar label="Budget" value={budgetPercent} variant="budget" />
         <ProgressBar label="Tasks" value={taskPercent} variant="completion" />
-      </div>
-
-      {/* Footer action hint */}
-      <div className="flex items-center justify-end text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-        <span className="flex items-center gap-1">
-          View details <ChevronRight className="h-3 w-3" />
-        </span>
       </div>
     </div>
   );
