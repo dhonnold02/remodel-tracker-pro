@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ProjectData } from "@/hooks/useProjects";
 import { getProjectStats, getAggregatedStats } from "@/types/project";
-import { Trash2, ChevronRight, FolderOpen, MapPin, CheckCircle2 } from "lucide-react";
+import { Trash2, MapPin, CheckCircle2 } from "lucide-react";
 import ProgressBar from "@/components/ProgressBar";
 
 interface ProjectCardProps {
