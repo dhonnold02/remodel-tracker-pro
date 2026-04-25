@@ -64,20 +64,19 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
         sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
         {/* Brand header */}
-        <div className="p-5 border-b">
-          <div className="flex items-center gap-3">
+        <div className="px-4 py-3 border-b">
+          <div className="flex items-center gap-2.5">
             {brand.brandLogoUrl ? (
-              <img src={brand.brandLogoUrl} alt="Logo" className="h-9 w-9 rounded-xl object-contain" />
+              <img src={brand.brandLogoUrl} alt="Logo" className="h-8 w-8 rounded-lg object-contain" />
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm">
-                <HardHat className="h-4.5 w-4.5 text-primary-foreground" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-sm">
+                <HardHat className="h-4 w-4 text-primary-foreground" />
               </div>
             )}
             <div className="min-w-0">
-              <h2 className="font-heading text-sm font-bold text-foreground truncate">
+              <h2 className="font-heading text-sm font-medium text-foreground truncate leading-none">
                 {brand.brandName || "Remodel Tracker"}
               </h2>
-              <p className="text-[10px] text-muted-foreground">Pro</p>
             </div>
             <button onClick={() => setSidebarOpen(false)} className="ml-auto lg:hidden p-1 rounded-md hover:bg-secondary text-muted-foreground">
               <X className="h-4 w-4" />

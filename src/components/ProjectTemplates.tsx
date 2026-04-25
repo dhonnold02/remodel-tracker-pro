@@ -34,6 +34,11 @@ const ProjectTemplates = ({ onCreateFromTemplate, currentProject }: Props) => {
     toast.success("Template saved!");
   };
 
+  // Hide entirely when there are no templates and no current project to save from
+  if (!loading && templates.length === 0 && !currentProject) {
+    return null;
+  }
+
   return (
     <div className="rounded-2xl border border-border/60 bg-muted/30 p-5 space-y-4">
       <div className="flex items-center justify-between">
