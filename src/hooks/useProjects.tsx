@@ -309,6 +309,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     if (partial.materialCosts !== undefined) projectFields.material_costs = partial.materialCosts;
     if (partial.startDate !== undefined) projectFields.start_date = partial.startDate;
     if (partial.endDate !== undefined) projectFields.end_date = partial.endDate;
+    if ((partial as any).taskPhases !== undefined) projectFields.task_phases = (partial as any).taskPhases;
 
     if (Object.keys(projectFields).length > 0) {
       await supabase.from("projects").update(projectFields as any).eq("id", id);
@@ -403,6 +404,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
             due_date: t.dueDate || null,
             priority: t.priority || "medium",
             tags: t.tags || [],
+            phase: t.phase || "General",
           }))
         );
       }
@@ -419,6 +421,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
             due_date: t.dueDate || null,
             priority: t.priority || "medium",
             tags: t.tags || [],
+            phase: t.phase || "General",
           }))
         );
       }
