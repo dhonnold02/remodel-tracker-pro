@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Task, TaskPriority } from "@/hooks/useProjects";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,7 @@ import {
   pointerWithin, useDroppable,
 } from "@dnd-kit/core";
 import {
-  SortableContext, useSortable, arrayMove,
+  SortableContext, useSortable,
   verticalListSortingStrategy, sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
