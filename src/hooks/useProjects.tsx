@@ -31,6 +31,7 @@ export interface Task {
   dueDate?: string | null;
   priority: TaskPriority;
   tags: string[];
+  phase?: string;
 }
 
 export interface FileAttachment {
@@ -82,6 +83,7 @@ export interface ProjectData {
   members: ProjectMember[];
   createdBy: string | null;
   createdAt: string;
+  taskPhases: string[];
 }
 
 interface ProjectsContextType {
@@ -182,7 +184,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       createdAt: p.created_at,
       tasks: tasks
         .filter((t) => t.project_id === p.id)
-        .map((t) => ({ id: t.id, title: t.title, notes: t.notes, completed: t.completed, parentTaskId: (t as any).parent_task_id || null, dueDate: (t as any).due_date || null, priority: ((t as any).priority || "medium") as TaskPriority, tags: (t as any).tags || [] })),
+        .map((t) => ({ id: t.id, title: t.title, notes: t.notes, completed: t.completed, parentTaskId: (t as any).parent_task_id || null, dueDate: (t as any).due_date || null, priority: ((t as any).priority || "medium") as TaskPriority, tags: (t as any).tags || [], phase: (t as any).phase || "General" })),
       photos: photos
         .filter((ph) => ph.project_id === p.id)
         .map((ph) => ({ id: ph.id, name: ph.name, dataUrl: ph.data_url, createdAt: ph.created_at })),
@@ -207,6 +209,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
             avatarUrl: profile?.avatar_url || null,
           };
         }),
+      taskPhases: ((p as any).task_phases as string[]) || ["Demo", "Framing", "Electrical", "Plumbing", "Finish"],
     }));
 
     // Cache for offline use
@@ -306,6 +309,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     if (partial.materialCosts !== undefined) projectFields.material_costs = partial.materialCosts;
     if (partial.startDate !== undefined) projectFields.start_date = partial.startDate;
     if (partial.endDate !== undefined) projectFields.end_date = partial.endDate;
+    if ((partial as any).taskPhases !== undefined) projectFields.task_phases = (partial as any).taskPhases;
 
     if (Object.keys(projectFields).length > 0) {
       await supabase.from("projects").update(projectFields as any).eq("id", id);
@@ -400,6 +404,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
             due_date: t.dueDate || null,
             priority: t.priority || "medium",
             tags: t.tags || [],
+            phase: t.phase || "General",
           }))
         );
       }
@@ -416,6 +421,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
             due_date: t.dueDate || null,
             priority: t.priority || "medium",
             tags: t.tags || [],
+            phase: t.phase || "General",
           }))
         );
       }
