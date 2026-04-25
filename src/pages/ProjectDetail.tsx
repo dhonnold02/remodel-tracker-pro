@@ -6,7 +6,7 @@ import AppLayout from "@/components/AppLayout";
 import ProjectDetails from "@/components/ProjectDetails";
 import BudgetSection from "@/components/BudgetSection";
 import InvoicesSection from "@/components/InvoicesSection";
-import TaskList from "@/components/TaskList";
+import TaskBoard from "@/components/TaskBoard";
 import PhotoGallery from "@/components/PhotoGallery";
 import BlueprintSection from "@/components/BlueprintSection";
 import ChangeOrdersSection from "@/components/ChangeOrdersSection";
@@ -370,7 +370,13 @@ const ProjectDetailPage = () => {
                   </div>
                 </div>
               </header>
-              <TaskList tasks={project.tasks} onChange={isEditor ? (tasks) => update({ tasks }) : () => {}} />
+              <TaskBoard
+                tasks={project.tasks}
+                phases={(project as any).taskPhases || []}
+                onChangeTasks={isEditor ? (tasks) => update({ tasks }) : () => {}}
+                onChangePhases={isEditor ? (taskPhases) => update({ taskPhases } as any) : () => {}}
+                isEditor={isEditor}
+              />
             </section>
 
             {/* PLANNING MODULE */}
