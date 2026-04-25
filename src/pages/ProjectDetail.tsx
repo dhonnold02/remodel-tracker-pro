@@ -294,7 +294,7 @@ const ProjectDetailPage = () => {
         {/* Sub-projects */}
         {!project.parentId && (
           <Collapsible open={subProjectsOpen} onOpenChange={setSubProjectsOpen}>
-            <div className={cn("premium-card space-y-4", subProjects.length === 0 ? "p-4" : "p-6")}>
+            <div className={cn("premium-card", subProjects.length === 0 ? "p-3 space-y-0" : "p-6 space-y-4")}>
               <div className="flex items-center justify-between">
                 <CollapsibleTrigger className="flex items-center gap-2 section-title hover:text-primary transition-colors">
                   {subProjectsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -317,9 +317,7 @@ const ProjectDetailPage = () => {
               )}
 
               <CollapsibleContent className="space-y-2">
-                {subProjects.length === 0 ? (
-                  <p className="text-xs text-muted-foreground py-3">No sub-projects yet.</p>
-                ) : (
+                {subProjects.length === 0 ? null : (
                   subProjects.map((sub) => (
                     <div
                       key={sub.id}
