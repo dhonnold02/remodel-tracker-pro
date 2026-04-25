@@ -357,7 +357,7 @@ const ProjectDetailPage = () => {
             Each column scrolls independently on desktop based on cursor position. */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
           {/* PRIMARY column (Work-first) — independent scroll on desktop */}
-          <div className="lg:col-span-8 space-y-10 lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-2 scroll-pane scroll-smooth">
+          <div className="lg:col-span-8 space-y-10">
             {/* WORK MODULE — elevated, primary focus */}
             <section className="space-y-4">
               <header className="flex items-center justify-between px-1">
@@ -422,7 +422,7 @@ const ProjectDetailPage = () => {
           </div>
 
           {/* SECONDARY column — Control sidebar (independent scroll on desktop) */}
-          <aside className="lg:col-span-4 space-y-6 lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-2 scroll-pane scroll-smooth">
+          <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-2 scroll-pane scroll-smooth self-start">
             {/* FINANCIALS MODULE — moved to sidebar for control-panel feel */}
             <section className="space-y-3">
               <header className="flex items-center gap-2 px-1">
