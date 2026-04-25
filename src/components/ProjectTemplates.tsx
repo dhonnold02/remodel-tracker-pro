@@ -1,4 +1,4 @@
-import { forwardRef, useState } from "react";
+import { useState } from "react";
 import { useTemplates, ProjectTemplate } from "@/hooks/useTemplates";
 import { ProjectData, Task } from "@/hooks/useProjects";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ interface Props {
   currentProject?: ProjectData;
 }
 
-const ProjectTemplates = forwardRef<HTMLDivElement, Props>(({ onCreateFromTemplate, currentProject }, ref) => {
+const ProjectTemplates = ({ onCreateFromTemplate, currentProject }: Props) => {
   const { templates, loading, saveTemplate, deleteTemplate } = useTemplates();
   const [saveOpen, setSaveOpen] = useState(false);
   const [templateName, setTemplateName] = useState("");
@@ -35,7 +35,7 @@ const ProjectTemplates = forwardRef<HTMLDivElement, Props>(({ onCreateFromTempla
   };
 
   return (
-    <div ref={ref} className="premium-card p-6 space-y-5">
+    <div className="premium-card p-6 space-y-5">
       <div className="flex items-center justify-between">
         <h2 className="section-title flex items-center gap-2">
           <BookTemplate className="h-4 w-4 text-primary" />
@@ -105,7 +105,6 @@ const ProjectTemplates = forwardRef<HTMLDivElement, Props>(({ onCreateFromTempla
       )}
     </div>
   );
-});
-ProjectTemplates.displayName = "ProjectTemplates";
+};
 
 export default ProjectTemplates;

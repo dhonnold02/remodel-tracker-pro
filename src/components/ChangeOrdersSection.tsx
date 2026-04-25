@@ -1,4 +1,4 @@
-import { forwardRef, useState } from "react";
+import { useState } from "react";
 import { ChangeOrder } from "@/types/project";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, ClipboardList } from "lucide-react";
@@ -8,7 +8,7 @@ interface ChangeOrdersProps {
   onChange: (orders: ChangeOrder[]) => void;
 }
 
-const ChangeOrdersSection = forwardRef<HTMLDivElement, ChangeOrdersProps>(({ orders, onChange }, ref) => {
+const ChangeOrdersSection = ({ orders, onChange }: ChangeOrdersProps) => {
   const [draft, setDraft] = useState("");
 
   const add = () => {
@@ -23,7 +23,7 @@ const ChangeOrdersSection = forwardRef<HTMLDivElement, ChangeOrdersProps>(({ ord
   const remove = (id: string) => onChange(orders.filter((o) => o.id !== id));
 
   return (
-    <div ref={ref} className="premium-card p-6 space-y-5">
+    <div className="premium-card p-6 space-y-5">
       <h2 className="section-title flex items-center gap-2">
         <ClipboardList className="h-4 w-4 text-primary" />
         Change Orders & Notes
@@ -63,7 +63,6 @@ const ChangeOrdersSection = forwardRef<HTMLDivElement, ChangeOrdersProps>(({ ord
       )}
     </div>
   );
-});
-ChangeOrdersSection.displayName = "ChangeOrdersSection";
+};
 
 export default ChangeOrdersSection;
