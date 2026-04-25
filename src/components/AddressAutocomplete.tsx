@@ -32,14 +32,29 @@ const buildStreet = (a: Record<string, string> = {}): string => {
   return parts.join(" ").trim();
 };
 
+/** Two-letter US state code, parsed from ISO3166-2-lvl4 (e.g. "US-IA" → "IA"), with fallbacks. */
+const resolveStateCode = (a: Record<string, string> = {}): string => {
+  if (a.state_code) return a.state_code.toUpperCase();
+  const iso = a["ISO3166-2-lvl4"];
+  if (iso && iso.includes("-")) return iso.split("-")[1].toUpperCase();
+  return a.state || "";
+};
+
 /** Resolve a city-like field with a sensible fallback chain. */
 const resolveCity = (a: Record<string, string> = {}): string =>
-  a.city || a.town || a.village || a.hamlet || a.suburb || a.county || "";
+  a.city ||
+  a.town ||
+  a.village ||
+  a.hamlet ||
+  a.suburb ||
+  a.municipality ||
+  a.county ||
+  "";
 
 /** Build the secondary "city, ST zip" line. */
 const buildCityStateZip = (a: Record<string, string> = {}): string => {
   const city = resolveCity(a);
-  const state = a.state_code || a.state || "";
+  const state = resolveStateCode(a);
   const zip = a.postcode || "";
   const right = [state, zip].filter(Boolean).join(" ");
   return [city, right].filter(Boolean).join(", ");
