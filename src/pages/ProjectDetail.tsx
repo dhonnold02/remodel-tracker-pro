@@ -495,8 +495,7 @@ const ProjectDetailPage = () => {
               <FileImage className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <h2 className="font-heading text-lg font-bold text-foreground tracking-tight">Project Workspace</h2>
-              <p className="text-xs text-muted-foreground">Timeline, photos, plans, notes & files</p>
+              <h2 className="font-heading text-lg font-bold text-foreground tracking-tight">Workspace</h2>
             </div>
           </header>
 

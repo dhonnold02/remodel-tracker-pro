@@ -135,7 +135,8 @@ const PhotoGallery = ({ photos, onChange }: PhotoGalleryProps) => {
           className="border-2 border-dashed border-muted rounded-xl p-8 text-center cursor-pointer hover:border-primary/30 transition-colors"
         >
           <Camera className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">Click to add photos</p>
+          <p className="text-sm text-muted-foreground">Drop photos here or click to upload</p>
+          <p className="text-xs text-muted-foreground mt-1">JPG, PNG, HEIC up to 10MB</p>
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-2">
