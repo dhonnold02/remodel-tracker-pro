@@ -395,8 +395,8 @@ const ProjectDetailPage = () => {
               </header>
               <div className="space-y-6">
                 <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} />
-                <GanttTimeline tasks={project.tasks} startDate={project.startDate} />
-                <CalendarView tasks={project.tasks} projectName={project.name} />
+                <GanttTimeline tasks={project.tasks} startDate={project.startDate} phases={project.taskPhases} />
+                <CalendarView tasks={project.tasks} projectName={project.name} phases={project.taskPhases} />
               </div>
             </section>
 
