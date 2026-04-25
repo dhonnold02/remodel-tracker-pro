@@ -33,7 +33,7 @@ const BudgetSection = ({ data, onChange }: BudgetSectionProps) => {
               placeholder="0"
               value={data.totalBudget || ""}
               onChange={(e) => onChange({ totalBudget: Number(e.target.value) || 0 })}
-              className="pl-9 rounded-xl h-10"
+              className="pl-9 rounded-xl h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
         </div>
@@ -49,7 +49,7 @@ const BudgetSection = ({ data, onChange }: BudgetSectionProps) => {
                 placeholder="0"
                 value={data.laborCosts || ""}
                 onChange={(e) => onChange({ laborCosts: Number(e.target.value) || 0 })}
-                className="pl-9 rounded-xl h-10"
+                className="pl-9 rounded-xl h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
           </div>
@@ -64,7 +64,7 @@ const BudgetSection = ({ data, onChange }: BudgetSectionProps) => {
                 placeholder="0"
                 value={data.materialCosts || ""}
                 onChange={(e) => onChange({ materialCosts: Number(e.target.value) || 0 })}
-                className="pl-9 rounded-xl h-10"
+                className="pl-9 rounded-xl h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
           </div>

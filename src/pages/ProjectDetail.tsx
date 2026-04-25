@@ -48,7 +48,7 @@ const ProjectDetailPage = () => {
   const [newSubName, setNewSubName] = useState("");
   const [showSubForm, setShowSubForm] = useState(false);
   const [creatingSubProject, setCreatingSubProject] = useState(false);
-  const [subProjectsOpen, setSubProjectsOpen] = useState(true);
+  const [subProjectsOpen, setSubProjectsOpen] = useState(false);
   const [teamOpen, setTeamOpen] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
 
@@ -292,7 +292,7 @@ const ProjectDetailPage = () => {
         )}
 
         {/* Sub-projects */}
-        {(hasSubs || !project.parentId) && (
+        {!project.parentId && (
           <Collapsible open={subProjectsOpen} onOpenChange={setSubProjectsOpen}>
             <div className={cn("premium-card space-y-4", subProjects.length === 0 ? "p-4" : "p-6")}>
               <div className="flex items-center justify-between">
