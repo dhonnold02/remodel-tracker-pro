@@ -376,6 +376,8 @@ const ProjectDetailPage = () => {
                 onChangeTasks={isEditor ? (tasks) => update({ tasks }) : () => {}}
                 onChangePhases={isEditor ? (taskPhases) => update({ taskPhases } as any) : () => {}}
                 isEditor={isEditor}
+                projectName={project.name}
+                projectAddress={project.address}
               />
             </section>
 
