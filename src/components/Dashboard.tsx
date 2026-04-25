@@ -205,7 +205,7 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
                   )} />
                   <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{stat.label}</p>
                 </div>
-                <p className="text-2xl font-heading font-semibold text-foreground leading-tight">{stat.value}</p>
+                <p className="text-4xl font-heading font-bold text-foreground leading-none mt-2">{stat.value}</p>
               </button>
             ))}
           </div>
