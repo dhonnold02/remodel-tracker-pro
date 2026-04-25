@@ -520,7 +520,7 @@ const ProjectDetailPage = () => {
               </TabsList>
 
               <TabsContent value="timeline" className="space-y-6 mt-0 focus-visible:outline-none">
-                <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} />
+                <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} phases={project.taskPhases} />
                 <GanttTimeline tasks={project.tasks} startDate={project.startDate} phases={project.taskPhases} />
                 <CalendarView
                   tasks={project.tasks}

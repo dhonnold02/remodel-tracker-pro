@@ -95,6 +95,7 @@ export interface PhaseBreakdown {
   taskCount: number;
   days: number;
   fromDates: boolean;
+  parallel: boolean;
 }
 
 /**
@@ -104,6 +105,10 @@ export interface PhaseBreakdown {
  * - Skips weekends (work days only).
  * - Returns null if no incomplete tasks remain.
  */
+/** Phases treated as administrative catch-alls — excluded from sequential timeline. */
+const PARALLEL_PHASES = new Set(["general", "misc", "other"]);
+const isParallelPhase = (phase: string) => PARALLEL_PHASES.has(phase.trim().toLowerCase());
+
 export function estimateFinishDate(
   tasks: Task[],
   startDate?: string
@@ -127,6 +132,7 @@ export function estimateFinishDate(
 
   const phaseBreakdown: PhaseBreakdown[] = phaseOrder.map((phase) => {
     const phaseTasks = grouped.get(phase)!;
+    const parallel = isParallelPhase(phase);
     const dated = phaseTasks
       .map((t) => safeParse(t.dueDate))
       .filter((d): d is Date => !!d);
@@ -136,7 +142,7 @@ export function estimateFinishDate(
       const earliest = new Date(Math.min(...dated.map((d) => d.getTime())));
       const latest = new Date(Math.max(...dated.map((d) => d.getTime())));
       const days = Math.max(1, differenceInBusinessDays(latest, earliest) + 1);
-      return { phase, taskCount: phaseTasks.length, days, fromDates: true };
+      return { phase, taskCount: phaseTasks.length, days, fromDates: true, parallel };
     }
 
     return {
@@ -144,10 +150,14 @@ export function estimateFinishDate(
       taskCount: phaseTasks.length,
       days: estimatePhaseDays(phaseTasks.length),
       fromDates: false,
+      parallel,
     };
   });
 
-  const totalWorkDays = phaseBreakdown.reduce((sum, p) => sum + p.days, 0);
+  // Catch-all phases run in parallel and don't extend the sequential timeline
+  const totalWorkDays = phaseBreakdown
+    .filter((p) => !p.parallel)
+    .reduce((sum, p) => sum + p.days, 0);
 
   // Start from today or project start date (whichever is later)
   const today = new Date();
