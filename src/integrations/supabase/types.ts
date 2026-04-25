@@ -269,6 +269,39 @@ export type Database = {
         }
         Relationships: []
       }
+      project_events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          date: string
+          id: string
+          project_id: string
+          time: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          date: string
+          id?: string
+          project_id: string
+          time?: string | null
+          title?: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          id?: string
+          project_id?: string
+          time?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       project_members: {
         Row: {
           created_at: string
