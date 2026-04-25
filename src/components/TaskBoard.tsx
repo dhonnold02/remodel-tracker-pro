@@ -715,6 +715,24 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, pro
             <div className="h-full bg-success rounded-full transition-all duration-500" style={{ width: `${totalPercent}%` }} />
           </div>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 text-xs gap-1.5"
+          onClick={() =>
+            exportTasksPDF({
+              projectName: projectName || "Project",
+              projectAddress,
+              tasks,
+              brandLogoUrl: brand.brandLogoUrl,
+              brandName: brand.brandName,
+            })
+          }
+          disabled={tasks.length === 0}
+        >
+          <FileDown className="h-3.5 w-3.5" />
+          Export Tasks PDF
+        </Button>
       </div>
 
       <DndContext
