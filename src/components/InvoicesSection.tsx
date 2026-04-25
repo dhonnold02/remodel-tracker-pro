@@ -92,7 +92,7 @@ const InvoicesSection = ({ invoices, onChange, totalBudget, totalSpent, readOnly
           <Input placeholder="Description…" value={desc} onChange={e => setDesc(e.target.value)} className="flex-1 min-w-[120px] h-9 text-sm rounded-xl" />
           <div className="relative">
             <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input type="number" min={0} placeholder="0" value={amount} onChange={e => setAmount(e.target.value)} className="w-24 h-9 text-sm pl-7 rounded-xl" />
+            <Input type="number" min={0} placeholder="0" value={amount} onChange={e => setAmount(e.target.value)} className="w-24 h-9 text-sm pl-7 rounded-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
           </div>
           <Button size="sm" className="h-9 rounded-xl" onClick={handleAdd}><Plus className="h-4 w-4" /></Button>
         </div>
