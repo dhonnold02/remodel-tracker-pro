@@ -21,8 +21,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Plus, FolderOpen, ChevronRight, ChevronDown, Users, Activity,
-  Download, FileText, MapPin, Receipt, ClipboardList, ImageIcon, CalendarRange,
+  Download, FileText, MapPin, Receipt, ClipboardList, ImageIcon, CalendarRange, Trash2,
 } from "lucide-react";
 import { Wallet, ListChecks, CalendarDays, FileImage, DollarSign, Target } from "lucide-react";
 import { exportProjectCSV, exportProjectPDF } from "@/lib/exportProject";
@@ -30,7 +41,7 @@ import { exportProjectCSV, exportProjectPDF } from "@/lib/exportProject";
 const ProjectDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getProject, updateProject, addProject, getSubProjects, userRole, loading } = useProjects();
+  const { getProject, updateProject, addProject, deleteProject, getSubProjects, userRole, loading } = useProjects();
   const project = getProject(id || "");
   const [newSubName, setNewSubName] = useState("");
   const [showSubForm, setShowSubForm] = useState(false);
@@ -244,20 +255,58 @@ const ProjectDetailPage = () => {
                   <p className="text-xs text-muted-foreground py-3">No sub-projects yet.</p>
                 ) : (
                   subProjects.map((sub) => (
-                    <button
+                    <div
                       key={sub.id}
-                      onClick={() => navigate(`/project/${sub.id}`)}
-                      className="w-full text-left rounded-xl border bg-background p-4 hover:border-primary/20 hover:shadow-sm transition-all duration-150 space-y-2"
+                      className="group w-full rounded-xl border bg-background p-4 hover:border-primary/20 hover:shadow-sm transition-all duration-150"
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-heading font-semibold text-foreground truncate">{sub.name || "Untitled"}</span>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <div className="flex items-start gap-3">
+                        <button
+                          onClick={() => navigate(`/project/${sub.id}`)}
+                          className="flex-1 min-w-0 text-left space-y-2"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-sm font-heading font-semibold text-foreground truncate">
+                              {sub.name || "Untitled"}
+                            </span>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                          </div>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <span>{sub.tasks.filter((t) => t.completed).length}/{sub.tasks.length} tasks</span>
+                            <span>${(sub.laborCosts + sub.materialCosts).toLocaleString()} spent</span>
+                          </div>
+                        </button>
+                        {isEditor && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button
+                                className="shrink-0 p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                title="Delete sub-project"
+                                aria-label={`Delete sub-project ${sub.name || "Untitled"}`}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete sub-project?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This will permanently delete <span className="font-semibold text-foreground">{sub.name || "Untitled"}</span> and all of its tasks, invoices, photos, blueprints, and notes. This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteProject(sub.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </div>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span>{sub.tasks.filter((t) => t.completed).length}/{sub.tasks.length} tasks</span>
-                        <span>${(sub.laborCosts + sub.materialCosts).toLocaleString()} spent</span>
-                      </div>
-                    </button>
+                    </div>
                   ))
                 )}
               </CollapsibleContent>
