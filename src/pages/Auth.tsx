@@ -60,7 +60,7 @@ const AuthPage = () => {
   return (
     <div className="min-h-screen flex bg-background">
       {/* Left panel — brand */}
-      <div className="relative hidden lg:flex flex-col justify-between w-1/2 p-12 bg-card border-r overflow-hidden">
+      <div className="relative hidden lg:flex flex-col justify-between w-1/2 p-12 bg-card overflow-hidden">
         {/* Subtle grid texture */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.04]"
@@ -169,7 +169,7 @@ const AuthPage = () => {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-11 rounded-xl"
+                  className="w-full h-11 rounded-xl shadow-sm"
                 >
                   {loading ? "Sending…" : "Send Reset Link"}
                 </Button>
@@ -274,7 +274,7 @@ const AuthPage = () => {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-11 rounded-xl"
+                  className="w-full h-11 rounded-xl shadow-sm"
                 >
                   {loading
                     ? "Please wait…"
