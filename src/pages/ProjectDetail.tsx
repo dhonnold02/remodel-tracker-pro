@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { Wallet, ListChecks, CalendarDays, FileImage, DollarSign, Target, TrendingUp, CheckCircle2, Camera, FilePlus2, BookTemplate, Circle } from "lucide-react";
 import { exportProjectCSV, exportProjectPDF } from "@/lib/exportProject";
+import { cn } from "@/lib/utils";
 
 const ProjectDetailPage = () => {
   const { id } = useParams<{ id: string }>();
