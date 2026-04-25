@@ -748,7 +748,7 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, pro
         onDragCancel={() => setActiveId(null)}
       >
         {/* Board background layer — columns float as lanes on top */}
-        <div className="rounded-2xl bg-secondary/40 ring-1 ring-border/40 p-3 sm:p-4 md:p-5 overflow-x-auto">
+        <div className="rounded-2xl bg-secondary/40 ring-1 ring-border/40 p-3 sm:p-4 md:p-5 overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden">
           <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-stretch min-h-[200px]">
             {effectivePhases.map((phase, i) => (
               <PhaseColumn
@@ -777,11 +777,11 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, pro
               />
             ))}
 
-            {/* Add phase column */}
+            {/* Add phase — subtle inline button */}
             {isEditor && (
-              <div className="w-72 sm:w-72 shrink-0">
+              <div className="shrink-0 self-start pt-2">
                 {addingPhase ? (
-                  <div className="rounded-2xl border bg-card p-3 space-y-2 shadow-sm">
+                  <div className="w-60 rounded-xl border bg-card p-2 space-y-2 shadow-sm">
                     <Input
                       autoFocus
                       placeholder="Phase name…"
@@ -801,9 +801,9 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, pro
                 ) : (
                   <button
                     onClick={() => setAddingPhase(true)}
-                    className="w-full h-full min-h-[120px] flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground rounded-2xl border-2 border-dashed hover:border-primary/40 hover:bg-secondary/30 transition-colors py-3"
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md"
                   >
-                    <Plus className="h-4 w-4" /> Add phase
+                    <Plus className="h-3.5 w-3.5" /> Add phase
                   </button>
                 )}
               </div>
