@@ -3,6 +3,11 @@ import { Task } from "@/hooks/useProjects";
 import { format, addBusinessDays, parseISO, differenceInBusinessDays, isValid } from "date-fns";
 import { CalendarRange, CheckCircle2, X } from "lucide-react";
 import { phaseColor } from "@/lib/phaseColors";
+import { estimatePhaseDays } from "@/lib/estimateFinishDate";
+
+const PARALLEL_PHASES = new Set(["general", "misc", "other"]);
+const isParallelPhase = (phase: string) =>
+  PARALLEL_PHASES.has(phase.trim().toLowerCase());
 
 interface Props {
   tasks: Task[];
@@ -59,25 +64,38 @@ const GanttTimeline = ({ tasks, startDate, phases }: Props) => {
     // Append any phases not in config (shouldn't happen, but safe)
     for (const p of grouped.keys()) if (!phaseOrder.includes(p)) phaseOrder.push(p);
 
-    // Only include phases that have at least one task with an assigned date
-    const datedPhases = phaseOrder.filter((phase) => {
-      const phaseTasks = grouped.get(phase)!;
-      return phaseTasks.some((t) => safeParse(t.dueDate));
-    });
+    // Hide administrative catch-all phases entirely from the Gantt
+    const realPhases = phaseOrder.filter((p) => !isParallelPhase(p));
 
-    const bars: PhaseBar[] = datedPhases.map((phase, i) => {
+    // Sequential layout: each phase starts where the previous ended.
+    // If any task in the phase has an explicit due date, anchor + size from those dates.
+    // Otherwise, use the phase-size brackets (1-2=2, 3-5=5, 6-10=10, 11+=15).
+    let cursor = 0;
+    const bars: PhaseBar[] = realPhases.map((phase, i) => {
       const phaseTasks = grouped.get(phase)!;
       const dated = phaseTasks
         .map((t) => safeParse(t.dueDate))
         .filter((d): d is Date => !!d);
 
-      const earliest = new Date(Math.min(...dated.map((d) => d.getTime())));
-      const latest = new Date(Math.max(...dated.map((d) => d.getTime())));
-      const startDay = Math.max(0, differenceInBusinessDays(earliest, projectStart));
-      const days = Math.max(1, differenceInBusinessDays(latest, earliest) + 1);
+      let startDay: number;
+      let days: number;
+      let hasExplicitDates = false;
+
+      if (dated.length > 0) {
+        const earliest = new Date(Math.min(...dated.map((d) => d.getTime())));
+        const latest = new Date(Math.max(...dated.map((d) => d.getTime())));
+        startDay = Math.max(0, differenceInBusinessDays(earliest, projectStart));
+        days = Math.max(1, differenceInBusinessDays(latest, earliest) + 1);
+        hasExplicitDates = true;
+      } else {
+        startDay = cursor;
+        days = estimatePhaseDays(phaseTasks.length);
+      }
+
+      cursor = Math.max(cursor, startDay + days);
 
       const completed = phaseTasks.filter((t) => t.completed).length;
-      return { phase, index: i, days, startDay, tasks: phaseTasks, completed, hasExplicitDates: true };
+      return { phase, index: i, days, startDay, tasks: phaseTasks, completed, hasExplicitDates };
     });
 
     const totalDays = Math.max(
