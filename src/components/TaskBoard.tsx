@@ -93,8 +93,8 @@ const TaskCard = ({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group rounded-xl border bg-card p-3 space-y-2 shadow-sm hover:shadow-md transition-all duration-150",
-        status === "overdue" && !task.completed && "border-destructive/40",
+        "group rounded-xl bg-card p-3 space-y-2 ring-1 ring-border/60 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-md hover:-translate-y-0.5 hover:ring-border transition-all duration-200",
+        status === "overdue" && !task.completed && "ring-destructive/40",
         isOverlay && "shadow-2xl rotate-2 ring-2 ring-primary/30 cursor-grabbing",
         task.completed && "opacity-70",
       )}
