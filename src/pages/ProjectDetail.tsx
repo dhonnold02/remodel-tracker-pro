@@ -20,6 +20,7 @@ import ProgressBar from "@/components/ProgressBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,7 +36,7 @@ import {
   Plus, FolderOpen, ChevronRight, ChevronDown, Users, Activity,
   Download, FileText, MapPin, Receipt, ClipboardList, ImageIcon, CalendarRange, Trash2,
 } from "lucide-react";
-import { Wallet, ListChecks, CalendarDays, FileImage, DollarSign, Target, TrendingUp, CheckCircle2 } from "lucide-react";
+import { Wallet, ListChecks, CalendarDays, FileImage, DollarSign, Target, TrendingUp, CheckCircle2, Camera, FilePlus2, BookTemplate, Circle } from "lucide-react";
 import { exportProjectCSV, exportProjectPDF } from "@/lib/exportProject";
 
 const ProjectDetailPage = () => {
