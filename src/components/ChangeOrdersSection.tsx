@@ -147,7 +147,7 @@ const ChangeOrdersSection = ({ orders, onChange }: ChangeOrdersProps) => {
             return (
               <div
                 key={order.id}
-                className="rounded-xl border border-l-2 border-l-primary/40 bg-background hover:shadow-sm transition-shadow duration-150"
+                className="rounded-xl border border-l-2 border-l-primary/30 bg-background hover:shadow-sm transition-shadow duration-150"
               >
                 <div className="p-4 space-y-2">
                   <div className="flex items-start justify-between gap-3">
