@@ -748,9 +748,9 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, pro
         onDragEnd={onDragEnd}
         onDragCancel={() => setActiveId(null)}
       >
-        {/* Horizontal scrollable board on desktop, stacked on mobile */}
-        <div className="overflow-x-auto -mx-1 px-1 pb-3">
-          <div className="flex flex-col md:flex-row gap-3 md:gap-4 items-stretch min-h-[200px]">
+        {/* Board background layer — columns float as lanes on top */}
+        <div className="rounded-2xl bg-secondary/40 ring-1 ring-border/40 p-3 sm:p-4 md:p-5 overflow-x-auto">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-stretch min-h-[200px]">
             {effectivePhases.map((phase, i) => (
               <PhaseColumn
                 key={phase}
