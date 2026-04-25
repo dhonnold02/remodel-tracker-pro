@@ -14,6 +14,7 @@ import ProjectTemplates from "@/components/ProjectTemplates";
 import { ProjectTemplate } from "@/hooks/useTemplates";
 import AppLayout from "@/components/AppLayout";
 import { cn } from "@/lib/utils";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 interface DashboardProps {
   projects: ProjectData[];
@@ -135,16 +136,11 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Address (optional)</label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="123 Main St, City"
-                value={newAddress}
-                onChange={(e) => setNewAddress(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-                className="rounded-xl h-11 pl-9"
-              />
-            </div>
+            <AddressAutocomplete
+              value={newAddress}
+              onChange={setNewAddress}
+              onEnter={handleAdd}
+            />
           </div>
         </div>
         <DialogFooter className="gap-2 sm:gap-2">
