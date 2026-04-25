@@ -45,7 +45,20 @@ export interface ChangeOrder {
   id: string;
   text: string;
   createdAt: string;
-  createdByName?: string;
+  authorName: string;
+  authorInitials: string;
+  createdBy?: string | null;
+  comments: ChangeOrderComment[];
+}
+
+export interface ChangeOrderComment {
+  id: string;
+  changeOrderId: string;
+  text: string;
+  authorName: string;
+  authorInitials: string;
+  createdBy?: string | null;
+  createdAt: string;
 }
 
 export interface ProjectMember {
