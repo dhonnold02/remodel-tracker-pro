@@ -315,6 +315,7 @@ export type Database = {
           name: string
           parent_id: string | null
           start_date: string
+          task_phases: string[]
           total_budget: number
           updated_at: string
         }
@@ -329,6 +330,7 @@ export type Database = {
           name?: string
           parent_id?: string | null
           start_date?: string
+          task_phases?: string[]
           total_budget?: number
           updated_at?: string
         }
@@ -343,6 +345,7 @@ export type Database = {
           name?: string
           parent_id?: string | null
           start_date?: string
+          task_phases?: string[]
           total_budget?: number
           updated_at?: string
         }
@@ -365,6 +368,7 @@ export type Database = {
           id: string
           notes: string
           parent_task_id: string | null
+          phase: string
           priority: string
           project_id: string
           sort_order: number
@@ -379,6 +383,7 @@ export type Database = {
           id?: string
           notes?: string
           parent_task_id?: string | null
+          phase?: string
           priority?: string
           project_id: string
           sort_order?: number
@@ -393,6 +398,7 @@ export type Database = {
           id?: string
           notes?: string
           parent_task_id?: string | null
+          phase?: string
           priority?: string
           project_id?: string
           sort_order?: number
