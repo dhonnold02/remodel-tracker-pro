@@ -21,10 +21,52 @@ interface Suggestion {
   id: number;
   primary: string;
   secondary: string;
-  display_name: string;
+  formatted: string;
 }
 
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
+
+/** Build the primary "street" line: "{house_number} {road}". Falls back gracefully. */
+const buildStreet = (a: Record<string, string> = {}): string => {
+  const parts = [a.house_number, a.road].filter(Boolean);
+  return parts.join(" ").trim();
+};
+
+/** Two-letter US state code, parsed from ISO3166-2-lvl4 (e.g. "US-IA" → "IA"), with fallbacks. */
+const resolveStateCode = (a: Record<string, string> = {}): string => {
+  if (a.state_code) return a.state_code.toUpperCase();
+  const iso = a["ISO3166-2-lvl4"];
+  if (iso && iso.includes("-")) return iso.split("-")[1].toUpperCase();
+  return a.state || "";
+};
+
+/** Resolve a city-like field with a sensible fallback chain. */
+const resolveCity = (a: Record<string, string> = {}): string =>
+  a.city ||
+  a.town ||
+  a.village ||
+  a.hamlet ||
+  a.suburb ||
+  a.municipality ||
+  a.county ||
+  "";
+
+/** Build the secondary "city, ST zip" line. */
+const buildCityStateZip = (a: Record<string, string> = {}): string => {
+  const city = resolveCity(a);
+  const state = resolveStateCode(a);
+  const zip = a.postcode || "";
+  const right = [state, zip].filter(Boolean).join(" ");
+  return [city, right].filter(Boolean).join(", ");
+};
+
+/** Full single-line formatted address used when a suggestion is selected. */
+const buildFormatted = (a: Record<string, string> = {}, fallback: string): string => {
+  const street = buildStreet(a);
+  const tail = buildCityStateZip(a);
+  const combined = [street, tail].filter(Boolean).join(", ");
+  return combined || fallback;
+};
 
 const AddressAutocomplete = ({
   value,
@@ -61,22 +103,29 @@ const AddressAutocomplete = ({
       abortRef.current = controller;
       setLoading(true);
       try {
-        const url = `${NOMINATIM_URL}?format=json&addressdetails=1&limit=5&q=${encodeURIComponent(q)}`;
+        const url = `${NOMINATIM_URL}?format=json&addressdetails=1&limit=5&countrycodes=us&q=${encodeURIComponent(q)}`;
         const res = await fetch(url, {
           signal: controller.signal,
           headers: { Accept: "application/json" },
         });
         if (!res.ok) throw new Error("Nominatim request failed");
         const data: NominatimResult[] = await res.json();
-        const mapped: Suggestion[] = data.map((r) => {
-          const parts = r.display_name.split(",").map((s) => s.trim());
-          return {
-            id: r.place_id,
-            primary: parts[0] || r.display_name,
-            secondary: parts.slice(1).join(", "),
-            display_name: r.display_name,
-          };
-        });
+        const mapped: Suggestion[] = data
+          .map((r) => {
+            const a = r.address || {};
+            const street = buildStreet(a);
+            const tail = buildCityStateZip(a);
+            const formatted = buildFormatted(a, r.display_name);
+            // Skip entries with no usable street/city info
+            if (!street && !tail) return null;
+            return {
+              id: r.place_id,
+              primary: street || tail,
+              secondary: street ? tail : "",
+              formatted,
+            } as Suggestion;
+          })
+          .filter((s): s is Suggestion => s !== null);
         setSuggestions(mapped);
         setOpen(mapped.length > 0);
         setHighlight(0);
@@ -107,7 +156,7 @@ const AddressAutocomplete = ({
     skipNextFetchRef.current = true;
     setOpen(false);
     setSuggestions([]);
-    onChange(s.display_name);
+    onChange(s.formatted);
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
