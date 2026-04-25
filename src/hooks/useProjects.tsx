@@ -184,7 +184,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       createdAt: p.created_at,
       tasks: tasks
         .filter((t) => t.project_id === p.id)
-        .map((t) => ({ id: t.id, title: t.title, notes: t.notes, completed: t.completed, parentTaskId: (t as any).parent_task_id || null, dueDate: (t as any).due_date || null, priority: ((t as any).priority || "medium") as TaskPriority, tags: (t as any).tags || [] })),
+        .map((t) => ({ id: t.id, title: t.title, notes: t.notes, completed: t.completed, parentTaskId: (t as any).parent_task_id || null, dueDate: (t as any).due_date || null, priority: ((t as any).priority || "medium") as TaskPriority, tags: (t as any).tags || [], phase: (t as any).phase || "General" })),
       photos: photos
         .filter((ph) => ph.project_id === p.id)
         .map((ph) => ({ id: ph.id, name: ph.name, dataUrl: ph.data_url, createdAt: ph.created_at })),
@@ -209,6 +209,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
             avatarUrl: profile?.avatar_url || null,
           };
         }),
+      taskPhases: ((p as any).task_phases as string[]) || ["Demo", "Framing", "Electrical", "Plumbing", "Finish"],
     }));
 
     // Cache for offline use
