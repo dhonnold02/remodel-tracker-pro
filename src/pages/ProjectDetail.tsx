@@ -490,22 +490,80 @@ const ProjectDetailPage = () => {
           </aside>
         </div>
 
-        {/* Templates — minimized tertiary */}
-        {isEditor && (
-          <ProjectTemplates
-            currentProject={project}
-            onCreateFromTemplate={async (template) => {
-              const subId = await addProject(template.name, project.id);
-              await updateProject(subId, {
-                totalBudget: template.totalBudget,
-                laborCosts: template.laborCosts,
-                materialCosts: template.materialCosts,
-                tasks: template.tasks.map((t) => ({ ...t, id: crypto.randomUUID(), completed: false })) as any,
-              });
-              navigate(`/project/${subId}`);
-            }}
-          />
-        )}
+        {/* TERTIARY — Tabbed workspace (Timeline, Photos, Plans, Notes, Files) */}
+        <section className="space-y-4">
+          <header className="flex items-center gap-2.5 px-1">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <FileImage className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h2 className="font-heading text-lg font-bold text-foreground tracking-tight">Project Workspace</h2>
+              <p className="text-xs text-muted-foreground">Timeline, photos, plans, notes & files</p>
+            </div>
+          </header>
+
+          <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-4 sm:p-6 shadow-sm">
+            <Tabs defaultValue="timeline" className="space-y-5">
+              <TabsList className="bg-muted/60 h-10 p-1 rounded-xl">
+                <TabsTrigger value="timeline" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                  <CalendarDays className="h-3.5 w-3.5" /> Timeline
+                </TabsTrigger>
+                <TabsTrigger value="photos" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                  <Camera className="h-3.5 w-3.5" /> Photos
+                </TabsTrigger>
+                <TabsTrigger value="plans" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                  <FileImage className="h-3.5 w-3.5" /> Plans
+                </TabsTrigger>
+                <TabsTrigger value="notes" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                  <ClipboardList className="h-3.5 w-3.5" /> Notes
+                </TabsTrigger>
+                <TabsTrigger value="files" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                  <BookTemplate className="h-3.5 w-3.5" /> Files
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="timeline" className="space-y-6 mt-0 focus-visible:outline-none">
+                <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} />
+                <GanttTimeline tasks={project.tasks} startDate={project.startDate} phases={project.taskPhases} />
+                <CalendarView tasks={project.tasks} projectName={project.name} phases={project.taskPhases} />
+              </TabsContent>
+
+              <TabsContent value="photos" className="mt-0 focus-visible:outline-none">
+                <PhotoGallery photos={project.photos} onChange={isEditor ? (photos) => update({ photos }) : () => {}} />
+              </TabsContent>
+
+              <TabsContent value="plans" className="mt-0 focus-visible:outline-none">
+                <BlueprintSection blueprints={project.blueprints} onChange={isEditor ? (blueprints) => update({ blueprints }) : () => {}} />
+              </TabsContent>
+
+              <TabsContent value="notes" className="mt-0 focus-visible:outline-none">
+                <ChangeOrdersSection orders={project.changeOrders} onChange={isEditor ? (changeOrders) => update({ changeOrders }) : () => {}} />
+              </TabsContent>
+
+              <TabsContent value="files" className="mt-0 focus-visible:outline-none">
+                {isEditor ? (
+                  <ProjectTemplates
+                    currentProject={project}
+                    onCreateFromTemplate={async (template) => {
+                      const subId = await addProject(template.name, project.id);
+                      await updateProject(subId, {
+                        totalBudget: template.totalBudget,
+                        laborCosts: template.laborCosts,
+                        materialCosts: template.materialCosts,
+                        tasks: template.tasks.map((t) => ({ ...t, id: crypto.randomUUID(), completed: false })) as any,
+                      });
+                      navigate(`/project/${subId}`);
+                    }}
+                  />
+                ) : (
+                  <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                    Templates and reusable files are available to editors.
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
+        </section>
       </div>
     </AppLayout>
   );
