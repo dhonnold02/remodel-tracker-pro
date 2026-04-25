@@ -60,32 +60,25 @@ const GanttTimeline = ({ tasks, startDate, phases }: Props) => {
     // Append any phases not in config (shouldn't happen, but safe)
     for (const p of grouped.keys()) if (!phaseOrder.includes(p)) phaseOrder.push(p);
 
-    let cursor = 0;
-    const bars: PhaseBar[] = phaseOrder.map((phase, i) => {
+    // Only include phases that have at least one task with an assigned date
+    const datedPhases = phaseOrder.filter((phase) => {
+      const phaseTasks = grouped.get(phase)!;
+      return phaseTasks.some((t) => safeParse(t.dueDate));
+    });
+
+    const bars: PhaseBar[] = datedPhases.map((phase, i) => {
       const phaseTasks = grouped.get(phase)!;
       const dated = phaseTasks
         .map((t) => safeParse(t.dueDate))
         .filter((d): d is Date => !!d);
 
-      let startDay: number;
-      let days: number;
-      let hasExplicitDates = false;
-
-      if (dated.length > 0) {
-        hasExplicitDates = true;
-        const earliest = new Date(Math.min(...dated.map((d) => d.getTime())));
-        const latest = new Date(Math.max(...dated.map((d) => d.getTime())));
-        startDay = Math.max(0, differenceInBusinessDays(earliest, projectStart));
-        days = Math.max(1, differenceInBusinessDays(latest, earliest) + 1);
-      } else {
-        const estimated = phaseTasks.reduce((sum, t) => sum + estimateTaskDays(t.title), 0);
-        startDay = cursor;
-        days = Math.max(1, estimated);
-        cursor += days;
-      }
+      const earliest = new Date(Math.min(...dated.map((d) => d.getTime())));
+      const latest = new Date(Math.max(...dated.map((d) => d.getTime())));
+      const startDay = Math.max(0, differenceInBusinessDays(earliest, projectStart));
+      const days = Math.max(1, differenceInBusinessDays(latest, earliest) + 1);
 
       const completed = phaseTasks.filter((t) => t.completed).length;
-      return { phase, index: i, days, startDay, tasks: phaseTasks, completed, hasExplicitDates };
+      return { phase, index: i, days, startDay, tasks: phaseTasks, completed, hasExplicitDates: true };
     });
 
     const totalDays = Math.max(
@@ -291,7 +284,7 @@ const GanttTimeline = ({ tasks, startDate, phases }: Props) => {
         </div>
       )}
 
-      <p className="text-[10px] text-muted-foreground">
+      <p className="text-[11px] text-muted-foreground opacity-50">
         Phases sized by task dates · Falls back to estimates when dates are missing · Weekends excluded
       </p>
     </div>

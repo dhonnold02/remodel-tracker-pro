@@ -37,7 +37,7 @@ const EstimatedFinishDate = ({ tasks, startDate, endDate }: Props) => {
       ) : result ? (
         <>
           <div className="flex items-baseline gap-3">
-            <p className={`font-heading text-2xl font-bold ${overdue ? "text-destructive" : "text-foreground"}`}>
+            <p className={`font-heading text-3xl font-bold ${overdue ? "text-destructive" : "text-foreground"}`}>
               {format(result.date, "MMM d, yyyy")}
             </p>
             <span className="text-sm text-muted-foreground">({result.totalWorkDays} work days)</span>
