@@ -11,43 +11,20 @@ interface Props {
   className?: string;
 }
 
-const SCRIPT_ID = "google-maps-places-script";
-let scriptPromise: Promise<boolean> | null = null;
-
-/** Lazy-load the Google Maps JS Places library. Resolves true on success, false otherwise. */
-function loadGoogleMaps(apiKey: string): Promise<boolean> {
-  if (typeof window === "undefined") return Promise.resolve(false);
-  const w = window as any;
-  if (w.google?.maps?.places) return Promise.resolve(true);
-  if (scriptPromise) return scriptPromise;
-
-  scriptPromise = new Promise((resolve) => {
-    const existing = document.getElementById(SCRIPT_ID) as HTMLScriptElement | null;
-    if (existing) {
-      existing.addEventListener("load", () => resolve(!!w.google?.maps?.places));
-      existing.addEventListener("error", () => resolve(false));
-      return;
-    }
-    const script = document.createElement("script");
-    script.id = SCRIPT_ID;
-    script.async = true;
-    script.defer = true;
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(
-      apiKey
-    )}&libraries=places&v=weekly`;
-    script.onload = () => resolve(!!w.google?.maps?.places);
-    script.onerror = () => resolve(false);
-    document.head.appendChild(script);
-  });
-
-  return scriptPromise;
+interface NominatimResult {
+  place_id: number;
+  display_name: string;
+  address?: Record<string, string>;
 }
 
 interface Suggestion {
-  placeId: string;
+  id: number;
   primary: string;
   secondary: string;
+  display_name: string;
 }
+
+const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
 
 const AddressAutocomplete = ({
   value,
@@ -56,33 +33,16 @@ const AddressAutocomplete = ({
   placeholder = "123 Main St, City",
   className,
 }: Props) => {
-  const apiKey = (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY as
-    | string
-    | undefined;
-  const [ready, setReady] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
-  const sessionTokenRef = useRef<any>(null);
+  const [loading, setLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const skipNextFetchRef = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
 
-  // Lazy-load script when component mounts (only if key present)
+  // Fetch suggestions as user types (debounced)
   useEffect(() => {
-    if (!apiKey) return;
-    let cancelled = false;
-    loadGoogleMaps(apiKey).then((ok) => {
-      if (cancelled) return;
-      setReady(ok);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [apiKey]);
-
-  // Fetch suggestions as user types
-  useEffect(() => {
-    if (!ready) return;
     if (skipNextFetchRef.current) {
       skipNextFetchRef.current = false;
       return;
@@ -91,52 +51,47 @@ const AddressAutocomplete = ({
     if (q.length < 3) {
       setSuggestions([]);
       setOpen(false);
+      setLoading(false);
       return;
     }
 
-    const w = window as any;
-    const places = w.google?.maps?.places;
-    if (!places?.AutocompleteSuggestion) return;
-
-    if (!sessionTokenRef.current) {
-      sessionTokenRef.current = new places.AutocompleteSessionToken();
-    }
-
-    let cancelled = false;
     const handle = setTimeout(async () => {
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+      setLoading(true);
       try {
-        const { suggestions: results } =
-          await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
-            input: q,
-            sessionToken: sessionTokenRef.current,
-            includedPrimaryTypes: ["street_address", "premise", "subpremise", "route"],
-          });
-        if (cancelled) return;
-        const mapped: Suggestion[] = (results || [])
-          .map((s: any) => {
-            const p = s.placePrediction;
-            if (!p) return null;
-            return {
-              placeId: p.placeId,
-              primary: p.mainText?.toString?.() ?? p.text?.toString?.() ?? "",
-              secondary: p.secondaryText?.toString?.() ?? "",
-            } as Suggestion;
-          })
-          .filter(Boolean) as Suggestion[];
+        const url = `${NOMINATIM_URL}?format=json&addressdetails=1&limit=5&q=${encodeURIComponent(q)}`;
+        const res = await fetch(url, {
+          signal: controller.signal,
+          headers: { Accept: "application/json" },
+        });
+        if (!res.ok) throw new Error("Nominatim request failed");
+        const data: NominatimResult[] = await res.json();
+        const mapped: Suggestion[] = data.map((r) => {
+          const parts = r.display_name.split(",").map((s) => s.trim());
+          return {
+            id: r.place_id,
+            primary: parts[0] || r.display_name,
+            secondary: parts.slice(1).join(", "),
+            display_name: r.display_name,
+          };
+        });
         setSuggestions(mapped);
         setOpen(mapped.length > 0);
         setHighlight(0);
-      } catch {
-        setSuggestions([]);
-        setOpen(false);
+      } catch (err: any) {
+        if (err?.name !== "AbortError") {
+          setSuggestions([]);
+          setOpen(false);
+        }
+      } finally {
+        setLoading(false);
       }
-    }, 180);
+    }, 300);
 
-    return () => {
-      cancelled = true;
-      clearTimeout(handle);
-    };
-  }, [value, ready]);
+    return () => clearTimeout(handle);
+  }, [value]);
 
   // Click outside closes dropdown
   useEffect(() => {
@@ -148,28 +103,11 @@ const AddressAutocomplete = ({
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [open]);
 
-  const selectSuggestion = async (s: Suggestion) => {
-    const w = window as any;
-    const places = w.google?.maps?.places;
+  const selectSuggestion = (s: Suggestion) => {
     skipNextFetchRef.current = true;
     setOpen(false);
     setSuggestions([]);
-
-    try {
-      if (places?.Place) {
-        const place = new places.Place({ id: s.placeId });
-        await place.fetchFields({ fields: ["formattedAddress"] });
-        const formatted = (place as any).formattedAddress as string | undefined;
-        onChange(formatted || `${s.primary}${s.secondary ? `, ${s.secondary}` : ""}`);
-      } else {
-        onChange(`${s.primary}${s.secondary ? `, ${s.secondary}` : ""}`);
-      }
-    } catch {
-      onChange(`${s.primary}${s.secondary ? `, ${s.secondary}` : ""}`);
-    }
-
-    // Reset session token after a selection (per Google guidance)
-    sessionTokenRef.current = null;
+    onChange(s.display_name);
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -211,6 +149,9 @@ const AddressAutocomplete = ({
         autoComplete="off"
         className={cn("rounded-xl h-11 pl-9", className)}
       />
+      {loading && value.trim().length >= 3 && (
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin pointer-events-none" />
+      )}
       {open && suggestions.length > 0 && (
         <ul
           role="listbox"
@@ -218,7 +159,7 @@ const AddressAutocomplete = ({
         >
           {suggestions.map((s, i) => (
             <li
-              key={s.placeId}
+              key={s.id}
               role="option"
               aria-selected={i === highlight}
               onMouseDown={(e) => {
