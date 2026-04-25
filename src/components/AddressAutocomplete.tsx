@@ -155,7 +155,15 @@ const AddressAutocomplete = ({
       {open && suggestions.length > 0 && (
         <ul
           role="listbox"
-          className="absolute z-50 left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg overflow-hidden max-h-72 overflow-y-auto"
+          className="absolute z-50 left-0 right-0 max-h-72 overflow-y-auto"
+          style={{
+            marginTop: 4,
+            background: "hsl(var(--card))",
+            border: "1px solid hsl(var(--border))",
+            borderRadius: 12,
+            overflow: "hidden",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+          }}
         >
           {suggestions.map((s, i) => (
             <li
@@ -167,17 +175,49 @@ const AddressAutocomplete = ({
                 selectSuggestion(s);
               }}
               onMouseEnter={() => setHighlight(i)}
-              className={cn(
-                "px-3 py-2 cursor-pointer text-sm text-foreground transition-colors",
-                i === highlight ? "bg-secondary" : "hover:bg-secondary"
-              )}
+              style={{
+                padding: "10px 14px",
+                borderBottom:
+                  i === suggestions.length - 1
+                    ? "none"
+                    : "1px solid hsl(var(--border))",
+                cursor: "pointer",
+                transition: "background 0.15s",
+                background:
+                  i === highlight ? "hsl(var(--secondary))" : "transparent",
+              }}
             >
               <div className="flex items-start gap-2">
-                <MapPin className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                <MapPin
+                  className="shrink-0 mt-0.5"
+                  style={{
+                    width: 14,
+                    height: 14,
+                    color: "hsl(var(--primary))",
+                  }}
+                />
                 <div className="min-w-0">
-                  <p className="truncate">{s.primary}</p>
+                  <p
+                    className="truncate"
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: "hsl(var(--foreground))",
+                    }}
+                  >
+                    {s.primary}
+                  </p>
                   {s.secondary && (
-                    <p className="text-xs text-muted-foreground truncate">{s.secondary}</p>
+                    <p
+                      className="truncate"
+                      style={{
+                        fontSize: 11,
+                        color: "hsl(var(--muted-foreground))",
+                        marginTop: 2,
+                      }}
+                    >
+                      {s.secondary}
+                    </p>
                   )}
                 </div>
               </div>
