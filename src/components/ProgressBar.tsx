@@ -21,7 +21,7 @@ const ProgressBar = ({ label, value, variant = "budget" }: ProgressBarProps) => 
           {Math.round(clamped)}%
         </span>
       </div>
-      <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
+      <div className="h-[3px] w-full rounded-full bg-secondary overflow-hidden">
         <div
           className={cn(
             "h-full rounded-full progress-bar-fill",

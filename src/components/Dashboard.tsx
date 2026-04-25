@@ -194,7 +194,7 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
                 className={cn(
                   "group rounded-xl border bg-card/60 px-4 py-3 text-left transition-all duration-200",
                   stat.active
-                    ? "border-primary/40 bg-accent/60 shadow-sm"
+                    ? "border-primary/50 bg-primary/[0.08] shadow-sm"
                     : "border-border/60 hover:bg-card hover:border-border hover:shadow-sm"
                 )}
               >
