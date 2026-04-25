@@ -324,15 +324,14 @@ const PhaseColumn = ({
   return (
     <div
       className={cn(
-        "flex flex-col rounded-2xl border bg-muted/30 transition-all shrink-0",
+        "flex flex-col rounded-2xl bg-muted/40 transition-all shrink-0 ring-1 ring-border/40",
         collapsed ? "w-14" : "w-72 sm:w-80",
-        isOver && "ring-2 ring-primary/40 bg-primary/5",
+        isOver && "ring-2 ring-primary/50 bg-primary/5",
       )}
     >
       {/* Sticky phase header */}
       <div
-        className="sticky top-0 z-10 rounded-t-2xl bg-card/95 backdrop-blur-sm border-b px-3 pt-3 pb-2"
-        style={{ borderTopColor: color.bar, borderTopWidth: 3 }}
+        className="sticky top-0 z-10 rounded-t-2xl bg-muted/40 backdrop-blur-sm px-4 pt-3 pb-3"
       >
         {collapsed ? (
           <button onClick={onToggleCollapse} className="flex flex-col items-center gap-2 w-full py-2" title={phase}>
@@ -347,6 +346,11 @@ const PhaseColumn = ({
         ) : (
           <>
             <div className="flex items-center gap-2">
+              <span
+                className="h-2 w-2 rounded-full shrink-0"
+                style={{ background: color.bar }}
+                aria-hidden
+              />
               <button
                 onClick={onToggleCollapse}
                 className="text-muted-foreground hover:text-foreground transition p-0.5 -ml-1"
@@ -368,14 +372,15 @@ const PhaseColumn = ({
                 />
               ) : (
                 <h3
-                  className="flex-1 text-sm font-heading font-bold text-foreground tracking-tight truncate"
+                  className="flex-1 text-sm font-heading font-bold text-foreground tracking-tight truncate uppercase"
+                  style={{ letterSpacing: "0.02em" }}
                   onDoubleClick={() => isEditor && setRenaming(true)}
                   title={isEditor ? "Double-click to rename" : phase}
                 >
                   {phase}
                 </h3>
               )}
-              <span className="text-[10px] text-muted-foreground tabular-nums px-1.5 py-0.5 rounded-md bg-secondary">
+              <span className="text-[10px] font-medium text-muted-foreground tabular-nums px-1.5 py-0.5 rounded-md bg-background/80">
                 {parentTasks.length}
               </span>
               {isEditor && !renaming && (
@@ -428,12 +433,12 @@ const PhaseColumn = ({
               )}
             </div>
             {/* Progress */}
-            <div className="mt-2 space-y-1">
+            <div className="mt-2.5 space-y-1 pt-2 border-t border-border/40">
               <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                 <span>{completedCount}/{allLeaf.length} done</span>
                 <span className="tabular-nums">{Math.round(percent)}%</span>
               </div>
-              <div className="h-1 w-full rounded-full bg-secondary overflow-hidden">
+              <div className="h-1 w-full rounded-full bg-background/70 overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{ width: `${percent}%`, background: color.bar }}
@@ -448,7 +453,7 @@ const PhaseColumn = ({
       {!collapsed && (
         <div
           ref={setDropRef}
-          className="flex-1 p-2.5 space-y-2 min-h-[120px] max-h-[calc(100vh-280px)] overflow-y-auto"
+          className="flex-1 px-3 pt-2 pb-3 space-y-2.5 min-h-[160px] max-h-[calc(100vh-280px)] overflow-y-auto"
         >
           <SortableContext items={parentTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
             {parentTasks.length === 0 && !adding && (
