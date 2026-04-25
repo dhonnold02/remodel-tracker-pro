@@ -441,7 +441,7 @@ const ProjectDetailPage = () => {
             </section>
 
             {/* Key Dates */}
-            <div className="rounded-2xl border bg-card p-5 space-y-3 shadow-sm">
+            <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5 space-y-3 shadow-none">
               <h3 className="section-title flex items-center gap-2">
                 <Target className="h-4 w-4 text-primary" />
                 Key Dates
@@ -471,7 +471,7 @@ const ProjectDetailPage = () => {
 
             {/* Team — collapsible */}
             <Collapsible open={teamOpen} onOpenChange={setTeamOpen}>
-              <div className="rounded-2xl border bg-card p-5 shadow-sm">
+              <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5 shadow-none">
                 <CollapsibleTrigger className="flex items-center gap-2 w-full section-title hover:text-primary transition-colors">
                   {teamOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                   <Users className="h-4 w-4 text-primary" />
@@ -486,7 +486,7 @@ const ProjectDetailPage = () => {
 
             {/* Activity — collapsible */}
             <Collapsible open={activityOpen} onOpenChange={setActivityOpen}>
-              <div className="rounded-2xl border bg-card p-5 shadow-sm">
+              <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5 shadow-none">
                 <CollapsibleTrigger className="flex items-center gap-2 w-full section-title hover:text-primary transition-colors">
                   {activityOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                   <Activity className="h-4 w-4 text-primary" />
