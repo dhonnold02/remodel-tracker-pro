@@ -779,7 +779,7 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, pro
 
             {/* Add phase — subtle inline button */}
             {isEditor && (
-              <div className="shrink-0 self-start pt-2">
+              <div className="shrink-0 self-start">
                 {addingPhase ? (
                   <div className="w-60 rounded-xl border bg-card p-2 space-y-2 shadow-sm">
                     <Input
@@ -801,9 +801,9 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, pro
                 ) : (
                   <button
                     onClick={() => setAddingPhase(true)}
-                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md"
+                    className="flex items-center gap-1.5 px-3 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0 self-start mt-1"
                   >
-                    <Plus className="h-3.5 w-3.5" /> Add phase
+                    <Plus className="h-3.5 w-3.5" />Add phase
                   </button>
                 )}
               </div>
