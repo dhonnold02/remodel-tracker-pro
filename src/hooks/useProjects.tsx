@@ -536,8 +536,41 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
           id: o.id,
           project_id: projectId,
           text: o.text,
+          created_by: o.createdBy ?? null,
+          created_by_name: o.authorName || "",
         }))
       );
+    }
+
+    // Sync comments per change order (insert new only; deletions are handled on the parent order via cascade)
+    const existingCommentIds = new Set(
+      existing.flatMap((o) => (o.comments || []).map((c) => c.id))
+    );
+    const newComments = orders.flatMap((o) =>
+      (o.comments || [])
+        .filter((c) => !existingCommentIds.has(c.id))
+        .map((c) => ({
+          id: c.id,
+          change_order_id: o.id,
+          project_id: projectId,
+          text: c.text,
+          created_by: c.createdBy ?? null,
+          created_by_name: c.authorName || "",
+        }))
+    );
+    if (newComments.length > 0) {
+      await supabase.from("change_order_comments").insert(newComments);
+    }
+
+    // Delete removed comments (within still-existing orders)
+    const stillExistingOrderIds = new Set(orders.map((o) => o.id));
+    const newCommentIds = new Set(orders.flatMap((o) => (o.comments || []).map((c) => c.id)));
+    const commentsToDelete = existing
+      .filter((o) => stillExistingOrderIds.has(o.id))
+      .flatMap((o) => (o.comments || []))
+      .filter((c) => !newCommentIds.has(c.id));
+    for (const c of commentsToDelete) {
+      await supabase.from("change_order_comments").delete().eq("id", c.id);
     }
   };
 
