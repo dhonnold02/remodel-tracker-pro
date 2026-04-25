@@ -638,6 +638,32 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const syncEvents = async (projectId: string, events: ProjectEvent[]) => {
+    const existing = projectsRef.current.find((p) => p.id === projectId)?.events || [];
+    const existingIds = new Set(existing.map((e) => e.id));
+    const newIds = new Set(events.map((e) => e.id));
+
+    const toDelete = existing.filter((e) => !newIds.has(e.id));
+    for (const e of toDelete) {
+      await supabase.from("project_events").delete().eq("id", e.id);
+    }
+
+    const toInsert = events.filter((e) => !existingIds.has(e.id));
+    if (toInsert.length > 0) {
+      await supabase.from("project_events").insert(
+        toInsert.map((e) => ({
+          id: e.id,
+          project_id: projectId,
+          title: e.title,
+          type: e.type,
+          date: e.date,
+          time: e.time || null,
+          created_by: user?.id ?? null,
+        }))
+      );
+    }
+  };
+
   const deleteProject = useCallback(async (id: string) => {
     await supabase.from("projects").delete().eq("id", id);
     setProjects((prev) => prev.filter((p) => p.id !== id && p.parentId !== id));
