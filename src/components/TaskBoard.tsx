@@ -453,7 +453,7 @@ const PhaseColumn = ({
       {!collapsed && (
         <div
           ref={setDropRef}
-          className="flex-1 px-3 pt-2 pb-3 space-y-2.5 min-h-[160px] max-h-[calc(100vh-280px)] overflow-y-auto"
+          className="flex-1 px-3 pt-2 pb-3 space-y-2.5 min-h-[160px]"
         >
           <SortableContext items={parentTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
             {parentTasks.length === 0 && !adding && (
