@@ -14,7 +14,7 @@ import { format, isPast, isToday, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import {
   Plus, Trash2, ChevronDown, ChevronRight, GripVertical,
-  CalendarIcon, AlertTriangle, X, MoreHorizontal, Pencil, ListTree,
+  CalendarIcon, AlertTriangle, X, MoreHorizontal, Pencil, ListTree, FileDown,
 } from "lucide-react";
 import {
   DndContext, DragOverlay, PointerSensor, TouchSensor, KeyboardSensor,
@@ -27,6 +27,8 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { exportTasksPDF } from "@/lib/exportTasksPDF";
+import { useBranding } from "@/hooks/useBranding";
 
 const DEFAULT_PHASES = ["Demo", "Framing", "Electrical", "Plumbing", "Finish"];
 
@@ -515,9 +517,12 @@ interface TaskBoardProps {
   onChangeTasks: (tasks: Task[]) => void;
   onChangePhases: (phases: string[]) => void;
   isEditor: boolean;
+  projectName?: string;
+  projectAddress?: string;
 }
 
-const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor }: TaskBoardProps) => {
+const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, projectName, projectAddress }: TaskBoardProps) => {
+  const { brand } = useBranding();
   const effectivePhases = useMemo(() => {
     const base = phases && phases.length > 0 ? [...phases] : [...DEFAULT_PHASES];
     // Ensure any phase referenced by an existing task is included (legacy / "General")
