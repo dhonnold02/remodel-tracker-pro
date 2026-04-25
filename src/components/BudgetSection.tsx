@@ -28,12 +28,12 @@ const BudgetSection = ({ data, onChange }: BudgetSectionProps) => {
             <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               id="budget"
-              type="number"
-              min={0}
+              type="text"
+              inputMode="numeric"
               placeholder="0"
-              value={data.totalBudget || ""}
-              onChange={(e) => onChange({ totalBudget: Number(e.target.value) || 0 })}
-              className="pl-9 rounded-xl h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              value={data.totalBudget ? data.totalBudget.toLocaleString() : ""}
+              onChange={(e) => onChange({ totalBudget: Number(e.target.value.replace(/[^0-9.]/g, "")) || 0 })}
+              className="pl-9 rounded-xl h-10"
             />
           </div>
         </div>
@@ -44,12 +44,12 @@ const BudgetSection = ({ data, onChange }: BudgetSectionProps) => {
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="labor"
-                type="number"
-                min={0}
+                type="text"
+                inputMode="numeric"
                 placeholder="0"
-                value={data.laborCosts || ""}
-                onChange={(e) => onChange({ laborCosts: Number(e.target.value) || 0 })}
-                className="pl-9 rounded-xl h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                value={data.laborCosts ? data.laborCosts.toLocaleString() : ""}
+                onChange={(e) => onChange({ laborCosts: Number(e.target.value.replace(/[^0-9.]/g, "")) || 0 })}
+                className="pl-9 rounded-xl h-10"
               />
             </div>
           </div>
@@ -59,12 +59,12 @@ const BudgetSection = ({ data, onChange }: BudgetSectionProps) => {
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="material"
-                type="number"
-                min={0}
+                type="text"
+                inputMode="numeric"
                 placeholder="0"
-                value={data.materialCosts || ""}
-                onChange={(e) => onChange({ materialCosts: Number(e.target.value) || 0 })}
-                className="pl-9 rounded-xl h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                value={data.materialCosts ? data.materialCosts.toLocaleString() : ""}
+                onChange={(e) => onChange({ materialCosts: Number(e.target.value.replace(/[^0-9.]/g, "")) || 0 })}
+                className="pl-9 rounded-xl h-10"
               />
             </div>
           </div>

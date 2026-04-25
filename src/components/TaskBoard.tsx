@@ -372,8 +372,7 @@ const PhaseColumn = ({
                 />
               ) : (
                 <h3
-                  className="flex-1 text-sm font-heading font-bold text-foreground tracking-tight truncate uppercase"
-                  style={{ letterSpacing: "0.02em" }}
+                  className="flex-1 text-xs font-heading font-semibold text-foreground tracking-wider truncate uppercase"
                   onDoubleClick={() => isEditor && setRenaming(true)}
                   title={isEditor ? "Double-click to rename" : phase}
                 >
