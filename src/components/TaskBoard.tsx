@@ -633,64 +633,66 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor }: T
   const onDragEnd = (e: DragEndEvent) => {
     setActiveId(null);
     const { active, over } = e;
-    if (!over) return;
+    if (!over || active.id === over.id) return;
 
-    const activeTask = tasks.find(t => t.id === active.id);
-    if (!activeTask) return;
+    const activeTask = tasks.find((t) => t.id === active.id);
+    if (!activeTask || activeTask.parentTaskId) return; // only top-level cards are draggable on the board
 
     const overId = String(over.id);
-    const activePhase = activeTask.phase || "General";
-
-    // Determine target phase + position
-    let targetPhase = activePhase;
-    let targetIndex = -1; // -1 means append
+    let targetPhase: string;
+    let beforeTaskId: string | null = null; // insert before this parent id, or null = append to phase
 
     if (overId.startsWith("phase-")) {
-      // Dropped on empty area of a column
       targetPhase = overId.slice("phase-".length);
     } else {
-      const overTask = tasks.find(t => t.id === overId);
+      const overTask = tasks.find((t) => t.id === overId);
       if (!overTask) return;
       targetPhase = overTask.phase || "General";
-      const phaseList = tasks.filter(t => !t.parentTaskId && (t.phase || "General") === targetPhase);
-      targetIndex = phaseList.findIndex(t => t.id === overId);
+      // If hovering a sub-task, anchor to its parent
+      beforeTaskId = overTask.parentTaskId || overTask.id;
+      if (beforeTaskId === active.id) return;
     }
 
-    // Build a working list with the moved task removed, then reinserted
-    const others = tasks.filter(t => t.id !== active.id);
-    const moved: Task = { ...activeTask, phase: targetPhase };
+    // Pull moved parent + its subs out of the list
+    const movedSubs = tasks
+      .filter((t) => t.parentTaskId === active.id)
+      .map((s) => ({ ...s, phase: targetPhase }));
+    const movedParent: Task = { ...activeTask, phase: targetPhase };
+    const remaining = tasks.filter((t) => t.id !== active.id && t.parentTaskId !== active.id);
 
-    if (targetPhase === activePhase && targetIndex !== -1) {
-      // Reorder within same phase
-      const samePhaseParents = others.filter(t => !t.parentTaskId && (t.phase || "General") === targetPhase);
-      const oldIdx = tasks.filter(t => !t.parentTaskId && (t.phase || "General") === activePhase).findIndex(t => t.id === active.id);
-      const reordered = arrayMove([...samePhaseParents.slice(0, oldIdx), moved, ...samePhaseParents.slice(oldIdx)], oldIdx, targetIndex);
-      const otherPhasesAndSubs = tasks.filter(t => t.id !== active.id && (t.parentTaskId || (t.phase || "General") !== targetPhase));
-      // Keep moved task subs grouped after parent
-      const finalList: Task[] = [];
-      const movedSubs = tasks.filter(t => t.parentTaskId === active.id);
-      for (const p of reordered) {
-        finalList.push(p);
-        if (p.id === moved.id) finalList.push(...movedSubs);
-        else finalList.push(...tasks.filter(s => s.parentTaskId === p.id));
+    // Re-insert at the correct position
+    let next: Task[];
+    if (beforeTaskId) {
+      const insertAt = remaining.findIndex((t) => t.id === beforeTaskId);
+      if (insertAt === -1) {
+        next = [...remaining, movedParent, ...movedSubs];
+      } else {
+        next = [
+          ...remaining.slice(0, insertAt),
+          movedParent,
+          ...movedSubs,
+          ...remaining.slice(insertAt),
+        ];
       }
-      onChangeTasks([...otherPhasesAndSubs.filter(t => !reordered.some(r => r.id === t.id || t.parentTaskId === r.id)), ...finalList]);
-      return;
-    }
-
-    // Cross-phase move (or append within phase when targetIndex === -1)
-    const movedSubs = tasks.filter(t => t.parentTaskId === active.id).map(s => ({ ...s, phase: targetPhase }));
-    const remaining = tasks.filter(t => t.id !== active.id && t.parentTaskId !== active.id);
-
-    if (targetIndex === -1) {
-      onChangeTasks([...remaining, moved, ...movedSubs]);
     } else {
-      // Insert before the over task
-      const insertAt = remaining.findIndex(t => t.id === overId);
-      const next = [...remaining];
-      next.splice(insertAt, 0, moved, ...movedSubs);
-      onChangeTasks(next);
+      // Append to end of target phase block — find last index of any task in that phase
+      let lastIdx = -1;
+      for (let i = remaining.length - 1; i >= 0; i--) {
+        if ((remaining[i].phase || "General") === targetPhase) { lastIdx = i; break; }
+      }
+      if (lastIdx === -1) {
+        next = [...remaining, movedParent, ...movedSubs];
+      } else {
+        next = [
+          ...remaining.slice(0, lastIdx + 1),
+          movedParent,
+          ...movedSubs,
+          ...remaining.slice(lastIdx + 1),
+        ];
+      }
     }
+
+    onChangeTasks(next);
   };
 
   const totalLeaf = tasks.filter(t => !tasks.some(c => c.parentTaskId === t.id));
