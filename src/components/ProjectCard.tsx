@@ -29,7 +29,7 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false }
 
   return (
     <div
-      className={`premium-card-hover p-5 space-y-4 cursor-pointer group ${
+      className={`premium-card-hover p-5 space-y-4 cursor-pointer group relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:rounded-t-2xl before:bg-primary before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-200 ${
         isCompleted ? "border-l-4 border-l-success" : ""
       }`}
       onClick={() => navigate(`/project/${project.id}`)}
