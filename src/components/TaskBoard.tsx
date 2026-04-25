@@ -93,8 +93,8 @@ const TaskCard = ({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group rounded-xl border bg-card p-3 space-y-2 shadow-sm hover:shadow-md transition-all duration-150",
-        status === "overdue" && !task.completed && "border-destructive/40",
+        "group rounded-xl bg-card p-3 space-y-2 ring-1 ring-border/60 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-md hover:-translate-y-0.5 hover:ring-border transition-all duration-200",
+        status === "overdue" && !task.completed && "ring-destructive/40",
         isOverlay && "shadow-2xl rotate-2 ring-2 ring-primary/30 cursor-grabbing",
         task.completed && "opacity-70",
       )}
@@ -324,15 +324,14 @@ const PhaseColumn = ({
   return (
     <div
       className={cn(
-        "flex flex-col rounded-2xl border bg-muted/30 transition-all shrink-0",
+        "flex flex-col rounded-2xl bg-muted/40 transition-all shrink-0 ring-1 ring-border/40",
         collapsed ? "w-14" : "w-72 sm:w-80",
-        isOver && "ring-2 ring-primary/40 bg-primary/5",
+        isOver && "ring-2 ring-primary/50 bg-primary/5",
       )}
     >
       {/* Sticky phase header */}
       <div
-        className="sticky top-0 z-10 rounded-t-2xl bg-card/95 backdrop-blur-sm border-b px-3 pt-3 pb-2"
-        style={{ borderTopColor: color.bar, borderTopWidth: 3 }}
+        className="sticky top-0 z-10 rounded-t-2xl bg-muted/40 backdrop-blur-sm px-4 pt-3 pb-3"
       >
         {collapsed ? (
           <button onClick={onToggleCollapse} className="flex flex-col items-center gap-2 w-full py-2" title={phase}>
@@ -347,6 +346,11 @@ const PhaseColumn = ({
         ) : (
           <>
             <div className="flex items-center gap-2">
+              <span
+                className="h-2 w-2 rounded-full shrink-0"
+                style={{ background: color.bar }}
+                aria-hidden
+              />
               <button
                 onClick={onToggleCollapse}
                 className="text-muted-foreground hover:text-foreground transition p-0.5 -ml-1"
@@ -368,14 +372,15 @@ const PhaseColumn = ({
                 />
               ) : (
                 <h3
-                  className="flex-1 text-sm font-heading font-bold text-foreground tracking-tight truncate"
+                  className="flex-1 text-sm font-heading font-bold text-foreground tracking-tight truncate uppercase"
+                  style={{ letterSpacing: "0.02em" }}
                   onDoubleClick={() => isEditor && setRenaming(true)}
                   title={isEditor ? "Double-click to rename" : phase}
                 >
                   {phase}
                 </h3>
               )}
-              <span className="text-[10px] text-muted-foreground tabular-nums px-1.5 py-0.5 rounded-md bg-secondary">
+              <span className="text-[10px] font-medium text-muted-foreground tabular-nums px-1.5 py-0.5 rounded-md bg-background/80">
                 {parentTasks.length}
               </span>
               {isEditor && !renaming && (
@@ -428,12 +433,12 @@ const PhaseColumn = ({
               )}
             </div>
             {/* Progress */}
-            <div className="mt-2 space-y-1">
+            <div className="mt-2.5 space-y-1 pt-2 border-t border-border/40">
               <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                 <span>{completedCount}/{allLeaf.length} done</span>
                 <span className="tabular-nums">{Math.round(percent)}%</span>
               </div>
-              <div className="h-1 w-full rounded-full bg-secondary overflow-hidden">
+              <div className="h-1 w-full rounded-full bg-background/70 overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{ width: `${percent}%`, background: color.bar }}
@@ -448,7 +453,7 @@ const PhaseColumn = ({
       {!collapsed && (
         <div
           ref={setDropRef}
-          className="flex-1 p-2.5 space-y-2 min-h-[120px] max-h-[calc(100vh-280px)] overflow-y-auto"
+          className="flex-1 px-3 pt-2 pb-3 space-y-2.5 min-h-[160px] max-h-[calc(100vh-280px)] overflow-y-auto"
         >
           <SortableContext items={parentTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
             {parentTasks.length === 0 && !adding && (
@@ -743,9 +748,9 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, pro
         onDragEnd={onDragEnd}
         onDragCancel={() => setActiveId(null)}
       >
-        {/* Horizontal scrollable board on desktop, stacked on mobile */}
-        <div className="overflow-x-auto -mx-1 px-1 pb-3">
-          <div className="flex flex-col md:flex-row gap-3 md:gap-4 items-stretch min-h-[200px]">
+        {/* Board background layer — columns float as lanes on top */}
+        <div className="rounded-2xl bg-secondary/40 ring-1 ring-border/40 p-3 sm:p-4 md:p-5 overflow-x-auto">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-stretch min-h-[200px]">
             {effectivePhases.map((phase, i) => (
               <PhaseColumn
                 key={phase}
