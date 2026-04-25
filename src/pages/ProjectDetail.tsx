@@ -408,44 +408,6 @@ const ProjectDetailPage = () => {
                 projectAddress={project.address}
               />
             </section>
-
-            {/* PLANNING MODULE */}
-            <section className="space-y-4">
-              <header className="flex items-center gap-2.5 px-1">
-                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <CalendarDays className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <h2 className="font-heading text-lg font-bold text-foreground tracking-tight">Planning</h2>
-                  <p className="text-xs text-muted-foreground">Timeline & key milestones</p>
-                </div>
-              </header>
-              <div className="space-y-6">
-                <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} />
-                <GanttTimeline tasks={project.tasks} startDate={project.startDate} phases={project.taskPhases} />
-                <CalendarView tasks={project.tasks} projectName={project.name} phases={project.taskPhases} />
-              </div>
-            </section>
-
-            {/* DOCUMENTATION MODULE */}
-            <section className="space-y-4">
-              <header className="flex items-center gap-2.5 px-1">
-                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <FileImage className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <h2 className="font-heading text-lg font-bold text-foreground tracking-tight">Documentation</h2>
-                  <p className="text-xs text-muted-foreground">Photos, blueprints & change orders</p>
-                </div>
-              </header>
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                  <PhotoGallery photos={project.photos} onChange={isEditor ? (photos) => update({ photos }) : () => {}} />
-                  <BlueprintSection blueprints={project.blueprints} onChange={isEditor ? (blueprints) => update({ blueprints }) : () => {}} />
-                </div>
-                <ChangeOrdersSection orders={project.changeOrders} onChange={isEditor ? (changeOrders) => update({ changeOrders }) : () => {}} />
-              </div>
-            </section>
           </div>
 
           {/* SECONDARY column — Control sidebar (independent scroll on desktop) */}
