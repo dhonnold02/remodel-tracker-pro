@@ -192,10 +192,10 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
                 key={stat.view}
                 onClick={() => setView(stat.view)}
                 className={cn(
-                  "group rounded-xl border bg-card/60 px-4 py-3 text-left transition-all duration-200",
+                  "group rounded-xl border px-4 py-3 text-left transition-all duration-200",
                   stat.active
-                    ? "border-primary/40 bg-primary/[0.08] shadow-sm"
-                    : "border-border/60 hover:bg-card hover:border-border hover:shadow-sm"
+                    ? "border-primary/40 bg-primary/10 shadow-sm"
+                    : "border-border/60 bg-card/60 hover:bg-card hover:border-border hover:shadow-sm"
                 )}
               >
                 <div className="flex items-center gap-2 mb-1">
