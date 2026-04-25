@@ -1,4 +1,4 @@
-import { Task } from "@/types/project";
+import { Task } from "@/hooks/useProjects";
 import { estimateFinishDate } from "@/lib/estimateFinishDate";
 import { CalendarClock, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
@@ -45,22 +45,35 @@ const EstimatedFinishDate = ({ tasks, startDate, endDate }: Props) => {
           {overdue && endDate && (
             <p className="text-xs text-destructive">⚠ Exceeds target end date of {format(new Date(endDate), "MMM d, yyyy")}</p>
           )}
-          <p className="text-xs text-muted-foreground">Based on industry-average renovation timelines.</p>
+          <p className="text-xs text-muted-foreground">Phases run sequentially · Weekends excluded.</p>
           <button
             onClick={() => setShowBreakdown(!showBreakdown)}
             className="flex items-center gap-1 text-xs text-primary hover:underline transition-colors"
           >
             {showBreakdown ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-            {showBreakdown ? "Hide" : "Show"} task breakdown
+            {showBreakdown ? "Hide" : "Show"} phase breakdown
           </button>
           {showBreakdown && (
-            <div className="space-y-1">
-              {result.taskBreakdown.map((item, i) => (
-                <div key={i} className="flex items-center justify-between text-sm rounded-xl bg-secondary px-4 py-2">
-                  <span className="text-foreground truncate mr-2">{item.title}</span>
-                  <span className="text-muted-foreground whitespace-nowrap">~{item.days}d</span>
-                </div>
-              ))}
+            <div className="space-y-2">
+              <div className="space-y-1">
+                {result.phaseBreakdown.map((item) => (
+                  <div
+                    key={item.phase}
+                    className="flex items-center justify-between text-sm rounded-xl bg-secondary px-4 py-2"
+                  >
+                    <span className="text-foreground truncate mr-2">
+                      <span className="font-medium">{item.phase}</span>
+                      <span className="text-muted-foreground"> · {item.taskCount} task{item.taskCount === 1 ? "" : "s"}</span>
+                    </span>
+                    <span className="text-muted-foreground whitespace-nowrap">
+                      {item.fromDates ? `${item.days}d` : `~${item.days} days`}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Estimates based on phase size · Set task due dates for exact scheduling
+              </p>
             </div>
           )}
         </>

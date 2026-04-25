@@ -1,4 +1,5 @@
-import { Task } from "@/types/project";
+import { Task } from "@/hooks/useProjects";
+import { differenceInBusinessDays, parseISO, isValid } from "date-fns";
 
 /**
  * Estimated days per task based on industry averages for home renovation.
@@ -70,6 +71,32 @@ export function estimateTaskDays(title: string): number {
   return DEFAULT_DAYS_PER_TASK;
 }
 
+/** Estimate days for a phase based on the number of tasks it contains. */
+export function estimatePhaseDays(taskCount: number): number {
+  if (taskCount <= 0) return 0;
+  if (taskCount <= 2) return 2;
+  if (taskCount <= 5) return 5;
+  if (taskCount <= 10) return 10;
+  return 15;
+}
+
+const safeParse = (d?: string | null): Date | null => {
+  if (!d) return null;
+  try {
+    const p = parseISO(d);
+    return isValid(p) ? p : null;
+  } catch {
+    return null;
+  }
+};
+
+export interface PhaseBreakdown {
+  phase: string;
+  taskCount: number;
+  days: number;
+  fromDates: boolean;
+}
+
 /**
  * Calculate estimated finish date based on incomplete tasks.
  * - Sums estimated days for each remaining (incomplete) task.
@@ -80,16 +107,47 @@ export function estimateTaskDays(title: string): number {
 export function estimateFinishDate(
   tasks: Task[],
   startDate?: string
-): { date: Date; totalWorkDays: number; taskBreakdown: { title: string; days: number }[] } | null {
-  const incomplete = tasks.filter((t) => !t.completed);
+): { date: Date; totalWorkDays: number; phaseBreakdown: PhaseBreakdown[] } | null {
+  // Only consider top-level, incomplete tasks
+  const topTasks = tasks.filter((t) => !t.parentTaskId);
+  const incomplete = topTasks.filter((t) => !t.completed);
   if (incomplete.length === 0) return null;
 
-  const breakdown = incomplete.map((t) => ({
-    title: t.title,
-    days: estimateTaskDays(t.title),
-  }));
+  // Group by phase, preserving first-seen order
+  const phaseOrder: string[] = [];
+  const grouped = new Map<string, Task[]>();
+  for (const t of incomplete) {
+    const p = t.phase || "General";
+    if (!grouped.has(p)) {
+      grouped.set(p, []);
+      phaseOrder.push(p);
+    }
+    grouped.get(p)!.push(t);
+  }
 
-  const totalWorkDays = breakdown.reduce((sum, b) => sum + b.days, 0);
+  const phaseBreakdown: PhaseBreakdown[] = phaseOrder.map((phase) => {
+    const phaseTasks = grouped.get(phase)!;
+    const dated = phaseTasks
+      .map((t) => safeParse(t.dueDate))
+      .filter((d): d is Date => !!d);
+
+    if (dated.length > 0) {
+      // Real dates win — measure span across earliest → latest due date
+      const earliest = new Date(Math.min(...dated.map((d) => d.getTime())));
+      const latest = new Date(Math.max(...dated.map((d) => d.getTime())));
+      const days = Math.max(1, differenceInBusinessDays(latest, earliest) + 1);
+      return { phase, taskCount: phaseTasks.length, days, fromDates: true };
+    }
+
+    return {
+      phase,
+      taskCount: phaseTasks.length,
+      days: estimatePhaseDays(phaseTasks.length),
+      fromDates: false,
+    };
+  });
+
+  const totalWorkDays = phaseBreakdown.reduce((sum, p) => sum + p.days, 0);
 
   // Start from today or project start date (whichever is later)
   const today = new Date();
@@ -114,5 +172,5 @@ export function estimateFinishDate(
     }
   }
 
-  return { date: finish, totalWorkDays, taskBreakdown: breakdown };
+  return { date: finish, totalWorkDays, phaseBreakdown };
 }
