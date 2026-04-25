@@ -13,6 +13,7 @@ import ProjectCard from "@/components/ProjectCard";
 import ProjectTemplates from "@/components/ProjectTemplates";
 import { ProjectTemplate } from "@/hooks/useTemplates";
 import AppLayout from "@/components/AppLayout";
+import { cn } from "@/lib/utils";
 
 interface DashboardProps {
   projects: ProjectData[];
