@@ -35,7 +35,7 @@ import {
   Plus, FolderOpen, ChevronRight, ChevronDown, Users, Activity,
   Download, FileText, MapPin, Receipt, ClipboardList, ImageIcon, CalendarRange, Trash2,
 } from "lucide-react";
-import { Wallet, ListChecks, CalendarDays, FileImage, DollarSign, Target } from "lucide-react";
+import { Wallet, ListChecks, CalendarDays, FileImage, DollarSign, Target, TrendingUp, CheckCircle2 } from "lucide-react";
 import { exportProjectCSV, exportProjectPDF } from "@/lib/exportProject";
 
 const ProjectDetailPage = () => {
@@ -141,9 +141,9 @@ const ProjectDetailPage = () => {
       actions={headerActions}
     >
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Command Center Header */}
-        <section className="space-y-6">
-          <div className="space-y-3">
+        {/* Status Strip — Command Center Header */}
+        <section className="space-y-5">
+          <div className="space-y-2">
             {parentProject && (
               <button
                 onClick={() => navigate(`/project/${parentProject.id}`)}
@@ -152,46 +152,85 @@ const ProjectDetailPage = () => {
                 {parentProject.name} <ChevronRight className="h-3 w-3" />
               </button>
             )}
-            <h1 className="font-heading text-3xl sm:text-4xl font-bold text-foreground tracking-tight leading-tight">
+            <h1 className="font-heading text-3xl sm:text-4xl font-bold text-foreground tracking-tight leading-[1.1]">
               {project.name || "Untitled Project"}
             </h1>
             {project.address && (
-              <p className="text-sm text-muted-foreground flex items-start gap-1.5">
-                <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+              <p className="text-sm text-muted-foreground flex items-start gap-1.5 max-w-2xl">
+                <MapPin className="h-3.5 w-3.5 shrink-0 mt-[3px]" />
                 <span className="leading-relaxed">{project.address}</span>
               </p>
             )}
           </div>
 
-          {/* Key stats row */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="rounded-xl border bg-card px-5 py-4">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Budget Used</p>
-              <p className="text-2xl font-heading font-bold text-foreground mt-1">
-                {Math.round(budgetPercent)}<span className="text-base text-muted-foreground font-medium">%</span>
-              </p>
-              <p className="text-[11px] text-muted-foreground mt-1">${totalSpent.toLocaleString()} of ${project.totalBudget.toLocaleString()}</p>
-            </div>
-            <div className="rounded-xl border bg-card px-5 py-4">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Tasks Done</p>
-              <p className="text-2xl font-heading font-bold text-foreground mt-1">
-                {Math.round(taskPercent)}<span className="text-base text-muted-foreground font-medium">%</span>
-              </p>
-              <p className="text-[11px] text-muted-foreground mt-1">{completedTasks} of {project.tasks.length} completed</p>
-            </div>
-            <div className="rounded-xl border bg-card px-5 py-4">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Remaining</p>
-              <p className={`text-2xl font-heading font-bold mt-1 ${remainingBudget < 0 ? "text-destructive" : "text-foreground"}`}>
-                ${Math.abs(remainingBudget).toLocaleString()}
-              </p>
-              <p className="text-[11px] text-muted-foreground mt-1">{remainingBudget < 0 ? "Over budget" : "Available"}</p>
-            </div>
-            <div className="rounded-xl border bg-card px-5 py-4">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Outstanding</p>
-              <p className={`text-2xl font-heading font-bold mt-1 ${invoicesOutstanding > 0 ? "text-foreground" : "text-foreground"}`}>
-                ${invoicesOutstanding.toLocaleString()}
-              </p>
-              <p className="text-[11px] text-muted-foreground mt-1">{project.invoices.length} invoice{project.invoices.length !== 1 ? "s" : ""}</p>
+          {/* Compact stat pills with inline progress */}
+          <div className="rounded-2xl border bg-card/50 backdrop-blur-sm px-5 py-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 lg:divide-x lg:divide-border/60">
+              {/* Budget Used */}
+              <div className="lg:pl-0 lg:pr-6 space-y-1.5">
+                <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                  <TrendingUp className="h-3 w-3" /> Budget Used
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className={`text-xl font-heading font-bold tabular-nums ${budgetPercent > 100 ? "text-destructive" : "text-foreground"}`}>
+                    {Math.round(budgetPercent)}%
+                  </span>
+                  <span className="text-[11px] text-muted-foreground tabular-nums">${totalSpent.toLocaleString()}</span>
+                </div>
+                <div className="h-1 w-full rounded-full bg-secondary overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${budgetPercent > 100 ? "bg-destructive" : "bg-primary"}`}
+                    style={{ width: `${Math.min(100, budgetPercent)}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Tasks Done */}
+              <div className="lg:px-6 space-y-1.5">
+                <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                  <CheckCircle2 className="h-3 w-3" /> Tasks Done
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xl font-heading font-bold text-foreground tabular-nums">{Math.round(taskPercent)}%</span>
+                  <span className="text-[11px] text-muted-foreground tabular-nums">{completedTasks}/{project.tasks.length}</span>
+                </div>
+                <div className="h-1 w-full rounded-full bg-secondary overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-success transition-all duration-500"
+                    style={{ width: `${Math.min(100, taskPercent)}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Remaining */}
+              <div className="lg:px-6 space-y-1.5">
+                <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                  <Wallet className="h-3 w-3" /> Remaining
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className={`text-xl font-heading font-bold tabular-nums ${remainingBudget < 0 ? "text-destructive" : "text-foreground"}`}>
+                    ${Math.abs(remainingBudget).toLocaleString()}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  {remainingBudget < 0 ? "Over budget" : "of $" + project.totalBudget.toLocaleString()}
+                </p>
+              </div>
+
+              {/* Outstanding */}
+              <div className="lg:pl-6 lg:pr-0 space-y-1.5">
+                <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                  <Receipt className="h-3 w-3" /> Outstanding
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xl font-heading font-bold text-foreground tabular-nums">
+                    ${invoicesOutstanding.toLocaleString()}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  {project.invoices.length} invoice{project.invoices.length !== 1 ? "s" : ""}
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -314,42 +353,36 @@ const ProjectDetailPage = () => {
           </Collapsible>
         )}
 
-        {/* Command Center: Two-column layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
-          {/* PRIMARY column — Work + Planning + Documentation */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* WORK MODULE */}
-            <section className="space-y-3">
-              <header className="flex items-center gap-2 px-1">
-                <ListChecks className="h-4 w-4 text-primary" />
-                <h2 className="font-heading text-sm font-semibold uppercase tracking-wider text-muted-foreground">Work</h2>
+        {/* Command Center: 2-column layout — primary 65-70%, sidebar 30-35% */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+          {/* PRIMARY column (Work-first) */}
+          <div className="lg:col-span-8 space-y-10">
+            {/* WORK MODULE — elevated, primary focus */}
+            <section className="space-y-4">
+              <header className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <ListChecks className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="font-heading text-lg font-bold text-foreground tracking-tight">Tasks</h2>
+                    <p className="text-xs text-muted-foreground">{completedTasks} of {project.tasks.length} complete</p>
+                  </div>
+                </div>
               </header>
               <TaskList tasks={project.tasks} onChange={isEditor ? (tasks) => update({ tasks }) : () => {}} />
             </section>
 
-            {/* FINANCIALS MODULE */}
-            <section className="space-y-3">
-              <header className="flex items-center gap-2 px-1">
-                <Wallet className="h-4 w-4 text-primary" />
-                <h2 className="font-heading text-sm font-semibold uppercase tracking-wider text-muted-foreground">Financials</h2>
-              </header>
-              <div className="space-y-6">
-                <BudgetSection data={project as any} onChange={isEditor ? update : () => {}} />
-                <InvoicesSection
-                  invoices={project.invoices}
-                  onChange={isEditor ? (invoices) => update({ invoices }) : () => {}}
-                  totalBudget={project.totalBudget}
-                  totalSpent={project.laborCosts + project.materialCosts}
-                  readOnly={!isEditor}
-                />
-              </div>
-            </section>
-
             {/* PLANNING MODULE */}
-            <section className="space-y-3">
-              <header className="flex items-center gap-2 px-1">
-                <CalendarDays className="h-4 w-4 text-primary" />
-                <h2 className="font-heading text-sm font-semibold uppercase tracking-wider text-muted-foreground">Planning</h2>
+            <section className="space-y-4">
+              <header className="flex items-center gap-2.5 px-1">
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <CalendarDays className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h2 className="font-heading text-lg font-bold text-foreground tracking-tight">Planning</h2>
+                  <p className="text-xs text-muted-foreground">Timeline & key milestones</p>
+                </div>
               </header>
               <div className="space-y-6">
                 <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} />
@@ -359,10 +392,15 @@ const ProjectDetailPage = () => {
             </section>
 
             {/* DOCUMENTATION MODULE */}
-            <section className="space-y-3">
-              <header className="flex items-center gap-2 px-1">
-                <FileImage className="h-4 w-4 text-primary" />
-                <h2 className="font-heading text-sm font-semibold uppercase tracking-wider text-muted-foreground">Documentation</h2>
+            <section className="space-y-4">
+              <header className="flex items-center gap-2.5 px-1">
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <FileImage className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h2 className="font-heading text-lg font-bold text-foreground tracking-tight">Documentation</h2>
+                  <p className="text-xs text-muted-foreground">Photos, blueprints & change orders</p>
+                </div>
               </header>
               <div className="space-y-6">
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -374,45 +412,28 @@ const ProjectDetailPage = () => {
             </section>
           </div>
 
-          {/* SECONDARY column — Sticky sidebar */}
-          <aside className="lg:col-span-1 space-y-6 lg:sticky lg:top-6">
-            {/* Project details */}
-            <ProjectDetails data={project as any} onChange={isEditor ? update : () => {}} />
-
-            {/* Quick financial snapshot */}
-            <div className="premium-card p-5 space-y-4">
-              <h3 className="section-title flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-primary" />
-                Snapshot
-              </h3>
-              <div className="space-y-3">
-                <ProgressBar label="Budget" value={budgetPercent} variant="budget" />
-                <ProgressBar label="Tasks" value={taskPercent} variant="completion" />
+          {/* SECONDARY column — Control sidebar (sticky) */}
+          <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-6">
+            {/* FINANCIALS MODULE — moved to sidebar for control-panel feel */}
+            <section className="space-y-3">
+              <header className="flex items-center gap-2 px-1">
+                <Wallet className="h-3.5 w-3.5 text-primary" />
+                <h3 className="font-heading text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Financials</h3>
+              </header>
+              <div className="space-y-4">
+                <BudgetSection data={project as any} onChange={isEditor ? update : () => {}} />
+                <InvoicesSection
+                  invoices={project.invoices}
+                  onChange={isEditor ? (invoices) => update({ invoices }) : () => {}}
+                  totalBudget={project.totalBudget}
+                  totalSpent={project.laborCosts + project.materialCosts}
+                  readOnly={!isEditor}
+                />
               </div>
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t">
-                <div className="space-y-0.5">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Spent</p>
-                  <p className="text-sm font-heading font-semibold text-foreground">${totalSpent.toLocaleString()}</p>
-                </div>
-                <div className="space-y-0.5">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Remaining</p>
-                  <p className={`text-sm font-heading font-semibold ${remainingBudget < 0 ? "text-destructive" : "text-foreground"}`}>
-                    ${Math.abs(remainingBudget).toLocaleString()}
-                  </p>
-                </div>
-                <div className="space-y-0.5">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Labor</p>
-                  <p className="text-sm font-heading font-semibold text-foreground">${project.laborCosts.toLocaleString()}</p>
-                </div>
-                <div className="space-y-0.5">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Materials</p>
-                  <p className="text-sm font-heading font-semibold text-foreground">${project.materialCosts.toLocaleString()}</p>
-                </div>
-              </div>
-            </div>
+            </section>
 
-            {/* Key dates */}
-            <div className="premium-card p-5 space-y-3">
+            {/* Key Dates */}
+            <div className="rounded-2xl border bg-card p-5 space-y-3 shadow-sm">
               <h3 className="section-title flex items-center gap-2">
                 <Target className="h-4 w-4 text-primary" />
                 Key Dates
@@ -437,9 +458,12 @@ const ProjectDetailPage = () => {
               </div>
             </div>
 
+            {/* Project details (status, dates inputs) */}
+            <ProjectDetails data={project as any} onChange={isEditor ? update : () => {}} />
+
             {/* Team — collapsible */}
             <Collapsible open={teamOpen} onOpenChange={setTeamOpen}>
-              <div className="premium-card p-5">
+              <div className="rounded-2xl border bg-card p-5 shadow-sm">
                 <CollapsibleTrigger className="flex items-center gap-2 w-full section-title hover:text-primary transition-colors">
                   {teamOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                   <Users className="h-4 w-4 text-primary" />
@@ -454,7 +478,7 @@ const ProjectDetailPage = () => {
 
             {/* Activity — collapsible */}
             <Collapsible open={activityOpen} onOpenChange={setActivityOpen}>
-              <div className="premium-card p-5">
+              <div className="rounded-2xl border bg-card p-5 shadow-sm">
                 <CollapsibleTrigger className="flex items-center gap-2 w-full section-title hover:text-primary transition-colors">
                   {activityOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                   <Activity className="h-4 w-4 text-primary" />
