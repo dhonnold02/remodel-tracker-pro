@@ -31,6 +31,7 @@ export interface Task {
   dueDate?: string | null;
   priority: TaskPriority;
   tags: string[];
+  phase?: string;
 }
 
 export interface FileAttachment {
@@ -82,6 +83,7 @@ export interface ProjectData {
   members: ProjectMember[];
   createdBy: string | null;
   createdAt: string;
+  taskPhases: string[];
 }
 
 interface ProjectsContextType {
