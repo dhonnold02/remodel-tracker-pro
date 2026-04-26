@@ -525,6 +525,12 @@ const ProjectDetailPage = () => {
                 <TabsTrigger value="files" className="text-xs sm:text-sm rounded-lg gap-1.5">
                   <BookTemplate className="h-3.5 w-3.5" /> Files
                 </TabsTrigger>
+                <TabsTrigger value="closeout" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                  <ClipboardCheck className="h-3.5 w-3.5" /> Closeout
+                  {punchData.isLocked && (
+                    <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-success" />
+                  )}
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="timeline" className="space-y-6 mt-0 focus-visible:outline-none">
@@ -572,6 +578,37 @@ const ProjectDetailPage = () => {
                     Templates and reusable files are available to editors.
                   </div>
                 )}
+              </TabsContent>
+
+              <TabsContent value="closeout" className="mt-0 focus-visible:outline-none">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between gap-3 flex-wrap px-1">
+                    <div className="flex items-center gap-2">
+                      <ClipboardCheck className="h-4 w-4 text-primary" />
+                      <h3 className="font-heading text-sm font-bold text-foreground tracking-tight">Punch List</h3>
+                      {punchData.items.length > 0 && (
+                        <span className="text-xs text-muted-foreground font-normal">
+                          ({punchData.items.length})
+                        </span>
+                      )}
+                      {punchData.isLocked && (
+                        <span className="ml-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">
+                          Signed Off
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {punchData.items.filter((i) => i.status === "pass").length} of {punchData.items.length} items passed
+                    </span>
+                  </div>
+                  <PunchList
+                    projectId={project.id}
+                    data={punchData}
+                    onChange={savePunch}
+                    isEditor={isEditor}
+                    members={project.members}
+                  />
+                </div>
               </TabsContent>
             </Tabs>
           </div>
