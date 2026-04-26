@@ -118,6 +118,7 @@ const PunchList = ({
   const [failReason, setFailReason] = useState("");
   const [signOffOpen, setSignOffOpen] = useState(false);
   const [signOffName, setSignOffName] = useState("");
+  const [reopenOpen, setReopenOpen] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   const items = data.items || [];
