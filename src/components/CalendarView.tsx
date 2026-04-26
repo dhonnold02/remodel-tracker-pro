@@ -8,10 +8,13 @@ import { parseISO, format, isValid } from "date-fns";
 import { CalendarDays, CheckCircle2, Plus, Trash2, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { phaseColor } from "@/lib/phaseColors";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Props {
   tasks: Task[];
   projectName?: string;
+  projectId?: string;
   phases?: string[];
   events?: ProjectEvent[];
   onEventsChange?: (events: ProjectEvent[]) => void;
@@ -48,7 +51,8 @@ const safeParse = (d?: string | null): Date | null => {
   }
 };
 
-const CalendarView = ({ tasks, phases, events = [], onEventsChange, canEdit = false }: Props) => {
+const CalendarView = ({ tasks, phases, events = [], onEventsChange, canEdit = false, projectId }: Props) => {
+  const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [showForm, setShowForm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -179,12 +183,77 @@ const CalendarView = ({ tasks, phases, events = [], onEventsChange, canEdit = fa
       time: newTime.trim() || null,
     };
     onEventsChange([...events, evt]);
+    void scheduleNotification(evt);
     resetForm();
   };
 
   const handleDeleteEvent = (id: string) => {
     if (!onEventsChange) return;
     onEventsChange(events.filter((e) => e.id !== id));
+    void deleteNotification(id);
+  };
+
+  const parseEventDateTime = (dateStr: string, time?: string | null): Date | null => {
+    if (!dateStr) return null;
+    let iso = dateStr;
+    if (time && time.trim()) {
+      // Try to parse times like "9:00 AM" or "14:30"
+      const t = time.trim();
+      const m = t.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+      if (m) {
+        let h = parseInt(m[1], 10);
+        const min = parseInt(m[2], 10);
+        const ampm = m[3]?.toUpperCase();
+        if (ampm === "PM" && h < 12) h += 12;
+        if (ampm === "AM" && h === 12) h = 0;
+        iso = `${dateStr}T${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}:00`;
+      }
+    } else {
+      iso = `${dateStr}T09:00:00`;
+    }
+    const d = new Date(iso);
+    return isValid(d) ? d : null;
+  };
+
+  const scheduleNotification = async (evt: ProjectEvent) => {
+    if (!user || !projectId) return;
+    try {
+      const { data: settings } = await supabase
+        .from("company_settings")
+        .select("notify_calendar_events")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!settings || !(settings as any).notify_calendar_events) return;
+
+      const eventDate = parseEventDateTime(evt.date, evt.time);
+      if (!eventDate) return;
+      const notifyAt = new Date(eventDate.getTime() - 24 * 60 * 60 * 1000);
+
+      await supabase.from("scheduled_notifications").insert({
+        user_id: user.id,
+        project_id: projectId,
+        event_id: evt.id,
+        event_title: evt.title,
+        event_type: evt.type,
+        event_date: eventDate.toISOString(),
+        notify_at: notifyAt.toISOString(),
+      } as any);
+    } catch {
+      // best-effort; don't block UX
+    }
+  };
+
+  const deleteNotification = async (eventId: string) => {
+    if (!user) return;
+    try {
+      await supabase
+        .from("scheduled_notifications")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("event_id", eventId);
+    } catch {
+      // best-effort
+    }
   };
 
   return (
