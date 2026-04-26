@@ -39,8 +39,8 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import type { ProjectMember } from "@/hooks/useProjects";
 import { useBranding } from "@/hooks/useBranding";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import { pdf } from "@react-pdf/renderer";
+import { PunchOutPdfDocument } from "@/lib/PunchOutPdfDocument";
 
 export type PunchStatus = "pending" | "pass" | "fail";
 
@@ -291,167 +291,45 @@ const PunchList = ({
 
     const signedBy = data.signedOffBy || "—";
     const signedDate = data.signedOffAt ? formatDate(data.signedOffAt) : dateLong;
-    const escapeHtml = (s: string) =>
-      s
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-
-    const statusPill = (status: PunchStatus) => {
-      if (status === "pass") {
-        return `<span style="background:#f0fdf4; color:#15803d; font-weight:600; padding:2px 8px; border-radius:4px; font-size:11px;">PASS</span>`;
-      }
-      if (status === "fail") {
-        return `<span style="background:#fef2f2; color:#dc2626; font-weight:600; padding:2px 8px; border-radius:4px; font-size:11px;">FAIL</span>`;
-      }
-      return `<span style="background:#f3f4f6; color:#6b7280; font-weight:600; padding:2px 8px; border-radius:4px; font-size:11px;">PENDING</span>`;
-    };
-
-    const rowsHtml = items
-      .map((it, idx) => {
-        const bg = idx % 2 === 0 ? "#ffffff" : "#f9fafb";
-        return `
-          <tr style="background:${bg}; border-bottom:1px solid #f3f4f6;">
-            <td style="padding:8px 10px; color:#0f1117; font-size:12px; vertical-align:top;">${escapeHtml(it.title)}</td>
-            <td style="padding:8px 10px; vertical-align:top;">${statusPill(it.status)}</td>
-            <td style="padding:8px 10px; color:#374151; font-size:12px; vertical-align:top;">${escapeHtml(it.assignee || "—")}</td>
-          </tr>
-        `;
-      })
-      .join("");
-
-    const html = `
-      <div style="width:794px; min-height:auto; background:#fff; font-family:'Helvetica Neue', Arial, sans-serif; position:relative; box-sizing:border-box;">
-
-        <div style="position:absolute; left:0; top:0; width:8px; height:100%; background:#1d4ed8;"></div>
-
-        <div style="padding:24px 48px 20px 56px; border-bottom:1px solid #e5e7eb;">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div>
-              <div style="font-size:11px; font-weight:700; color:#1d4ed8; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:6px;">PUNCH OUT REPORT</div>
-              <div style="font-size:22px; font-weight:700; color:#0f1117; letter-spacing:-0.02em;">${escapeHtml(projName)}</div>
-              <div style="font-size:12px; color:#6b7280; margin-top:4px;">${escapeHtml(projAddr || "—")}</div>
-            </div>
-            ${
-              logoUrl
-                ? `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(companyName)}" crossorigin="anonymous" style="width:60px; height:60px; object-fit:contain; border-radius:4px;" />`
-                : `<div style="text-align:right;">
-              <div style="font-size:13px; font-weight:700; color:#0f1117;">${escapeHtml(companyName)}</div>
-              <div style="font-size:11px; color:#6b7280; margin-top:2px;">Licensed Contractor</div>
-            </div>`
-            }
-          </div>
-        </div>
-
-        <div style="margin:16px 48px 0 56px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between;">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <div style="width:20px; height:20px; background:#16a34a; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:12px; font-weight:bold; flex-shrink:0;">&#10003;</div>
-            <div>
-              <div style="font-size:13px; font-weight:700; color:#15803d;">All punch out items complete</div>
-              <div style="font-size:11px; color:#16a34a; margin-top:2px;">This project has been inspected and signed off</div>
-            </div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:11px; color:#6b7280;">Signed off by</div>
-            <div style="font-size:12px; font-weight:600; color:#0f1117;">${escapeHtml(signedBy)}</div>
-            <div style="font-size:11px; color:#6b7280;">${escapeHtml(signedDate)}</div>
-          </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:#e5e7eb; margin:16px 48px 0 56px; border-radius:8px; overflow:hidden;">
-          <div style="background:#fff; padding:10px 16px;">
-            <div style="font-size:10px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.08em;">Total Items</div>
-            <div style="font-size:24px; font-weight:700; color:#0f1117; margin-top:4px;">${total}</div>
-          </div>
-          <div style="background:#fff; padding:10px 16px;">
-            <div style="font-size:10px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.08em;">Passed</div>
-            <div style="font-size:24px; font-weight:700; color:#16a34a; margin-top:4px;">${passed}</div>
-          </div>
-          <div style="background:#fff; padding:10px 16px;">
-            <div style="font-size:10px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.08em;">Failed</div>
-            <div style="font-size:24px; font-weight:700; color:#dc2626; margin-top:4px;">${failed}</div>
-          </div>
-        </div>
-
-        <div style="margin:16px 48px 16px 56px;">
-          <div style="font-size:10px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:12px;">Punch Out Items</div>
-          <table style="width:100%; border-collapse:collapse; font-size:12px;">
-            <thead>
-              <tr style="background:#f9fafb; border-top:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;">
-                <th style="text-align:left; padding:10px 12px; font-size:10px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:0.06em;">Item</th>
-                <th style="text-align:left; padding:10px 12px; font-size:10px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:0.06em; width:80px;">Status</th>
-                <th style="text-align:left; padding:10px 12px; font-size:10px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:0.06em; width:120px;">Assignee</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml || `<tr><td colspan="3" style="padding:24px 12px; text-align:center; color:#9ca3af; font-size:12px;">No items</td></tr>`}
-            </tbody>
-          </table>
-        </div>
-
-        <div style="margin-top:16px; padding:16px 48px 20px 56px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center;">
-          <div style="font-size:10px; color:#9ca3af;">${escapeHtml(companyName)} · Generated by Remodel Tracker Pro · ${escapeHtml(dateLong)}</div>
-          <div style="font-size:10px; color:#9ca3af;">Page 1 of 1</div>
-        </div>
-
-      </div>
-    `;
-
-    // Mount off-screen
-    const host = document.createElement("div");
-    host.style.position = "fixed";
-    host.style.left = "-10000px";
-    host.style.top = "0";
-    host.style.width = "794px";
-    host.style.background = "#fff";
-    host.innerHTML = html;
-    document.body.appendChild(host);
 
     try {
-      const target = host.firstElementChild as HTMLElement;
-      const canvas = await html2canvas(target, {
-        scale: 1.5,
-        backgroundColor: "#ffffff",
-        useCORS: true,
-        logging: false,
+      const blob = await pdf(
+        <PunchOutPdfDocument
+          companyName={companyName}
+          logoUrl={logoUrl || undefined}
+          projectName={projName}
+          projectAddress={projAddr}
+          signedBy={signedBy}
+          signedDate={signedDate}
+          generatedDate={dateLong}
+          total={total}
+          passed={passed}
+          failed={failed}
+          items={items}
+        />
+      ).toBlob();
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+      toast({
+        title: "PDF downloaded",
+        description: "Ready to share with your homeowner",
       });
-
-      const imgData = canvas.toDataURL("image/png");
-
-      // A4 portrait in mm
-      const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-
-      // Fit image to full page width, preserving aspect ratio
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      if (imgHeight <= pageHeight) {
-        doc.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
-      } else {
-        // Tile across pages if content is taller than one A4 page
-        let remaining = imgHeight;
-        let position = 0;
-        while (remaining > 0) {
-          doc.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-          remaining -= pageHeight;
-          position -= pageHeight;
-          if (remaining > 0) doc.addPage();
-        }
-      }
-
-      doc.save(fileName);
-    } finally {
-      document.body.removeChild(host);
+    } catch (err) {
+      console.error("PDF export failed", err);
+      toast({
+        title: "Export failed",
+        description: "Could not generate the PDF. Please try again.",
+        variant: "destructive",
+      });
     }
-
-    toast({
-      title: "PDF downloaded",
-      description: "Ready to share with your homeowner",
-    });
   };
 
   const memberOptions = members.map((m) => ({
