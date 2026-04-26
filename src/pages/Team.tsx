@@ -34,7 +34,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Copy, Loader2, Mail, Trash2, UserPlus, X } from "lucide-react";
+import { Copy, Info, Loader2, Mail, Trash2, UserPlus, X, Check } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 type InvitableRole = Exclude<Role, "owner">;
@@ -80,6 +86,33 @@ const INVITABLE_ROLES: InvitableRole[] = [
   "subcontractor",
 ];
 
+const PERMISSION_ROLES: Role[] = [
+  "owner",
+  "project_manager",
+  "field_supervisor",
+  "crew",
+  "subcontractor",
+];
+
+const PERMISSIONS: { feature: string; allowed: Role[] }[] = [
+  { feature: "Create / delete projects", allowed: ["owner", "project_manager"] },
+  { feature: "Edit project details", allowed: ["owner", "project_manager"] },
+  { feature: "View financials & budget", allowed: ["owner", "project_manager"] },
+  { feature: "View invoices", allowed: ["owner", "project_manager"] },
+  { feature: "Edit tasks", allowed: ["owner", "project_manager", "field_supervisor"] },
+  { feature: "Complete tasks", allowed: ["owner", "project_manager", "field_supervisor", "crew"] },
+  { feature: "View tasks", allowed: ["owner", "project_manager", "field_supervisor", "crew", "subcontractor"] },
+  { feature: "Add photos", allowed: ["owner", "project_manager", "field_supervisor", "crew", "subcontractor"] },
+  { feature: "Add notes & comments", allowed: ["owner", "project_manager", "field_supervisor", "crew", "subcontractor"] },
+  { feature: "Edit timeline", allowed: ["owner", "project_manager", "field_supervisor"] },
+  { feature: "View punch out", allowed: ["owner", "project_manager", "field_supervisor", "crew", "subcontractor"] },
+  { feature: "Edit punch out items", allowed: ["owner", "project_manager", "field_supervisor"] },
+  { feature: "Sign off punch out", allowed: ["owner", "project_manager"] },
+  { feature: "Invite team members", allowed: ["owner"] },
+  { feature: "Access settings", allowed: ["owner"] },
+  { feature: "View change orders", allowed: ["owner", "project_manager", "field_supervisor"] },
+];
+
 const formatDate = (iso?: string | null) => {
   if (!iso) return "—";
   try {
@@ -113,6 +146,7 @@ const Team = () => {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<InvitableRole>("crew");
   const [inviting, setInviting] = useState(false);
+  const [permissionsOpen, setPermissionsOpen] = useState(false);
 
   // Owner-only — kick others out.
   useEffect(() => {
@@ -290,7 +324,18 @@ const Team = () => {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Role</Label>
+              <div className="flex items-center gap-1.5">
+                <Label className="text-xs">Role</Label>
+                <button
+                  type="button"
+                  onClick={() => setPermissionsOpen(true)}
+                  className="p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  title="View role permissions"
+                  aria-label="View role permissions"
+                >
+                  <Info className="h-3.5 w-3.5" />
+                </button>
+              </div>
               <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as InvitableRole)}>
                 <SelectTrigger className="h-10 rounded-xl">
                   <SelectValue />
