@@ -40,7 +40,7 @@ import { cn } from "@/lib/utils";
 import type { ProjectMember } from "@/hooks/useProjects";
 import { useBranding } from "@/hooks/useBranding";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import html2canvas from "html2canvas";
 
 export type PunchStatus = "pending" | "pass" | "fail";
 
