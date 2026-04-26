@@ -37,8 +37,10 @@ import {
   Download, FileText, MapPin, Receipt, ClipboardList, ImageIcon, CalendarRange, Trash2,
 } from "lucide-react";
 import { Wallet, ListChecks, CalendarDays, FileImage, DollarSign, Target, TrendingUp, CheckCircle2, Camera, FilePlus2, BookTemplate, Circle } from "lucide-react";
+import { ClipboardCheck } from "lucide-react";
 import { exportProjectCSV, exportProjectPDF } from "@/lib/exportProject";
 import { cn } from "@/lib/utils";
+import PunchList, { usePunchList } from "@/components/PunchList";
 
 const ProjectDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -51,6 +53,10 @@ const ProjectDetailPage = () => {
   const [subProjectsOpen, setSubProjectsOpen] = useState(false);
   const [teamOpen, setTeamOpen] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
+  const [punchOpen, setPunchOpen] = useState(false);
+
+  // Always call hook (id may be empty string before load — hook tolerates undefined)
+  const { data: punchData, save: savePunch } = usePunchList(id);
 
   if (loading) {
     return (
@@ -377,6 +383,36 @@ const ProjectDetailPage = () => {
             </div>
           </Collapsible>
         )}
+
+        {/* Punch List — collapsible */}
+        <Collapsible open={punchOpen} onOpenChange={setPunchOpen}>
+          <div className="premium-card p-6 space-y-4">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <CollapsibleTrigger className="flex items-center gap-2 section-title hover:text-primary transition-colors">
+                {punchOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                <ClipboardCheck className="h-4 w-4 text-primary" />
+                Punch List
+                {punchData.isLocked && (
+                  <span className="ml-2 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">
+                    Signed Off
+                  </span>
+                )}
+              </CollapsibleTrigger>
+              <span className="text-xs text-muted-foreground">
+                {punchData.items.filter((i) => i.status === "pass").length} of {punchData.items.length} items passed
+              </span>
+            </div>
+            <CollapsibleContent>
+              <PunchList
+                projectId={project.id}
+                data={punchData}
+                onChange={savePunch}
+                isEditor={isEditor}
+                members={project.members}
+              />
+            </CollapsibleContent>
+          </div>
+        </Collapsible>
 
         {/* Command Center: 2-column layout — primary 65-70%, sidebar 30-35%
             Each column scrolls independently on desktop based on cursor position. */}
