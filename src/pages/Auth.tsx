@@ -78,7 +78,7 @@ const AuthPage = () => {
               <HardHat className="h-5 w-5 text-primary-foreground" />
             </div>
             <span className="font-heading text-lg font-semibold text-foreground">
-              RemodelPro
+              Sightline
             </span>
           </div>
 
@@ -87,15 +87,12 @@ const AuthPage = () => {
               Construction Project Management
             </p>
             <h1 className="font-heading text-4xl xl:text-5xl font-bold text-foreground leading-[1.05] tracking-tight">
-              Every job, tracked
+              Every job,
               <br />
-              from groundbreak
-              <br />
-              to punch list.
+              start to finish.
             </h1>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Built for contractors and remodelers who need a command center,
-              not a spreadsheet.
+              Built for contractors who need a command center, not a spreadsheet.
             </p>
           </div>
 
@@ -113,7 +110,7 @@ const AuthPage = () => {
 
         <div className="relative">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} RemodelPro. Built for the field.
+            © {new Date().getFullYear()} Sightline. Built for the field.
           </p>
         </div>
       </div>
@@ -127,7 +124,7 @@ const AuthPage = () => {
               <HardHat className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="font-heading text-base font-semibold text-foreground">
-              RemodelPro
+              Sightline
             </span>
           </div>
 

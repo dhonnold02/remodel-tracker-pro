@@ -6,7 +6,7 @@ import { useOnlineStatus } from "@/hooks/useOfflineSync";
 import BrandingSettings from "@/components/BrandingSettings";
 import {
   LayoutDashboard, BookTemplate,
-  LogOut, WifiOff, HardHat, Menu, X, ChevronLeft,
+  LogOut, WifiOff, HardHat, Menu, X, ChevronLeft, Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -75,7 +75,7 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
             )}
             <div className="min-w-0">
               <h2 className="font-heading text-sm font-medium text-foreground truncate leading-none">
-                {brand.brandName || "Remodel Tracker"}
+                {brand.brandName || "Sightline"}
               </h2>
             </div>
             <button onClick={() => setSidebarOpen(false)} className="ml-auto lg:hidden p-1 rounded-md hover:bg-secondary text-muted-foreground">
@@ -111,6 +111,18 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
               Offline Mode
             </div>
           )}
+          <button
+            onClick={() => { navigate("/settings"); setSidebarOpen(false); }}
+            className={cn(
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
+              location.pathname.startsWith("/settings")
+                ? "bg-accent text-accent-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+            )}
+          >
+            <Settings className="h-4 w-4" />
+            Settings
+          </button>
           <div className="flex items-center gap-1">
             <BrandingSettings />
             <button
