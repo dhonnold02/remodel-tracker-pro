@@ -170,6 +170,7 @@ export type Database = {
           id: string
           license_number: string
           logo_url: string | null
+          notify_calendar_events: boolean
           notify_invoices: boolean
           notify_notes: boolean
           notify_tasks: boolean
@@ -188,6 +189,7 @@ export type Database = {
           id?: string
           license_number?: string
           logo_url?: string | null
+          notify_calendar_events?: boolean
           notify_invoices?: boolean
           notify_notes?: boolean
           notify_tasks?: boolean
@@ -206,6 +208,7 @@ export type Database = {
           id?: string
           license_number?: string
           logo_url?: string | null
+          notify_calendar_events?: boolean
           notify_invoices?: boolean
           notify_notes?: boolean
           notify_tasks?: boolean
@@ -523,6 +526,45 @@ export type Database = {
           signed_off_by?: string | null
           signed_off_by_name?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      scheduled_notifications: {
+        Row: {
+          created_at: string
+          event_date: string
+          event_id: string | null
+          event_title: string
+          event_type: string
+          id: string
+          notify_at: string
+          project_id: string
+          sent: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_date: string
+          event_id?: string | null
+          event_title?: string
+          event_type?: string
+          id?: string
+          notify_at: string
+          project_id: string
+          sent?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_date?: string
+          event_id?: string | null
+          event_title?: string
+          event_type?: string
+          id?: string
+          notify_at?: string
+          project_id?: string
+          sent?: boolean
+          user_id?: string
         }
         Relationships: []
       }
