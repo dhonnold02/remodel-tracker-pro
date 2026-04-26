@@ -30,6 +30,9 @@ import {
   Check,
   Share2,
   Lock,
+  X,
+  ZoomIn,
+  ClipboardCheck,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -106,6 +109,7 @@ const PunchList = ({
   const [failReason, setFailReason] = useState("");
   const [signOffOpen, setSignOffOpen] = useState(false);
   const [signOffName, setSignOffName] = useState("");
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   const items = data.items || [];
   const locked = data.isLocked || readOnlyShare;
@@ -118,6 +122,23 @@ const PunchList = ({
   const completedCount = passed + failed;
   const passPercent = total > 0 ? Math.round((passed / total) * 100) : 0;
   const allResolved = total > 0 && pending === 0;
+  const completionPercent = total > 0 ? (completedCount / total) * 100 : 0;
+  const progressColor =
+    completionPercent >= 100
+      ? "bg-success"
+      : completionPercent >= 50
+      ? "bg-warning"
+      : "bg-primary";
+
+  // Close lightbox on Escape
+  useEffect(() => {
+    if (!lightboxSrc) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxSrc(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightboxSrc]);
 
   // Pre-fill sign-off name with user display name
   useEffect(() => {
@@ -165,6 +186,9 @@ const PunchList = ({
           : it
       )
     );
+    if (status === "fail") {
+      setExpandedNotes((s) => ({ ...s, [id]: true }));
+    }
   };
 
   const setNotes = (id: string, notes: string) => {
@@ -293,14 +317,14 @@ const PunchList = ({
         </div>
         <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
           <div
-            className="h-full bg-success transition-all duration-300"
-            style={{ width: `${total > 0 ? (completedCount / total) * 100 : 0}%` }}
+            className={cn("h-full transition-all duration-300", progressColor)}
+            style={{ width: `${completionPercent}%` }}
           />
         </div>
         {!locked && allResolved && isEditor && (
           <Button
             size="sm"
-            className="w-full rounded-xl text-xs mt-1"
+            className="w-full rounded-xl text-xs mt-1 bg-success text-success-foreground hover:bg-success/90"
             onClick={() => setSignOffOpen(true)}
           >
             <Lock className="h-3.5 w-3.5 mr-1.5" />
@@ -351,9 +375,17 @@ const PunchList = ({
 
       {/* Items */}
       {total === 0 ? (
-        <p className="text-xs text-muted-foreground text-center py-6">
-          No punch list items yet.
-        </p>
+        <div className="flex flex-col items-center justify-center text-center py-10 px-4 rounded-xl border border-dashed border-border bg-secondary/20">
+          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+            <ClipboardCheck className="h-5 w-5 text-primary" />
+          </div>
+          <p className="text-sm font-medium text-foreground">
+            Ready for final walkthrough?
+          </p>
+          <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+            Add items from your final inspection to track pass/fail before project closeout.
+          </p>
+        </div>
       ) : (
         <div className="space-y-2">
           {items.map((it) => {
@@ -483,27 +515,44 @@ const PunchList = ({
                   </div>
                 </div>
 
-                {/* Notes input */}
-                {(isExpanded || it.notes) && (
+                {/* Notes input — auto-expanded for failed items, with red border */}
+                {(isExpanded || it.notes || it.status === "fail") && (
                   <Textarea
-                    placeholder="Add notes..."
+                    placeholder={
+                      it.status === "fail"
+                        ? "Describe what needs to be fixed..."
+                        : "Add notes..."
+                    }
                     value={it.notes || ""}
                     onChange={(e) => setNotes(it.id, e.target.value)}
                     disabled={!canEdit}
-                    className="min-h-[60px] text-xs rounded-xl resize-none"
+                    className={cn(
+                      "min-h-[60px] text-xs rounded-xl resize-none",
+                      it.status === "fail" && "border-destructive/50 focus-visible:ring-destructive/30"
+                    )}
                   />
                 )}
 
-                {/* Photo thumbnails */}
+                {/* Photo thumbnails — clickable, opens lightbox */}
                 {it.photos && it.photos.length > 0 && (
                   <div className="flex gap-2 flex-wrap">
                     {it.photos.map((p, idx) => (
-                      <img
+                      <button
                         key={idx}
-                        src={p}
-                        alt={`Punch item photo ${idx + 1}`}
-                        className="h-16 w-16 rounded-lg object-cover border border-border"
-                      />
+                        type="button"
+                        onClick={() => setLightboxSrc(p)}
+                        className="group relative w-20 h-20 rounded-lg overflow-hidden border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+                        aria-label={`Open photo ${idx + 1}`}
+                      >
+                        <img
+                          src={p}
+                          alt={`Punch item photo ${idx + 1}`}
+                          className="w-20 h-20 rounded-lg object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <ZoomIn className="h-5 w-5 text-white" />
+                        </div>
+                      </button>
                     ))}
                   </div>
                 )}
@@ -585,6 +634,34 @@ const PunchList = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Photo lightbox */}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setLightboxSrc(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightboxSrc(null);
+            }}
+            className="absolute top-4 right-4 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <img
+            src={lightboxSrc}
+            alt="Punch list photo"
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
+          />
+        </div>
+      )}
     </div>
   );
 };

@@ -392,6 +392,11 @@ const ProjectDetailPage = () => {
                 {punchOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                 <ClipboardCheck className="h-4 w-4 text-primary" />
                 Punch List
+                {punchData.items.length > 0 && (
+                  <span className="text-xs text-muted-foreground font-normal">
+                    ({punchData.items.length})
+                  </span>
+                )}
                 {punchData.isLocked && (
                   <span className="ml-2 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">
                     Signed Off
