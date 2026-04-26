@@ -11,7 +11,9 @@ interface Props {
   className?: string;
 }
 
-const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
+const GOOGLE_MAPS_API_KEY =
+  (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined) ||
+  "AIzaSyA_sOPvjxhs8rsD8-6DLsvXdHjpen4Mj7Q";
 const SCRIPT_ID = "google-maps-places-script";
 const STYLE_ID = "google-pac-dark-theme-overrides";
 
@@ -34,7 +36,7 @@ const injectPacStyles = () => {
   document.head.appendChild(style);
 };
 
-const loadGoogleMaps = (): Promise<typeof google | null> => {
+const loadGoogleMaps = (): Promise<any> => {
   if (typeof window === "undefined") return Promise.resolve(null);
   if (!GOOGLE_MAPS_API_KEY) return Promise.resolve(null);
   // Already loaded
