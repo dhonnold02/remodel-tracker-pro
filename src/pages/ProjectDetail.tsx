@@ -524,7 +524,7 @@ const ProjectDetailPage = () => {
                   <BookTemplate className="h-3.5 w-3.5" /> Files
                 </TabsTrigger>
                 <TabsTrigger value="closeout" className="text-xs sm:text-sm rounded-lg gap-1.5">
-                  <ClipboardCheck className="h-3.5 w-3.5" /> Closeout
+                  <ClipboardCheck className="h-3.5 w-3.5" /> Punch Out
                   {punchData.isLocked && (
                     <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-success" />
                   )}

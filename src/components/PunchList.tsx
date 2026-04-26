@@ -128,7 +128,9 @@ const PunchList = ({
       ? "bg-success"
       : completionPercent >= 50
       ? "bg-warning"
-      : "bg-primary";
+      : completionPercent > 0
+      ? "bg-primary"
+      : "bg-primary/30";
 
   // Close lightbox on Escape
   useEffect(() => {
@@ -318,18 +320,24 @@ const PunchList = ({
         <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
           <div
             className={cn("h-full transition-all duration-300", progressColor)}
-            style={{ width: `${completionPercent}%` }}
+            style={{ width: `${Math.max(0, completionPercent)}%` }}
           />
         </div>
-        {!locked && allResolved && isEditor && (
-          <Button
-            size="sm"
-            className="w-full rounded-xl text-xs mt-1 bg-success text-success-foreground hover:bg-success/90"
-            onClick={() => setSignOffOpen(true)}
-          >
-            <Lock className="h-3.5 w-3.5 mr-1.5" />
-            Mark Complete & Sign Off
-          </Button>
+        {!locked && isEditor && total > 0 && (
+          allResolved ? (
+            <Button
+              size="sm"
+              className="w-full rounded-xl text-xs mt-1 bg-success text-success-foreground hover:bg-success/90"
+              onClick={() => setSignOffOpen(true)}
+            >
+              <Lock className="h-3.5 w-3.5 mr-1.5" />
+              Mark Complete & Sign Off
+            </Button>
+          ) : (
+            <p className="text-xs text-muted-foreground text-center mt-1">
+              Resolve all pending items to sign off
+            </p>
+          )
         )}
       </div>
 
@@ -383,7 +391,7 @@ const PunchList = ({
             Ready for final walkthrough?
           </p>
           <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-            Add items from your final inspection to track pass/fail before project closeout.
+            Add items from your final inspection to track pass/fail before project punch out.
           </p>
         </div>
       ) : (
