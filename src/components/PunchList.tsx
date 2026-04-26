@@ -119,16 +119,17 @@ const PunchList = ({
   const passed = items.filter((i) => i.status === "pass").length;
   const failed = items.filter((i) => i.status === "fail").length;
   const pending = items.filter((i) => i.status === "pending").length;
-  const completedCount = passed + failed;
   const passPercent = total > 0 ? Math.round((passed / total) * 100) : 0;
-  const allResolved = total > 0 && pending === 0;
-  const completionPercent = total > 0 ? (completedCount / total) * 100 : 0;
+  const allResolved =
+    items.length > 0 &&
+    items.every((i) => i.status === "pass" || i.status === "fail");
+  const progressPercent = total > 0 ? (passed / total) * 100 : 0;
   const progressColor =
-    completionPercent >= 100
+    progressPercent >= 100
       ? "bg-success"
-      : completionPercent >= 50
+      : progressPercent >= 50
       ? "bg-warning"
-      : completionPercent > 0
+      : progressPercent > 0
       ? "bg-primary"
       : "bg-primary/30";
 
