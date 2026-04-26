@@ -74,11 +74,11 @@ export function applyBrandPrimary(value: string | null | undefined) {
 
 export const BRAND_PRESETS: { name: string; hex: string }[] = [
   { name: "Steel Blue", hex: "#3b82f6" },
-  { name: "Navy",       hex: "#1e3a5f" },
+  { name: "Navy",       hex: "#1e3a8a" },
   { name: "Emerald",    hex: "#059669" },
   { name: "Slate",      hex: "#475569" },
   { name: "Orange",     hex: "#ea580c" },
   { name: "Red",        hex: "#dc2626" },
   { name: "Purple",     hex: "#7c3aed" },
-  { name: "Black",      hex: "#111827" },
+  { name: "Black",      hex: "#18181b" },
 ];
