@@ -121,16 +121,13 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
             <SlidersHorizontal className="h-4 w-4" />
             Settings
           </button>
-          <div className="flex items-center gap-1">
-            <BrandingSettings />
-            <button
-              onClick={signOut}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors w-full"
-            >
-              <LogOut className="h-4 w-4" />
-              Sign Out
-            </button>
-          </div>
+          <button
+            onClick={signOut}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </button>
         </div>
       </aside>
 
