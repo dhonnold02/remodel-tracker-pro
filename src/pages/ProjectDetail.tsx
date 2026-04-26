@@ -537,6 +537,7 @@ const ProjectDetailPage = () => {
                 <CalendarView
                   tasks={project.tasks}
                   projectName={project.name}
+                  projectId={project.id}
                   phases={project.taskPhases}
                   events={project.events || []}
                   onEventsChange={isEditor ? (events) => update({ events } as any) : undefined}
