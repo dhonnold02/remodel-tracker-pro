@@ -317,14 +317,14 @@ const PunchList = ({
         </div>
         <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
           <div
-            className="h-full bg-success transition-all duration-300"
-            style={{ width: `${total > 0 ? (completedCount / total) * 100 : 0}%` }}
+            className={cn("h-full transition-all duration-300", progressColor)}
+            style={{ width: `${completionPercent}%` }}
           />
         </div>
         {!locked && allResolved && isEditor && (
           <Button
             size="sm"
-            className="w-full rounded-xl text-xs mt-1"
+            className="w-full rounded-xl text-xs mt-1 bg-success text-success-foreground hover:bg-success/90"
             onClick={() => setSignOffOpen(true)}
           >
             <Lock className="h-3.5 w-3.5 mr-1.5" />
