@@ -548,6 +548,7 @@ const PhaseColumn = ({
                   task={task}
                   subtasks={subs}
                   isEditor={isEditor}
+                  canComplete={canComplete}
                   expanded={expandedTaskId === task.id}
                   onToggleExpand={() => onToggleExpandTask(task.id)}
                   onToggleComplete={onToggleComplete}
