@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
 import { Loader2, Upload, X, Check } from "lucide-react";
 import { toast } from "sonner";
 import { applyBrandPrimary, BRAND_PRESETS } from "@/lib/brandColor";
@@ -19,6 +21,9 @@ interface CompanySettings {
   address: string;
   logo_url: string | null;
   brand_color: string | null;
+  notify_tasks: boolean;
+  notify_notes: boolean;
+  notify_invoices: boolean;
 }
 
 const EMPTY: CompanySettings = {
@@ -30,6 +35,9 @@ const EMPTY: CompanySettings = {
   address: "",
   logo_url: null,
   brand_color: null,
+  notify_tasks: false,
+  notify_notes: false,
+  notify_invoices: false,
 };
 
 const Settings = () => {
@@ -70,6 +78,9 @@ const Settings = () => {
           address: row.address ?? "",
           logo_url: row.logo_url ?? null,
           brand_color: row.brand_color ?? null,
+          notify_tasks: row.notify_tasks ?? false,
+          notify_notes: row.notify_notes ?? false,
+          notify_invoices: row.notify_invoices ?? false,
         };
         setData(next);
         if (next.brand_color) applyBrandPrimary(next.brand_color);
@@ -145,6 +156,9 @@ const Settings = () => {
       address: data.address.trim(),
       logo_url: data.logo_url || null,
       brand_color: data.brand_color || null,
+      notify_tasks: data.notify_tasks,
+      notify_notes: data.notify_notes,
+      notify_invoices: data.notify_invoices,
     };
     const { error } = await supabase
       .from("company_settings")
