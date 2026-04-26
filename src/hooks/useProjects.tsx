@@ -708,6 +708,14 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     setProjects((prev) => prev.filter((p) => p.id !== id && p.parentId !== id));
   }, []);
 
+  // Keep syncRef pointing at the latest closures (they capture `user` etc.)
+  syncRef.current.syncTasks = syncTasks;
+  syncRef.current.syncPhotos = syncPhotos;
+  syncRef.current.syncBlueprints = syncBlueprints;
+  syncRef.current.syncChangeOrders = syncChangeOrders;
+  syncRef.current.syncInvoices = syncInvoices;
+  syncRef.current.syncEvents = syncEvents;
+
   const getProject = useCallback(
     (id: string) => projects.find((p) => p.id === id),
     [projects]
