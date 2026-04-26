@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useRole } from "@/hooks/useRole";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +46,15 @@ const EMPTY: CompanySettings = {
 
 const Settings = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { canAccessSettings, loading: roleLoading } = useRole();
   const [loading, setLoading] = useState(true);
+
+  // Owner-only — silently redirect anyone else.
+  useEffect(() => {
+    if (roleLoading) return;
+    if (!canAccessSettings) navigate("/", { replace: true });
+  }, [roleLoading, canAccessSettings, navigate]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
