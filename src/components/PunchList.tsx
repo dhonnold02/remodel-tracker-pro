@@ -33,6 +33,7 @@ import {
   X,
   ZoomIn,
   ClipboardCheck,
+  LockOpen,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -117,6 +118,7 @@ const PunchList = ({
   const [failReason, setFailReason] = useState("");
   const [signOffOpen, setSignOffOpen] = useState(false);
   const [signOffName, setSignOffName] = useState("");
+  const [reopenOpen, setReopenOpen] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   const items = data.items || [];
@@ -250,6 +252,20 @@ const PunchList = ({
     });
     setSignOffOpen(false);
     toast({ title: "Punch list signed off", description: `Locked by ${name}` });
+  };
+
+  const handleReopen = () => {
+    onChange({
+      ...data,
+      isLocked: false,
+      signedOffAt: undefined,
+      signedOffBy: undefined,
+    });
+    setReopenOpen(false);
+    toast({
+      title: "Punch list reopened",
+      description: "Items and statuses preserved",
+    });
   };
 
   const exportSignOffPdf = () => {
@@ -473,15 +489,28 @@ const PunchList = ({
             </p>
           </div>
           {!readOnlyShare && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="rounded-xl text-xs"
-              onClick={exportSignOffPdf}
-            >
-              <Share2 className="h-3.5 w-3.5 mr-1.5" />
-              Share with Homeowner
-            </Button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-xl text-xs"
+                onClick={exportSignOffPdf}
+              >
+                <Share2 className="h-3.5 w-3.5 mr-1.5" />
+                Share with Homeowner
+              </Button>
+              {isEditor && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="rounded-xl text-xs border-warning/40 text-warning hover:bg-warning/10 hover:text-warning"
+                  onClick={() => setReopenOpen(true)}
+                >
+                  <LockOpen className="h-3.5 w-3.5 mr-1.5" />
+                  Reopen
+                </Button>
+              )}
+            </div>
           )}
         </div>
       )}
@@ -844,6 +873,26 @@ const PunchList = ({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleSignOff}>Sign Off</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={reopenOpen} onOpenChange={setReopenOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reopen punch list?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will unlock the punch list so items can be added or updated. The previous sign-off will be cleared and you'll need to sign off again when complete.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleReopen}
+              className="bg-warning text-warning-foreground hover:bg-warning/90"
+            >
+              Reopen
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
