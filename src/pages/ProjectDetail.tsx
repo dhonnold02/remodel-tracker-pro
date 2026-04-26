@@ -404,6 +404,95 @@ const ProjectDetailPage = () => {
                 </CollapsibleContent>
               </div>
             </Collapsible>
+
+            {/* Sub-Projects — relocated to sidebar */}
+            {!project.parentId && (
+              <Collapsible open={subProjectsOpen} onOpenChange={setSubProjectsOpen}>
+                <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5 shadow-none space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <CollapsibleTrigger className="flex items-center gap-2 section-title hover:text-primary transition-colors">
+                      {subProjectsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                      <FolderOpen className="h-4 w-4 text-primary" />
+                      Sub-Projects
+                      {hasSubs && <span className="text-xs text-muted-foreground font-normal">({subProjects.length})</span>}
+                    </CollapsibleTrigger>
+                    {isEditor && (
+                      <Button size="sm" variant="ghost" onClick={() => setShowSubForm(!showSubForm)} className="h-8 text-xs rounded-xl">
+                        <Plus className="h-3.5 w-3.5 mr-1" /> Add
+                      </Button>
+                    )}
+                  </div>
+
+                  {showSubForm && (
+                    <div className="flex gap-2">
+                      <Input placeholder="Sub-project name…" value={newSubName} onChange={(e) => setNewSubName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleAddSub()} className="flex-1 h-9 text-sm rounded-xl" autoFocus />
+                      <Button onClick={handleAddSub} size="sm" className="h-9 text-xs rounded-xl" disabled={creatingSubProject}>Create</Button>
+                    </div>
+                  )}
+
+                  <CollapsibleContent className="space-y-2">
+                    {subProjects.length === 0 ? (
+                      <p className="text-xs text-muted-foreground text-center py-2">No sub-projects yet.</p>
+                    ) : (
+                      subProjects.map((sub) => (
+                        <div
+                          key={sub.id}
+                          className="group w-full rounded-xl border bg-background p-3 hover:border-primary/20 hover:shadow-sm transition-all duration-150"
+                        >
+                          <div className="flex items-start gap-2">
+                            <button
+                              onClick={() => navigate(`/project/${sub.id}`)}
+                              className="flex-1 min-w-0 text-left space-y-1.5"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-sm font-heading font-semibold text-foreground truncate">
+                                  {sub.name || "Untitled"}
+                                </span>
+                                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                              </div>
+                              <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                                <span>{sub.tasks.filter((t) => t.completed).length}/{sub.tasks.length} tasks</span>
+                                <span>${(sub.laborCosts + sub.materialCosts).toLocaleString()} spent</span>
+                              </div>
+                            </button>
+                            {isEditor && (
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <button
+                                    className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                    title="Delete sub-project"
+                                    aria-label={`Delete sub-project ${sub.name || "Untitled"}`}
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete sub-project?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      This will permanently delete <span className="font-semibold text-foreground">{sub.name || "Untitled"}</span> and all of its tasks, invoices, photos, blueprints, and notes. This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteProject(sub.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </CollapsibleContent>
+                </div>
+              </Collapsible>
+            )}
           </aside>
         </div>
 
