@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { HardHat, CheckCircle } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import SightlineLogo from "@/components/SightlineLogo";
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
@@ -52,8 +53,8 @@ const ResetPasswordPage = () => {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary mx-auto">
-            <HardHat className="h-7 w-7 text-primary-foreground" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0f1827] ring-1 ring-white/10 shadow-sm mx-auto">
+            <SightlineLogo size={24} />
           </div>
           <h1 className="font-heading text-2xl font-bold text-foreground">Set New Password</h1>
           <p className="text-sm text-muted-foreground">Enter your new password below.</p>

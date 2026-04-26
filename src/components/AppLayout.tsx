@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBranding } from "@/hooks/useBranding";
 import { useOnlineStatus } from "@/hooks/useOfflineSync";
 import BrandingSettings from "@/components/BrandingSettings";
-import SightlineMark from "@/components/SightlineMark";
+import SightlineLogo from "@/components/SightlineLogo";
 import {
   LayoutDashboard, BookTemplate,
   LogOut, WifiOff, Menu, X, ChevronLeft, Settings,
@@ -70,8 +70,8 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
             {brand.brandLogoUrl ? (
               <img src={brand.brandLogoUrl} alt="Logo" className="h-8 w-8 rounded-lg object-contain" />
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#0f1827] ring-1 ring-white/10 shadow-sm text-white">
-                <SightlineMark size={20} />
+              <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#0f1827] ring-1 ring-white/10 shadow-sm">
+                <SightlineLogo size={18} />
               </div>
             )}
             <div className="min-w-0">

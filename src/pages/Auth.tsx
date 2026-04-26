@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Wallet, ClipboardCheck, Users, FolderOpen } from "lucide-react";
-import SightlineMark from "@/components/SightlineMark";
+import SightlineLogo from "@/components/SightlineLogo";
 
 const AuthPage = () => {
   const { signIn, signUp } = useAuth();
@@ -75,8 +75,8 @@ const AuthPage = () => {
 
         <div className="relative space-y-12">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0f1827] ring-1 ring-white/10 shadow-sm text-white">
-              <SightlineMark size={22} />
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0f1827] ring-1 ring-white/10 shadow-sm">
+              <SightlineLogo size={22} />
             </div>
             <span className="font-heading text-lg font-semibold text-foreground">
               Sightline
@@ -121,8 +121,8 @@ const AuthPage = () => {
         <div className="w-full max-w-sm space-y-8">
           {/* Mobile logo */}
           <div className="flex items-center gap-2.5 lg:hidden">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0f1827] ring-1 ring-white/10 shadow-sm text-white">
-              <SightlineMark size={22} />
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0f1827] ring-1 ring-white/10 shadow-sm">
+              <SightlineLogo size={22} />
             </div>
             <span className="font-heading text-base font-semibold text-foreground">
               Sightline
