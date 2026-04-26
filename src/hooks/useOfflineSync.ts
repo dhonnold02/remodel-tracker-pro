@@ -11,6 +11,7 @@ interface QueuedAction {
   type: "insert" | "update" | "delete";
   data: any;
   timestamp: number;
+  attempts?: number;
 }
 
 // Save project data to local cache
@@ -44,9 +45,18 @@ function getOfflineQueue(): QueuedAction[] {
   } catch { return []; }
 }
 
-function clearOfflineQueue() {
-  localStorage.removeItem(OFFLINE_QUEUE_KEY);
+function setOfflineQueue(queue: QueuedAction[]) {
+  try {
+    if (queue.length === 0) {
+      localStorage.removeItem(OFFLINE_QUEUE_KEY);
+    } else {
+      localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+    }
+  } catch { /* storage full */ }
 }
+
+const MAX_RETRIES = 3;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // Hook to sync offline actions when back online
 export function useOfflineSync() {
@@ -60,29 +70,51 @@ export function useOfflineSync() {
 
     syncingRef.current = true;
     let synced = 0;
+    const failed: QueuedAction[] = [];
 
     try {
       const { supabase } = await import("@/integrations/supabase/client");
 
       for (const action of queue) {
-        try {
-          if (action.type === "insert") {
-            await supabase.from(action.table as any).insert(action.data);
-          } else if (action.type === "update") {
-            const { id, ...rest } = action.data;
-            await supabase.from(action.table as any).update(rest).eq("id", id);
-          } else if (action.type === "delete") {
-            await supabase.from(action.table as any).delete().eq("id", action.data.id);
+        const startingAttempts = action.attempts ?? 0;
+        let success = false;
+        let attempt = startingAttempts;
+
+        while (attempt < MAX_RETRIES && !success) {
+          try {
+            let error: any = null;
+            if (action.type === "insert") {
+              ({ error } = await supabase.from(action.table as any).insert(action.data));
+            } else if (action.type === "update") {
+              const { id, ...rest } = action.data;
+              ({ error } = await supabase.from(action.table as any).update(rest).eq("id", id));
+            } else if (action.type === "delete") {
+              ({ error } = await supabase.from(action.table as any).delete().eq("id", action.data.id));
+            }
+            if (error) throw error;
+            success = true;
+          } catch {
+            attempt++;
+            if (attempt < MAX_RETRIES) {
+              // Exponential backoff: 500ms, 1000ms, 2000ms
+              await sleep(500 * Math.pow(2, attempt - 1));
+            }
           }
+        }
+
+        if (success) {
           synced++;
-        } catch {
-          // Individual action failed, continue with others
+        } else {
+          failed.push({ ...action, attempts: attempt });
         }
       }
 
-      clearOfflineQueue();
+      setOfflineQueue(failed);
       if (synced > 0) {
         toast.success(`Synced ${synced} offline change${synced !== 1 ? "s" : ""}`);
+      }
+      if (failed.length > 0) {
+        toast.error("Some changes couldn't be saved — please check your connection");
       }
     } finally {
       syncingRef.current = false;
