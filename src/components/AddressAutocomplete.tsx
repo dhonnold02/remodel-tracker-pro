@@ -18,13 +18,40 @@ const SCRIPT_ID = "google-maps-places-script";
 const STYLE_ID = "google-pac-dark-theme-overrides";
 
 const PAC_CSS = `
-.pac-container { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 12px; margin-top: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); font-family: inherit; }
-.pac-item { padding: 10px 14px; border-top: 1px solid hsl(var(--border)); color: hsl(var(--foreground)); font-size: 13px; cursor: pointer; }
-.pac-item:hover, .pac-item-selected { background: hsl(var(--secondary)); }
-.pac-item-query { color: hsl(var(--foreground)); font-weight: 500; font-size: 13px; }
-.pac-matched { color: hsl(var(--primary)); }
-.pac-secondary-text { color: hsl(var(--muted-foreground)); font-size: 11px; }
-.pac-icon { display: none; }
+.pac-container {
+  background: hsl(226, 15%, 11%) !important;
+  border: 1px solid hsl(226, 12%, 17%) !important;
+  border-radius: 12px !important;
+  margin-top: 4px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+  font-family: inherit !important;
+  overflow: hidden !important;
+}
+.pac-item {
+  padding: 10px 14px !important;
+  border-top: 1px solid hsl(226, 12%, 17%) !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+}
+.pac-item:first-child { border-top: none !important; }
+.pac-item:hover, .pac-item-selected {
+  background: hsl(226, 12%, 15%) !important;
+}
+.pac-item-query {
+  color: hsl(220, 15%, 92%) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+.pac-matched { color: hsl(213, 90%, 60%) !important; }
+.pac-icon { display: none !important; }
+.pac-secondary-text {
+  color: hsl(220, 8%, 52%) !important;
+  font-size: 11px !important;
+  margin-left: 4px !important;
+}
+.pac-logo:after { display: none !important; }
 `;
 
 const injectPacStyles = () => {
