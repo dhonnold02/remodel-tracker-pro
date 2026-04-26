@@ -53,8 +53,8 @@ const ResetPasswordPage = () => {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0f1827] ring-1 ring-white/10 shadow-sm mx-auto">
-            <SightlineLogo size={24} />
+          <div className="mx-auto w-fit">
+            <SightlineLogo size={48} />
           </div>
           <h1 className="font-heading text-2xl font-bold text-foreground">Set New Password</h1>
           <p className="text-sm text-muted-foreground">Enter your new password below.</p>

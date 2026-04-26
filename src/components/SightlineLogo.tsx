@@ -11,7 +11,7 @@ export const SightlineLogo = ({ size = 22 }: { size?: number }) => (
       height: size,
       objectFit: "contain",
       display: "block",
-      borderRadius: Math.round(size * 0.22),
+      background: "transparent",
     }}
     draggable={false}
   />

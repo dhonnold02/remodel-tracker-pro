@@ -75,9 +75,7 @@ const AuthPage = () => {
 
         <div className="relative space-y-12">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0f1827] ring-1 ring-white/10 shadow-sm">
-              <SightlineLogo size={22} />
-            </div>
+            <SightlineLogo size={44} />
             <span className="font-heading text-lg font-semibold text-foreground">
               Sightline
             </span>
@@ -121,9 +119,7 @@ const AuthPage = () => {
         <div className="w-full max-w-sm space-y-8">
           {/* Mobile logo */}
           <div className="flex items-center gap-2.5 lg:hidden">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0f1827] ring-1 ring-white/10 shadow-sm">
-              <SightlineLogo size={22} />
-            </div>
+            <SightlineLogo size={44} />
             <span className="font-heading text-base font-semibold text-foreground">
               Sightline
             </span>
