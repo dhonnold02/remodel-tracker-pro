@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,10 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Wallet, ClipboardCheck, Users, FolderOpen } from "lucide-react";
 import SightlineLogo from "@/components/SightlineLogo";
+import { stashInviteToken } from "@/lib/inviteFlow";
 
 const AuthPage = () => {
   const { signIn, signUp } = useAuth();
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [searchParams] = useSearchParams();
+  const inviteToken = searchParams.get("token");
+  const [isSignUp, setIsSignUp] = useState(!!inviteToken);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,6 +21,12 @@ const AuthPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
+
+  // Stash invite token in sessionStorage so it survives the auth round-trip
+  // (email confirmation, OAuth, etc.) and gets picked up by ProtectedRoute.
+  useEffect(() => {
+    stashInviteToken(inviteToken);
+  }, [inviteToken]);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,7 +199,9 @@ const AuthPage = () => {
                   {isSignUp ? "Create account" : "Welcome back"}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {isSignUp
+                  {inviteToken
+                    ? "You've been invited to join a team on Sightline."
+                    : isSignUp
                     ? "Start managing your projects today."
                     : "Sign in to your project dashboard."}
                 </p>

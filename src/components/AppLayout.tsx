@@ -3,14 +3,15 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useBranding } from "@/hooks/useBranding";
 import { useOnlineStatus } from "@/hooks/useOfflineSync";
+import { useRole } from "@/hooks/useRole";
 import SightlineLogo from "@/components/SightlineLogo";
 import {
-  LayoutDashboard, BookTemplate,
+  LayoutDashboard, BookTemplate, Users,
   LogOut, WifiOff, Menu, X, ChevronLeft, SlidersHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/" },
   { label: "Templates", icon: BookTemplate, path: "/#templates" },
 ];
@@ -29,7 +30,12 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
   const { signOut } = useAuth();
   const { brand } = useBranding();
   const isOnline = useOnlineStatus();
+  const { canAccessSettings, canInviteMembers } = useRole();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const navItems = canInviteMembers
+    ? [...BASE_NAV_ITEMS, { label: "Team", icon: Users, path: "/team" }]
+    : BASE_NAV_ITEMS;
 
   const currentHash = location.hash;
   const isActive = (path: string) => {
@@ -84,7 +90,7 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
 
         {/* Navigation */}
         <nav className="flex-1 p-3 space-y-1">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <button
               key={item.path}
               onClick={() => handleNav(item.path)}
@@ -109,18 +115,20 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
               Offline Mode
             </div>
           )}
-          <button
-            onClick={() => { navigate("/settings"); setSidebarOpen(false); }}
-            className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
-              location.pathname.startsWith("/settings")
-                ? "bg-accent text-accent-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-            )}
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            Settings
-          </button>
+          {canAccessSettings && (
+            <button
+              onClick={() => { navigate("/settings"); setSidebarOpen(false); }}
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
+                location.pathname.startsWith("/settings")
+                  ? "bg-accent text-accent-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+              )}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              Settings
+            </button>
+          )}
           <button
             onClick={signOut}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"

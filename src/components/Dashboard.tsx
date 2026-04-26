@@ -16,6 +16,7 @@ import AppLayout from "@/components/AppLayout";
 import { cn } from "@/lib/utils";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useRole } from "@/hooks/useRole";
 import {
   DndContext,
   closestCenter,
@@ -43,6 +44,7 @@ interface DashboardProps {
 
 const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdateProject }: DashboardProps) => {
   const navigate = useNavigate();
+  const { canEditProjects } = useRole();
   const [newName, setNewName] = useState("");
   const [newAddress, setNewAddress] = useState("");
   const [creating, setCreating] = useState(false);
@@ -156,7 +158,7 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
     { label: "Completed", value: completedProjects.length, icon: CheckCircle2, view: "completed" as const, active: view === "completed" },
   ];
 
-  const newProjectButton = (
+  const newProjectButton = canEditProjects ? (
     <Dialog open={createOpen} onOpenChange={setCreateOpen}>
       <DialogTrigger asChild>
         <Button className="h-10 px-4 rounded-xl shadow-sm gap-1.5">
@@ -197,7 +199,7 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  ) : null;
 
   return (
     <AppLayout
@@ -313,12 +315,18 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
                 </div>
                 <div>
                   <p className="text-foreground font-medium">No projects yet</p>
-                  <p className="text-muted-foreground text-sm mt-1">Create your first renovation project to get started</p>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    {canEditProjects
+                      ? "Create your first renovation project to get started"
+                      : "Your team hasn't created any projects yet"}
+                  </p>
                 </div>
-                <Button onClick={() => setCreateOpen(true)} className="rounded-xl mt-2">
-                  <Plus className="h-4 w-4 mr-1.5" />
-                  New Project
-                </Button>
+                {canEditProjects && (
+                  <Button onClick={() => setCreateOpen(true)} className="rounded-xl mt-2">
+                    <Plus className="h-4 w-4 mr-1.5" />
+                    New Project
+                  </Button>
+                )}
               </div>
             )
           ) : (

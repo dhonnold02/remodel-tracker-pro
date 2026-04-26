@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useProjects } from "@/hooks/useProjects";
+import { useRole } from "@/hooks/useRole";
 import { getAggregatedStats } from "@/types/project";
 import AppLayout from "@/components/AppLayout";
 import ProjectDetails from "@/components/ProjectDetails";
@@ -46,6 +47,16 @@ const ProjectDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getProject, updateProject, addProject, deleteProject, getSubProjects, userRole, loading } = useProjects();
+  const {
+    canViewFinancials,
+    canEditProjects,
+    canEditTasks,
+    canCompleteTasks,
+    canEditTimeline,
+    canEditPunchOut,
+    canSignOffPunchOut,
+    canViewChangeOrders,
+  } = useRole();
   const project = getProject(id || "");
   const [newSubName, setNewSubName] = useState("");
   const [showSubForm, setShowSubForm] = useState(false);
@@ -81,7 +92,14 @@ const ProjectDetailPage = () => {
   }
 
   const role = userRole(project.id);
-  const isEditor = role === "editor";
+  const projectEditor = role === "editor";
+  // Project-level editor AND company-level permission both required.
+  const isEditor = projectEditor && canEditProjects;
+  const isTaskEditor = projectEditor && canEditTasks;
+  const canTickTasks = projectEditor && canCompleteTasks;
+  const isTimelineEditor = projectEditor && canEditTimeline;
+  const isPunchEditor = projectEditor && canEditPunchOut;
+  const isPunchSigner = projectEditor && canSignOffPunchOut;
   const update = (partial: Partial<typeof project>) => updateProject(project.id, partial);
   const subProjects = getSubProjects(project.id);
   const parentProject = project.parentId ? getProject(project.parentId) : undefined;
@@ -316,9 +334,10 @@ const ProjectDetailPage = () => {
               <TaskBoard
                 tasks={project.tasks}
                 phases={(project as any).taskPhases || []}
-                onChangeTasks={isEditor ? (tasks) => update({ tasks }) : () => {}}
-                onChangePhases={isEditor ? (taskPhases) => update({ taskPhases } as any) : () => {}}
-                isEditor={isEditor}
+                onChangeTasks={(isTaskEditor || canTickTasks) ? (tasks) => update({ tasks }) : () => {}}
+                onChangePhases={isTaskEditor ? (taskPhases) => update({ taskPhases } as any) : () => {}}
+                isEditor={isTaskEditor}
+                canComplete={canTickTasks}
                 projectName={project.name}
                 projectAddress={project.address}
               />
@@ -327,23 +346,25 @@ const ProjectDetailPage = () => {
 
           {/* SECONDARY column — Control sidebar (independent scroll on desktop) */}
           <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-2 scroll-pane scroll-smooth self-start">
-            {/* FINANCIALS MODULE — moved to sidebar for control-panel feel */}
-            <section className="space-y-3">
-              <header className="flex items-center gap-2 px-1">
-                <Wallet className="h-3.5 w-3.5 text-primary" />
-                <h3 className="font-heading text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Financials</h3>
-              </header>
-              <div className="space-y-4">
-                <BudgetSection data={project as any} onChange={isEditor ? update : () => {}} />
-                <InvoicesSection
-                  invoices={project.invoices}
-                  onChange={isEditor ? (invoices) => update({ invoices }) : () => {}}
-                  totalBudget={project.totalBudget}
-                  totalSpent={project.laborCosts + project.materialCosts}
-                  readOnly={!isEditor}
-                />
-              </div>
-            </section>
+            {/* FINANCIALS MODULE — owner & project_manager only */}
+            {canViewFinancials && (
+              <section className="space-y-3">
+                <header className="flex items-center gap-2 px-1">
+                  <Wallet className="h-3.5 w-3.5 text-primary" />
+                  <h3 className="font-heading text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Financials</h3>
+                </header>
+                <div className="space-y-4">
+                  <BudgetSection data={project as any} onChange={isEditor ? update : () => {}} />
+                  <InvoicesSection
+                    invoices={project.invoices}
+                    onChange={isEditor ? (invoices) => update({ invoices }) : () => {}}
+                    totalBudget={project.totalBudget}
+                    totalSpent={project.laborCosts + project.materialCosts}
+                    readOnly={!isEditor}
+                  />
+                </div>
+              </section>
+            )}
 
             {/* Key Dates */}
             <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5 space-y-3 shadow-none">
@@ -604,7 +625,8 @@ const ProjectDetailPage = () => {
                     projectId={project.id}
                     data={punchData}
                     onChange={savePunch}
-                    isEditor={isEditor}
+                    isEditor={isPunchEditor}
+                    canSignOff={isPunchSigner}
                     members={project.members}
                     projectName={project.name}
                     projectAddress={project.address}

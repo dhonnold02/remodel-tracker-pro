@@ -140,6 +140,7 @@ interface TaskCardProps {
   task: Task;
   subtasks: Task[];
   isEditor: boolean;
+  canComplete: boolean;
   expanded: boolean;
   onToggleExpand: () => void;
   onToggleComplete: (id: string) => void;
@@ -150,7 +151,7 @@ interface TaskCardProps {
 }
 
 const TaskCard = ({
-  task, subtasks, isEditor, expanded, onToggleExpand,
+  task, subtasks, isEditor, canComplete, expanded, onToggleExpand,
   onToggleComplete, onUpdate, onAddSubtask, onRemove, isOverlay,
 }: TaskCardProps) => {
   const sortable = useSortable({
@@ -190,8 +191,8 @@ const TaskCard = ({
         )}
         <Checkbox
           checked={task.completed}
-          onCheckedChange={() => isEditor && onToggleComplete(task.id)}
-          disabled={!isEditor}
+          onCheckedChange={() => (isEditor || canComplete) && onToggleComplete(task.id)}
+          disabled={!isEditor && !canComplete}
           className="mt-0.5"
         />
         <TitleInput
@@ -310,8 +311,8 @@ const TaskCard = ({
             <div key={s.id} className="flex items-center gap-2 py-1">
               <Checkbox
                 checked={s.completed}
-                onCheckedChange={() => isEditor && onToggleComplete(s.id)}
-                disabled={!isEditor}
+                onCheckedChange={() => (isEditor || canComplete) && onToggleComplete(s.id)}
+                disabled={!isEditor && !canComplete}
                 className="h-3.5 w-3.5"
               />
               <TitleInput
@@ -352,6 +353,7 @@ interface PhaseColumnProps {
   tasks: Task[];
   allTasks: Task[];
   isEditor: boolean;
+  canComplete: boolean;
   collapsed: boolean;
   expandedTaskId: string | null;
   onToggleCollapse: () => void;
@@ -367,7 +369,7 @@ interface PhaseColumnProps {
 }
 
 const PhaseColumn = ({
-  phase, index, tasks, allTasks, isEditor, collapsed, expandedTaskId,
+  phase, index, tasks, allTasks, isEditor, canComplete, collapsed, expandedTaskId,
   onToggleCollapse, onToggleExpandTask, onAddTask, onRenamePhase, onDeletePhase,
   onToggleComplete, onUpdateTask, onAddSubtask, onRemoveTask, isFirst,
 }: PhaseColumnProps) => {
@@ -546,6 +548,7 @@ const PhaseColumn = ({
                   task={task}
                   subtasks={subs}
                   isEditor={isEditor}
+                  canComplete={canComplete}
                   expanded={expandedTaskId === task.id}
                   onToggleExpand={() => onToggleExpandTask(task.id)}
                   onToggleComplete={onToggleComplete}
@@ -599,11 +602,13 @@ interface TaskBoardProps {
   onChangeTasks: (tasks: Task[]) => void;
   onChangePhases: (phases: string[]) => void;
   isEditor: boolean;
+  canComplete?: boolean;
   projectName?: string;
   projectAddress?: string;
 }
 
-const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, projectName, projectAddress }: TaskBoardProps) => {
+const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, canComplete, projectName, projectAddress }: TaskBoardProps) => {
+  const effectiveCanComplete = canComplete ?? isEditor;
   const { brand } = useBranding();
   const effectivePhases = useMemo(() => {
     const base = phases && phases.length > 0 ? [...phases] : [...DEFAULT_PHASES];
@@ -836,6 +841,7 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, pro
                 tasks={tasksByPhase[phase] || []}
                 allTasks={tasks}
                 isEditor={isEditor}
+                canComplete={effectiveCanComplete}
                 collapsed={collapsed.has(phase)}
                 expandedTaskId={expandedTaskId}
                 onToggleCollapse={() => setCollapsed(prev => {
@@ -895,6 +901,7 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, pro
               task={activeTask}
               subtasks={activeSubs}
               isEditor={false}
+              canComplete={false}
               expanded={false}
               onToggleExpand={() => {}}
               onToggleComplete={() => {}}

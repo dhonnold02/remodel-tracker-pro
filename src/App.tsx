@@ -13,9 +13,11 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import Onboarding from "./pages/Onboarding";
+import Team from "./pages/Team";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { applyBrandPrimary } from "@/lib/brandColor";
+import { acceptInvitation, consumeInviteToken } from "@/lib/inviteFlow";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,28 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     if (!user) { setOnboardingState("checking"); return; }
     let cancelled = false;
     (async () => {
+      // Step 1: if there's a pending invite token from /auth?token=..., accept
+      // it now that the user is signed in. Joining a team gives them an
+      // existing company, so they can skip onboarding entirely.
+      const token = consumeInviteToken();
+      if (token) {
+        await acceptInvitation(token, user.id);
+      }
+
+      // Step 2: figure out if they need onboarding.
+      // - If they belong to a company already (membership row exists), skip.
+      // - Else, check their own company_settings.onboarding_complete.
+      const { data: membership } = await supabase
+        .from("company_members")
+        .select("role")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (membership && membership.role !== "owner") {
+        if (!cancelled) setOnboardingState("ok");
+        return;
+      }
+
       const { data } = await supabase
         .from("company_settings")
         .select("onboarding_complete")
@@ -101,6 +125,7 @@ const App = () => (
                 <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                 <Route path="/project/:id" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="*" element={<NotFound />} />
