@@ -41,7 +41,9 @@ export function exportTasksPDF({
   }
 
   const checkbox = (done: boolean) =>
-    `<span class="cb">${done ? "☑" : "☐"}</span>`;
+    done
+      ? `<span style="display:inline-block; width:11px; height:11px; border:1.5px solid #16a34a; border-radius:2px; margin-right:8px; vertical-align:middle; background:#16a34a; flex-shrink:0;"></span>`
+      : `<span style="display:inline-block; width:11px; height:11px; border:1.5px solid #9ca3af; border-radius:2px; margin-right:8px; vertical-align:middle; flex-shrink:0;"></span>`;
 
   const renderTaskItem = (t: Task) => {
     const subs = subsByParent[t.id] || [];
@@ -155,17 +157,8 @@ export function exportTasksPDF({
     margin: 4px 0 8px 0;
   }
   ul.subs > li { color: #4b5563; margin: 3px 0; font-weight: 400; }
-  .cb {
-    display: inline-block;
-    width: 16px;
-    margin-right: 6px;
-    color: #6b7280;
-    font-size: 14px;
-    line-height: 1;
-  }
   li.done { color: #9ca3af; }
   li.done > .title { color: #9ca3af; }
-  li.done > .cb { color: #9ca3af; }
 
   .empty {
     color: #9ca3af;
