@@ -841,6 +841,7 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, can
                 tasks={tasksByPhase[phase] || []}
                 allTasks={tasks}
                 isEditor={isEditor}
+                canComplete={effectiveCanComplete}
                 collapsed={collapsed.has(phase)}
                 expandedTaskId={expandedTaskId}
                 onToggleCollapse={() => setCollapsed(prev => {
@@ -900,6 +901,7 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, can
               task={activeTask}
               subtasks={activeSubs}
               isEditor={false}
+              canComplete={false}
               expanded={false}
               onToggleExpand={() => {}}
               onToggleComplete={() => {}}
