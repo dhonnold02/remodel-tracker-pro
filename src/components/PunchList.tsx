@@ -411,7 +411,7 @@ const PunchList = ({
             style={{ width: `${Math.max(0, progressPercent)}%` }}
           />
         </div>
-        {isEditor && (() => {
+        {effectiveCanSignOff && (() => {
           const hasPending = items.some(
             (item) => item.status === "pending" || item.status === "fail"
           );
