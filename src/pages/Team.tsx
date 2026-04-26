@@ -328,7 +328,11 @@ const Team = () => {
                 <Label className="text-xs">Role</Label>
                 <button
                   type="button"
-                  onClick={() => setPermissionsOpen(true)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setPermissionsOpen(true);
+                  }}
                   className="p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                   title="View role permissions"
                   aria-label="View role permissions"
