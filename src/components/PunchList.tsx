@@ -321,7 +321,7 @@ const PunchList = ({
         <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
           <div
             className={cn("h-full transition-all duration-300", progressColor)}
-            style={{ width: `${Math.max(0, completionPercent)}%` }}
+            style={{ width: `${Math.max(0, progressPercent)}%` }}
           />
         </div>
         {!locked && isEditor && total > 0 && (
@@ -335,7 +335,7 @@ const PunchList = ({
               Mark Complete & Sign Off
             </Button>
           ) : (
-            <p className="text-xs text-muted-foreground text-center mt-1">
+            <p className="text-xs text-muted-foreground text-center py-2">
               Resolve all pending items to sign off
             </p>
           )
