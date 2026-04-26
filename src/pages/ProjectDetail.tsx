@@ -53,8 +53,6 @@ const ProjectDetailPage = () => {
   const [subProjectsOpen, setSubProjectsOpen] = useState(false);
   const [teamOpen, setTeamOpen] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
-  const [punchOpen, setPunchOpen] = useState(false);
-
   // Always call hook (id may be empty string before load — hook tolerates undefined)
   const { data: punchData, save: savePunch } = usePunchList(id);
 
@@ -297,128 +295,6 @@ const ProjectDetailPage = () => {
           </div>
         )}
 
-        {/* Sub-projects */}
-        {!project.parentId && (
-          <Collapsible open={subProjectsOpen} onOpenChange={setSubProjectsOpen}>
-            <div className={cn("premium-card", subProjects.length === 0 ? "p-3 space-y-0" : "p-6 space-y-4")}>
-              <div className="flex items-center justify-between">
-                <CollapsibleTrigger className="flex items-center gap-2 section-title hover:text-primary transition-colors">
-                  {subProjectsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                  <FolderOpen className="h-4 w-4 text-primary" />
-                  Sub-Projects
-                  {hasSubs && <span className="text-xs text-muted-foreground font-normal">({subProjects.length})</span>}
-                </CollapsibleTrigger>
-                {isEditor && (
-                  <Button size="sm" variant="ghost" onClick={() => setShowSubForm(!showSubForm)} className="h-8 text-xs rounded-xl">
-                    <Plus className="h-3.5 w-3.5 mr-1" /> Add
-                  </Button>
-                )}
-              </div>
-
-              {showSubForm && (
-                <div className="flex gap-2">
-                  <Input placeholder="Sub-project name…" value={newSubName} onChange={(e) => setNewSubName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleAddSub()} className="flex-1 h-9 text-sm rounded-xl" autoFocus />
-                  <Button onClick={handleAddSub} size="sm" className="h-9 text-xs rounded-xl" disabled={creatingSubProject}>Create</Button>
-                </div>
-              )}
-
-              <CollapsibleContent className="space-y-2">
-                {subProjects.length === 0 ? null : (
-                  subProjects.map((sub) => (
-                    <div
-                      key={sub.id}
-                      className="group w-full rounded-xl border bg-background p-4 hover:border-primary/20 hover:shadow-sm transition-all duration-150"
-                    >
-                      <div className="flex items-start gap-3">
-                        <button
-                          onClick={() => navigate(`/project/${sub.id}`)}
-                          className="flex-1 min-w-0 text-left space-y-2"
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-sm font-heading font-semibold text-foreground truncate">
-                              {sub.name || "Untitled"}
-                            </span>
-                            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                          </div>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <span>{sub.tasks.filter((t) => t.completed).length}/{sub.tasks.length} tasks</span>
-                            <span>${(sub.laborCosts + sub.materialCosts).toLocaleString()} spent</span>
-                          </div>
-                        </button>
-                        {isEditor && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <button
-                                className="shrink-0 p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                                title="Delete sub-project"
-                                aria-label={`Delete sub-project ${sub.name || "Untitled"}`}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Delete sub-project?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  This will permanently delete <span className="font-semibold text-foreground">{sub.name || "Untitled"}</span> and all of its tasks, invoices, photos, blueprints, and notes. This action cannot be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => deleteProject(sub.id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        )}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </CollapsibleContent>
-            </div>
-          </Collapsible>
-        )}
-
-        {/* Punch List — collapsible */}
-        <Collapsible open={punchOpen} onOpenChange={setPunchOpen}>
-          <div className="premium-card p-6 space-y-4">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <CollapsibleTrigger className="flex items-center gap-2 section-title hover:text-primary transition-colors">
-                {punchOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                <ClipboardCheck className="h-4 w-4 text-primary" />
-                Punch List
-                {punchData.items.length > 0 && (
-                  <span className="text-xs text-muted-foreground font-normal">
-                    ({punchData.items.length})
-                  </span>
-                )}
-                {punchData.isLocked && (
-                  <span className="ml-2 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">
-                    Signed Off
-                  </span>
-                )}
-              </CollapsibleTrigger>
-              <span className="text-xs text-muted-foreground">
-                {punchData.items.filter((i) => i.status === "pass").length} of {punchData.items.length} items passed
-              </span>
-            </div>
-            <CollapsibleContent>
-              <PunchList
-                projectId={project.id}
-                data={punchData}
-                onChange={savePunch}
-                isEditor={isEditor}
-                members={project.members}
-              />
-            </CollapsibleContent>
-          </div>
-        </Collapsible>
-
         {/* Command Center: 2-column layout — primary 65-70%, sidebar 30-35%
             Each column scrolls independently on desktop based on cursor position. */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
@@ -526,6 +402,95 @@ const ProjectDetailPage = () => {
                 </CollapsibleContent>
               </div>
             </Collapsible>
+
+            {/* Sub-Projects — relocated to sidebar */}
+            {!project.parentId && (
+              <Collapsible open={subProjectsOpen} onOpenChange={setSubProjectsOpen}>
+                <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5 shadow-none space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <CollapsibleTrigger className="flex items-center gap-2 section-title hover:text-primary transition-colors">
+                      {subProjectsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                      <FolderOpen className="h-4 w-4 text-primary" />
+                      Sub-Projects
+                      {hasSubs && <span className="text-xs text-muted-foreground font-normal">({subProjects.length})</span>}
+                    </CollapsibleTrigger>
+                    {isEditor && (
+                      <Button size="sm" variant="ghost" onClick={() => setShowSubForm(!showSubForm)} className="h-8 text-xs rounded-xl">
+                        <Plus className="h-3.5 w-3.5 mr-1" /> Add
+                      </Button>
+                    )}
+                  </div>
+
+                  {showSubForm && (
+                    <div className="flex gap-2">
+                      <Input placeholder="Sub-project name…" value={newSubName} onChange={(e) => setNewSubName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleAddSub()} className="flex-1 h-9 text-sm rounded-xl" autoFocus />
+                      <Button onClick={handleAddSub} size="sm" className="h-9 text-xs rounded-xl" disabled={creatingSubProject}>Create</Button>
+                    </div>
+                  )}
+
+                  <CollapsibleContent className="space-y-2">
+                    {subProjects.length === 0 ? (
+                      <p className="text-xs text-muted-foreground text-center py-2">No sub-projects yet.</p>
+                    ) : (
+                      subProjects.map((sub) => (
+                        <div
+                          key={sub.id}
+                          className="group w-full rounded-xl border bg-background p-3 hover:border-primary/20 hover:shadow-sm transition-all duration-150"
+                        >
+                          <div className="flex items-start gap-2">
+                            <button
+                              onClick={() => navigate(`/project/${sub.id}`)}
+                              className="flex-1 min-w-0 text-left space-y-1.5"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-sm font-heading font-semibold text-foreground truncate">
+                                  {sub.name || "Untitled"}
+                                </span>
+                                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                              </div>
+                              <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                                <span>{sub.tasks.filter((t) => t.completed).length}/{sub.tasks.length} tasks</span>
+                                <span>${(sub.laborCosts + sub.materialCosts).toLocaleString()} spent</span>
+                              </div>
+                            </button>
+                            {isEditor && (
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <button
+                                    className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                    title="Delete sub-project"
+                                    aria-label={`Delete sub-project ${sub.name || "Untitled"}`}
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete sub-project?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      This will permanently delete <span className="font-semibold text-foreground">{sub.name || "Untitled"}</span> and all of its tasks, invoices, photos, blueprints, and notes. This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteProject(sub.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </CollapsibleContent>
+                </div>
+              </Collapsible>
+            )}
           </aside>
         </div>
 
@@ -557,6 +522,12 @@ const ProjectDetailPage = () => {
                 </TabsTrigger>
                 <TabsTrigger value="files" className="text-xs sm:text-sm rounded-lg gap-1.5">
                   <BookTemplate className="h-3.5 w-3.5" /> Files
+                </TabsTrigger>
+                <TabsTrigger value="closeout" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                  <ClipboardCheck className="h-3.5 w-3.5" /> Closeout
+                  {punchData.isLocked && (
+                    <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-success" />
+                  )}
                 </TabsTrigger>
               </TabsList>
 
@@ -605,6 +576,37 @@ const ProjectDetailPage = () => {
                     Templates and reusable files are available to editors.
                   </div>
                 )}
+              </TabsContent>
+
+              <TabsContent value="closeout" className="mt-0 focus-visible:outline-none">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between gap-3 flex-wrap px-1">
+                    <div className="flex items-center gap-2">
+                      <ClipboardCheck className="h-4 w-4 text-primary" />
+                      <h3 className="font-heading text-sm font-bold text-foreground tracking-tight">Punch List</h3>
+                      {punchData.items.length > 0 && (
+                        <span className="text-xs text-muted-foreground font-normal">
+                          ({punchData.items.length})
+                        </span>
+                      )}
+                      {punchData.isLocked && (
+                        <span className="ml-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">
+                          Signed Off
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {punchData.items.filter((i) => i.status === "pass").length} of {punchData.items.length} items passed
+                    </span>
+                  </div>
+                  <PunchList
+                    projectId={project.id}
+                    data={punchData}
+                    onChange={savePunch}
+                    isEditor={isEditor}
+                    members={project.members}
+                  />
+                </div>
               </TabsContent>
             </Tabs>
           </div>
