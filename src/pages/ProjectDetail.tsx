@@ -53,8 +53,6 @@ const ProjectDetailPage = () => {
   const [subProjectsOpen, setSubProjectsOpen] = useState(false);
   const [teamOpen, setTeamOpen] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
-  const [punchOpen, setPunchOpen] = useState(false);
-
   // Always call hook (id may be empty string before load — hook tolerates undefined)
   const { data: punchData, save: savePunch } = usePunchList(id);
 
