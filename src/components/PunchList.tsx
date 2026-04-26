@@ -375,9 +375,17 @@ const PunchList = ({
 
       {/* Items */}
       {total === 0 ? (
-        <p className="text-xs text-muted-foreground text-center py-6">
-          No punch list items yet.
-        </p>
+        <div className="flex flex-col items-center justify-center text-center py-10 px-4 rounded-xl border border-dashed border-border bg-secondary/20">
+          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+            <ClipboardCheck className="h-5 w-5 text-primary" />
+          </div>
+          <p className="text-sm font-medium text-foreground">
+            Ready for final walkthrough?
+          </p>
+          <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+            Add items from your final inspection to track pass/fail before project closeout.
+          </p>
+        </div>
       ) : (
         <div className="space-y-2">
           {items.map((it) => {
