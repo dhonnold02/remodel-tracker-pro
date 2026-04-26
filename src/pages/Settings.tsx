@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
 import { Loader2, Upload, X, Check } from "lucide-react";
 import { toast } from "sonner";
 import { applyBrandPrimary, BRAND_PRESETS } from "@/lib/brandColor";
@@ -19,6 +21,9 @@ interface CompanySettings {
   address: string;
   logo_url: string | null;
   brand_color: string | null;
+  notify_tasks: boolean;
+  notify_notes: boolean;
+  notify_invoices: boolean;
 }
 
 const EMPTY: CompanySettings = {
@@ -30,6 +35,9 @@ const EMPTY: CompanySettings = {
   address: "",
   logo_url: null,
   brand_color: null,
+  notify_tasks: false,
+  notify_notes: false,
+  notify_invoices: false,
 };
 
 const Settings = () => {
@@ -70,6 +78,9 @@ const Settings = () => {
           address: row.address ?? "",
           logo_url: row.logo_url ?? null,
           brand_color: row.brand_color ?? null,
+          notify_tasks: row.notify_tasks ?? false,
+          notify_notes: row.notify_notes ?? false,
+          notify_invoices: row.notify_invoices ?? false,
         };
         setData(next);
         if (next.brand_color) applyBrandPrimary(next.brand_color);
@@ -145,6 +156,9 @@ const Settings = () => {
       address: data.address.trim(),
       logo_url: data.logo_url || null,
       brand_color: data.brand_color || null,
+      notify_tasks: data.notify_tasks,
+      notify_notes: data.notify_notes,
+      notify_invoices: data.notify_invoices,
     };
     const { error } = await supabase
       .from("company_settings")
@@ -172,7 +186,7 @@ const Settings = () => {
   return (
     <AppLayout
       title="Settings"
-      subtitle="Company profile & brand"
+      subtitle="Manage your company profile and preferences"
       actions={
         <Button onClick={handleSave} disabled={saving} className="rounded-xl">
           {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
@@ -246,8 +260,13 @@ const Settings = () => {
               >
                 {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
                 <span className="text-xs font-medium">
-                  {uploading ? "Uploading…" : "Drag & drop or click to upload (max 2MB)"}
+                  {uploading ? "Uploading…" : "Drop your logo here or click to upload"}
                 </span>
+                {!uploading && (
+                  <span className="text-[11px] text-muted-foreground/80">
+                    PNG, JPG, SVG up to 2MB
+                  </span>
+                )}
               </button>
             )}
           </div>
@@ -256,13 +275,14 @@ const Settings = () => {
         {/* Brand colors */}
         <section className="rounded-2xl border bg-card p-6 space-y-5">
           <header>
-            <h2 className="font-heading text-base font-semibold text-foreground">Brand Colors</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Pick the primary color for your workspace.</p>
+            <h2 className="font-heading text-base font-semibold text-foreground">Brand Color</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Applied to buttons, highlights, and your exported PDFs.
+            </p>
           </header>
 
           <div>
-            <Label className="text-xs">Primary Color</Label>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {BRAND_PRESETS.map((p) => {
                 const selected = (data.brand_color || "").toLowerCase() === p.hex.toLowerCase();
                 return (
@@ -271,7 +291,7 @@ const Settings = () => {
                     type="button"
                     onClick={() => pickColor(p.hex)}
                     title={`${p.name} — ${p.hex}`}
-                    className={`h-9 w-9 rounded-full border-2 transition-all ${selected ? "border-foreground scale-110 ring-2 ring-foreground/20" : "border-transparent hover:scale-105"}`}
+                    className={`h-8 w-8 rounded-full border-2 transition-all ${selected ? "border-foreground scale-110 ring-2 ring-foreground/20" : "border-transparent hover:scale-105"}`}
                     style={{ backgroundColor: p.hex }}
                     aria-label={p.name}
                   />
@@ -283,7 +303,7 @@ const Settings = () => {
                   type="color"
                   value={data.brand_color && data.brand_color.startsWith("#") ? data.brand_color : "#3b82f6"}
                   onChange={(e) => pickColor(e.target.value)}
-                  className="h-9 w-9 rounded-lg border bg-transparent cursor-pointer"
+                  className="h-8 w-8 rounded-lg border bg-transparent cursor-pointer"
                   aria-label="Custom color"
                 />
                 Custom
@@ -293,25 +313,53 @@ const Settings = () => {
                 <button
                   type="button"
                   onClick={() => { update("brand_color", null); applyBrandPrimary(null); }}
-                  className="ml-1 h-9 px-3 rounded-lg border border-dashed text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                  className="ml-1 h-8 px-3 rounded-lg border border-dashed text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                 >
                   Reset
                 </button>
               )}
             </div>
 
-            <div className="mt-4 flex items-center gap-3 rounded-xl border bg-secondary/40 p-3">
-              <div
-                className="h-10 w-10 rounded-lg border shadow-sm"
-                style={{ backgroundColor: data.brand_color || "hsl(var(--primary))" }}
-              />
-              <div className="text-xs">
-                <div className="font-semibold text-foreground">Preview</div>
-                <div className="text-muted-foreground">
-                  This color will appear on buttons, links, highlights, and your exported PDFs.
+            <div className="mt-5 rounded-xl border bg-secondary/40 p-4 space-y-3">
+              <div className="text-xs font-semibold text-foreground">Preview</div>
+              <div className="flex items-center gap-3">
+                <Button type="button" size="sm" className="rounded-lg pointer-events-none">
+                  Sample button
+                </Button>
+                <div className="flex-1">
+                  <Progress value={62} className="h-2" />
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Notifications */}
+        <section className="rounded-2xl border bg-card p-6 space-y-5">
+          <header>
+            <h2 className="font-heading text-base font-semibold text-foreground">Notifications</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Choose when we email you about activity on your projects.
+            </p>
+          </header>
+
+          <div className="space-y-3">
+            {[
+              { key: "notify_tasks" as const,    label: "Email me when a team member completes a task" },
+              { key: "notify_notes" as const,    label: "Email me when a note or comment is added" },
+              { key: "notify_invoices" as const, label: "Email me when an invoice is added" },
+            ].map(({ key, label }) => (
+              <div key={key} className="flex items-center justify-between gap-4 rounded-xl border bg-background px-4 py-3">
+                <Label htmlFor={key} className="text-sm font-medium text-foreground cursor-pointer flex-1">
+                  {label}
+                </Label>
+                <Switch
+                  id={key}
+                  checked={data[key]}
+                  onCheckedChange={(checked) => update(key, checked)}
+                />
+              </div>
+            ))}
           </div>
         </section>
 
