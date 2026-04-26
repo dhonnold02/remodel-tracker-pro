@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useProjects } from "@/hooks/useProjects";
+import { useRole } from "@/hooks/useRole";
 import { getAggregatedStats } from "@/types/project";
 import AppLayout from "@/components/AppLayout";
 import ProjectDetails from "@/components/ProjectDetails";
@@ -46,6 +47,16 @@ const ProjectDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getProject, updateProject, addProject, deleteProject, getSubProjects, userRole, loading } = useProjects();
+  const {
+    canViewFinancials,
+    canEditProjects,
+    canEditTasks,
+    canCompleteTasks,
+    canEditTimeline,
+    canEditPunchOut,
+    canSignOffPunchOut,
+    canViewChangeOrders,
+  } = useRole();
   const project = getProject(id || "");
   const [newSubName, setNewSubName] = useState("");
   const [showSubForm, setShowSubForm] = useState(false);
@@ -81,7 +92,14 @@ const ProjectDetailPage = () => {
   }
 
   const role = userRole(project.id);
-  const isEditor = role === "editor";
+  const projectEditor = role === "editor";
+  // Project-level editor AND company-level permission both required.
+  const isEditor = projectEditor && canEditProjects;
+  const isTaskEditor = projectEditor && canEditTasks;
+  const canTickTasks = projectEditor && canCompleteTasks;
+  const isTimelineEditor = projectEditor && canEditTimeline;
+  const isPunchEditor = projectEditor && canEditPunchOut;
+  const isPunchSigner = projectEditor && canSignOffPunchOut;
   const update = (partial: Partial<typeof project>) => updateProject(project.id, partial);
   const subProjects = getSubProjects(project.id);
   const parentProject = project.parentId ? getProject(project.parentId) : undefined;
