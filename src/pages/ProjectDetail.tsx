@@ -625,7 +625,8 @@ const ProjectDetailPage = () => {
                     projectId={project.id}
                     data={punchData}
                     onChange={savePunch}
-                    isEditor={isEditor}
+                    isEditor={isPunchEditor}
+                    canSignOff={isPunchSigner}
                     members={project.members}
                     projectName={project.name}
                     projectAddress={project.address}
