@@ -6,7 +6,13 @@ export const SightlineLogo = ({ size = 22 }: { size?: number }) => (
     alt="Sightline"
     width={size}
     height={size}
-    style={{ width: size, height: size, objectFit: "contain", display: "block" }}
+    style={{
+      width: size,
+      height: size,
+      objectFit: "contain",
+      display: "block",
+      borderRadius: Math.round(size * 0.22),
+    }}
     draggable={false}
   />
 );
