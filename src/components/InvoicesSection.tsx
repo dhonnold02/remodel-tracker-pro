@@ -46,34 +46,45 @@ const InvoicesSection = ({ invoices, onChange, totalBudget, totalSpent, readOnly
     onChange(invoices.filter(i => i.id !== id));
   };
 
+  const formatCompact = (n: number) => {
+    const abs = Math.abs(n);
+    const sign = n < 0 ? "-" : "";
+    if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(1)}M`;
+    if (abs >= 1000) return `${sign}$${(abs / 1000).toFixed(0)}K`;
+    return `${sign}$${abs}`;
+  };
+
   return (
-    <div className="premium-card p-6 space-y-5">
+    <div className="premium-card p-6 space-y-5 overflow-hidden">
       <h2 className="section-title flex items-center gap-2">
         <Receipt className="h-4 w-4 text-primary" />
         Invoices & Financials
       </h2>
 
       {/* Financial summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <div className="rounded-xl border bg-card p-4">
+      <div className="grid grid-cols-3 gap-3">
+        <div className="min-w-0 rounded-xl border bg-card p-3">
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Budget</p>
-          <p className="font-heading text-lg font-bold text-foreground mt-1.5">${totalBudget.toLocaleString()}</p>
+          <p className="font-heading text-sm font-bold text-foreground mt-1.5">{formatCompact(totalBudget)}</p>
         </div>
-        <div className="rounded-xl border bg-card p-4">
+        <div className="min-w-0 rounded-xl border bg-card p-3">
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Spent</p>
-          <p className="font-heading text-lg font-bold text-foreground mt-1.5">${totalSpent.toLocaleString()}</p>
+          <p className="font-heading text-sm font-bold text-foreground mt-1.5">{formatCompact(totalSpent)}</p>
         </div>
-        <div className="rounded-xl border bg-card p-4">
+        <div className="min-w-0 rounded-xl border bg-card p-3">
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Remaining</p>
-          <p className={`font-heading text-lg font-bold mt-1.5 ${remaining < 0 ? "text-destructive" : "text-foreground"}`}>${remaining.toLocaleString()}</p>
+          <p className={`font-heading text-sm font-bold mt-1.5 ${remaining < 0 ? "text-destructive" : "text-foreground"}`}>{formatCompact(remaining)}</p>
         </div>
-        <div className="rounded-xl border border-primary/20 bg-accent/50 p-4">
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="min-w-0 rounded-xl border border-primary/20 bg-accent/50 p-3">
           <p className="text-[10px] text-accent-foreground/70 uppercase tracking-wider font-medium">Owed by HO</p>
-          <p className="font-heading text-lg font-bold text-accent-foreground mt-1.5">${owedByHomeowner.toLocaleString()}</p>
+          <p className="font-heading text-sm font-bold text-accent-foreground mt-1.5">{formatCompact(owedByHomeowner)}</p>
         </div>
-        <div className="rounded-xl border border-warning/30 bg-warning/5 p-4">
+        <div className="min-w-0 rounded-xl border border-warning/30 bg-warning/5 p-3">
           <p className="text-[10px] text-warning uppercase tracking-wider font-medium">Owed to Subs</p>
-          <p className="font-heading text-lg font-bold text-warning mt-1.5">${owedToSubs.toLocaleString()}</p>
+          <p className="font-heading text-sm font-bold text-warning mt-1.5">{formatCompact(owedToSubs)}</p>
         </div>
       </div>
 
