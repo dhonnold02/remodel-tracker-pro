@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, HardHat, CheckCircle2, Calendar, Users } from "lucide-react";
+import { ArrowLeft, Wallet, ClipboardCheck, Users, FolderOpen } from "lucide-react";
 import SightlineMark from "@/components/SightlineMark";
 
 const AuthPage = () => {
@@ -52,10 +52,10 @@ const AuthPage = () => {
   };
 
   const features = [
-    { icon: CheckCircle2, text: "Budget & cost tracking per project" },
-    { icon: Calendar, text: "Gantt timelines & milestone planning" },
+    { icon: Wallet, text: "Full budget, cost & invoice tracking" },
+    { icon: ClipboardCheck, text: "Punch out lists with homeowner sign-off" },
     { icon: Users, text: "Real-time team collaboration" },
-    { icon: HardHat, text: "Photo logs, blueprints & change orders" },
+    { icon: FolderOpen, text: "Photos, blueprints, plans & change orders" },
   ];
 
   return (
@@ -75,8 +75,8 @@ const AuthPage = () => {
 
         <div className="relative space-y-12">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-sm text-primary-foreground">
-              <SightlineMark size={20} />
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0f1827] ring-1 ring-white/10 shadow-sm text-white">
+              <SightlineMark size={22} />
             </div>
             <span className="font-heading text-lg font-semibold text-foreground">
               Sightline
@@ -121,8 +121,8 @@ const AuthPage = () => {
         <div className="w-full max-w-sm space-y-8">
           {/* Mobile logo */}
           <div className="flex items-center gap-2.5 lg:hidden">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm text-primary-foreground">
-              <SightlineMark size={16} />
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0f1827] ring-1 ring-white/10 shadow-sm text-white">
+              <SightlineMark size={22} />
             </div>
             <span className="font-heading text-base font-semibold text-foreground">
               Sightline
