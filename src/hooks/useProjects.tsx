@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef, Re
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { cacheProjects, getCachedProjects } from "@/hooks/useOfflineSync";
+import { toast } from "sonner";
 
 const logActivity = async (
   userId: string,
@@ -165,11 +166,17 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     }
     
     // Get project IDs user is member of
-    const { data: memberships } = await supabase
+    const { data: memberships, error: membershipsError } = await supabase
       .from("project_members")
       .select("project_id")
       .eq("user_id", user.id);
-    
+
+    if (membershipsError) {
+      toast.error("Failed to load projects — please refresh");
+      setLoading(false);
+      return;
+    }
+
     if (!memberships || memberships.length === 0) {
       setProjects([]);
       setLoading(false);
@@ -179,11 +186,16 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     const projectIds = memberships.map((m) => m.project_id);
 
     // Fetch projects
-    const { data: projectRows } = await supabase
+    const { data: projectRows, error: projectsError } = await supabase
       .from("projects")
       .select("*")
       .in("id", projectIds);
 
+    if (projectsError) {
+      toast.error("Failed to load projects — please refresh");
+      setLoading(false);
+      return;
+    }
     if (!projectRows) { setProjects([]); setLoading(false); return; }
 
     // Fetch related data for all projects in parallel
@@ -197,6 +209,22 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       supabase.from("change_order_comments").select("*").in("project_id", projectIds).order("created_at"),
       supabase.from("project_events").select("*").in("project_id", projectIds).order("date"),
     ]);
+
+    const relatedErrors: { res: { error: any }; label: string }[] = [
+      { res: tasksRes, label: "tasks" },
+      { res: photosRes, label: "photos" },
+      { res: blueprintsRes, label: "blueprints" },
+      { res: ordersRes, label: "change orders" },
+      { res: membersRes, label: "team members" },
+      { res: invoicesRes, label: "invoices" },
+      { res: commentsRes, label: "comments" },
+      { res: eventsRes, label: "events" },
+    ];
+    for (const { res, label } of relatedErrors) {
+      if (res.error) {
+        toast.error(`Failed to load ${label} — please refresh`);
+      }
+    }
 
     const tasks = tasksRes.data || [];
     const photos = photosRes.data || [];
