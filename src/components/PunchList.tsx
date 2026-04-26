@@ -37,6 +37,9 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import type { ProjectMember } from "@/hooks/useProjects";
+import { useBranding } from "@/hooks/useBranding";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export type PunchStatus = "pending" | "pass" | "fail";
 
@@ -67,6 +70,8 @@ interface PunchListProps {
   isEditor: boolean;
   members: ProjectMember[];
   readOnlyShare?: boolean;
+  projectName?: string;
+  projectAddress?: string;
 }
 
 const initialsFor = (name?: string | null) => {
@@ -97,9 +102,12 @@ const PunchList = ({
   isEditor,
   members,
   readOnlyShare = false,
+  projectName,
+  projectAddress,
 }: PunchListProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { brand } = useBranding();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [photoTargetId, setPhotoTargetId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
@@ -244,21 +252,177 @@ const PunchList = ({
     toast({ title: "Punch list signed off", description: `Locked by ${name}` });
   };
 
-  const copyShareLink = async () => {
-    const url = `${window.location.origin}/punch-list/${projectId}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast({
-        title: "Link copied",
-        description: "Share with your homeowner",
-      });
-    } catch {
-      toast({
-        title: "Could not copy link",
-        description: url,
-        variant: "destructive",
-      });
+  const exportSignOffPdf = () => {
+    const companyName = brand.brandName?.trim() || "Remodel Tracker Pro";
+    const projName = projectName?.trim() || "Project";
+    const projAddr = projectAddress?.trim() || "";
+    const now = new Date();
+    const dateLong = now.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+    const fileDate = now
+      .toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })
+      .replace(/[\s,]+/g, "");
+    const safeProj = projName.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "Project";
+    const fileName = `${safeProj}-PunchList-${fileDate}.pdf`;
+
+    const doc = new jsPDF({ unit: "pt", format: "letter" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 48;
+
+    // Colors
+    const HEADER_BG: [number, number, number] = [15, 17, 23];
+    const ACCENT: [number, number, number] = [59, 130, 246];
+    const SUCCESS: [number, number, number] = [22, 163, 74];
+    const DANGER: [number, number, number] = [220, 38, 38];
+    const MUTED: [number, number, number] = [107, 114, 128];
+    const TEXT: [number, number, number] = [17, 24, 39];
+
+    // Dark header bar
+    doc.setFillColor(...HEADER_BG);
+    doc.rect(0, 0, pageWidth, 56, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text(companyName, margin, 34);
+
+    // Title
+    let y = 96;
+    doc.setTextColor(...TEXT);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(24);
+    doc.text(projName, margin, y);
+
+    if (projAddr) {
+      y += 22;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(...MUTED);
+      const addrLines = doc.splitTextToSize(projAddr.replace(/\n/g, " · "), pageWidth - margin * 2);
+      doc.text(addrLines, margin, y);
+      y += (addrLines.length - 1) * 14;
     }
+
+    // Complete badge
+    y += 28;
+    const badgeText = "  \u2713  Project Complete  ";
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    const badgeW = doc.getTextWidth(badgeText) + 8;
+    const badgeH = 24;
+    doc.setFillColor(...SUCCESS);
+    doc.roundedRect(margin, y - badgeH + 6, badgeW, badgeH, 6, 6, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.text(badgeText, margin + 4, y);
+
+    // Signed off line
+    y += 28;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(...MUTED);
+    const signedBy = data.signedOffBy || "—";
+    const signedDate = data.signedOffAt ? formatDate(data.signedOffAt) : dateLong;
+    doc.text(`Signed off by: ${signedBy}    \u00B7    Date: ${signedDate}`, margin, y);
+
+    // Summary stats row
+    y += 32;
+    const statW = (pageWidth - margin * 2) / 3;
+    const stats: Array<{ label: string; value: string; color: [number, number, number] }> = [
+      { label: "Total Items", value: String(total), color: TEXT },
+      { label: "Passed", value: String(passed), color: SUCCESS },
+      { label: "Failed", value: String(failed), color: DANGER },
+    ];
+    stats.forEach((s, i) => {
+      const x = margin + statW * i;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.setTextColor(...s.color);
+      doc.text(s.value, x, y);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(...MUTED);
+      doc.text(s.label.toUpperCase(), x, y + 14);
+    });
+
+    // Divider
+    y += 32;
+    doc.setDrawColor(...ACCENT);
+    doc.setLineWidth(1);
+    doc.line(margin, y, pageWidth - margin, y);
+
+    // Section header
+    y += 22;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(...ACCENT);
+    doc.text("PUNCH LIST ITEMS", margin, y);
+
+    // Table
+    const rows = items.map((it) => [
+      it.title,
+      it.status === "pass" ? "PASS" : it.status === "fail" ? "FAIL" : "PENDING",
+      it.assignee || "—",
+      [it.notes, it.failReason ? `Failed: ${it.failReason}` : ""].filter(Boolean).join("\n") || "—",
+    ]);
+
+    autoTable(doc, {
+      startY: y + 10,
+      head: [["Item", "Status", "Assignee", "Notes"]],
+      body: rows,
+      margin: { left: margin, right: margin },
+      styles: {
+        font: "helvetica",
+        fontSize: 10,
+        cellPadding: 8,
+        textColor: TEXT,
+        lineColor: [229, 231, 235],
+        lineWidth: 0.5,
+      },
+      headStyles: {
+        fillColor: HEADER_BG,
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+        fontSize: 10,
+      },
+      columnStyles: {
+        0: { cellWidth: "auto" },
+        1: { cellWidth: 70, halign: "center", fontStyle: "bold" },
+        2: { cellWidth: 90 },
+        3: { cellWidth: 160 },
+      },
+      didParseCell: (hookData) => {
+        if (hookData.section === "body" && hookData.column.index === 1) {
+          const v = String(hookData.cell.raw);
+          if (v === "PASS") hookData.cell.styles.textColor = SUCCESS;
+          else if (v === "FAIL") hookData.cell.styles.textColor = DANGER;
+          else hookData.cell.styles.textColor = MUTED;
+        }
+      },
+    });
+
+    // Footer + page numbers on every page
+    const pageCount = doc.getNumberOfPages();
+    for (let p = 1; p <= pageCount; p++) {
+      doc.setPage(p);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(...MUTED);
+      const footer = `${companyName}  \u00B7  Generated by Remodel Tracker Pro  \u00B7  ${dateLong}`;
+      doc.text(footer, margin, pageHeight - 24);
+      const pageLabel = `Page ${p} of ${pageCount}`;
+      const pw = doc.getTextWidth(pageLabel);
+      doc.text(pageLabel, pageWidth - margin - pw, pageHeight - 24);
+    }
+
+    doc.save(fileName);
+
+    toast({
+      title: "PDF downloaded",
+      description: "Ready to share with your homeowner",
+    });
   };
 
   const memberOptions = members.map((m) => ({
@@ -286,7 +450,7 @@ const PunchList = ({
               size="sm"
               variant="outline"
               className="rounded-xl text-xs"
-              onClick={copyShareLink}
+              onClick={exportSignOffPdf}
             >
               <Share2 className="h-3.5 w-3.5 mr-1.5" />
               Share with Homeowner
