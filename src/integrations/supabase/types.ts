@@ -173,6 +173,7 @@ export type Database = {
           notify_invoices: boolean
           notify_notes: boolean
           notify_tasks: boolean
+          onboarding_complete: boolean
           phone: string
           updated_at: string
           user_id: string
@@ -190,6 +191,7 @@ export type Database = {
           notify_invoices?: boolean
           notify_notes?: boolean
           notify_tasks?: boolean
+          onboarding_complete?: boolean
           phone?: string
           updated_at?: string
           user_id: string
@@ -207,6 +209,7 @@ export type Database = {
           notify_invoices?: boolean
           notify_notes?: boolean
           notify_tasks?: boolean
+          onboarding_complete?: boolean
           phone?: string
           updated_at?: string
           user_id?: string
