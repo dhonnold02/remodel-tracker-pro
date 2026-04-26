@@ -36,7 +36,7 @@ const injectPacStyles = () => {
   document.head.appendChild(style);
 };
 
-const loadGoogleMaps = (): Promise<typeof google | null> => {
+const loadGoogleMaps = (): Promise<any> => {
   if (typeof window === "undefined") return Promise.resolve(null);
   if (!GOOGLE_MAPS_API_KEY) return Promise.resolve(null);
   // Already loaded
