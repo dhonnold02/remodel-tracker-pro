@@ -353,6 +353,7 @@ interface PhaseColumnProps {
   tasks: Task[];
   allTasks: Task[];
   isEditor: boolean;
+  canComplete: boolean;
   collapsed: boolean;
   expandedTaskId: string | null;
   onToggleCollapse: () => void;
@@ -368,7 +369,7 @@ interface PhaseColumnProps {
 }
 
 const PhaseColumn = ({
-  phase, index, tasks, allTasks, isEditor, collapsed, expandedTaskId,
+  phase, index, tasks, allTasks, isEditor, canComplete, collapsed, expandedTaskId,
   onToggleCollapse, onToggleExpandTask, onAddTask, onRenamePhase, onDeletePhase,
   onToggleComplete, onUpdateTask, onAddSubtask, onRemoveTask, isFirst,
 }: PhaseColumnProps) => {
