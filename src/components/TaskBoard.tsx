@@ -602,11 +602,13 @@ interface TaskBoardProps {
   onChangeTasks: (tasks: Task[]) => void;
   onChangePhases: (phases: string[]) => void;
   isEditor: boolean;
+  canComplete?: boolean;
   projectName?: string;
   projectAddress?: string;
 }
 
-const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, projectName, projectAddress }: TaskBoardProps) => {
+const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, canComplete, projectName, projectAddress }: TaskBoardProps) => {
+  const effectiveCanComplete = canComplete ?? isEditor;
   const { brand } = useBranding();
   const effectivePhases = useMemo(() => {
     const base = phases && phases.length > 0 ? [...phases] : [...DEFAULT_PHASES];
