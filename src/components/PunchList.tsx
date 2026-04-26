@@ -301,43 +301,53 @@ const PunchList = ({
     doc.setTextColor(...HEADER_SUB);
     doc.text("Punch Out Report", 195, 26, { align: "right" });
 
-    // Project title
+    // Project title (y=52)
     doc.setFont("helvetica", "bold");
     doc.setFontSize(22);
     doc.setTextColor(...TEXT_BLACK);
-    doc.text(projName, 15, 55);
+    doc.text(projName, 15, 52);
 
-    // Address
+    // Address — gray RGB(120,120,120) at 9pt, between name and badge
     if (projAddr) {
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
-      doc.setTextColor(...TEXT_100);
+      doc.setFontSize(9);
+      doc.setTextColor(...TEXT_120);
       const addr = projAddr.replace(/\n+/g, " · ");
-      doc.text(addr, 15, 68);
+      doc.text(addr, 15, 60);
     }
 
-    // Completion badge — rounded rect, success green
-    doc.setFillColor(...SUCCESS);
-    doc.roundedRect(15, 78, 90, 16, 3, 3, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.setTextColor(255, 255, 255);
-    doc.text("\u2713 PROJECT COMPLETE", 15 + 90 / 2, 88, { align: "center" });
+    // Completion badge — small pill 55x10 at y=65
+    {
+      const bx = 15;
+      const by = 65;
+      const bw = 55;
+      const bh = 10;
+      doc.setFillColor(...SUCCESS);
+      doc.roundedRect(bx, by, bw, bh, 2, 2, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(255, 255, 255);
+      // Vertically center: baseline ~ by + bh/2 + 1.2
+      doc.text("PROJECT COMPLETE", bx + bw / 2, by + bh / 2 + 1.4, {
+        align: "center",
+        baseline: "alphabetic",
+      });
+    }
 
-    // Sign-off line
+    // Sign-off line (y=82)
     const signedBy = data.signedOffBy || "—";
     const signedDate = data.signedOffAt ? formatDate(data.signedOffAt) : dateLong;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(...TEXT_60);
-    doc.text(`Signed off by: ${signedBy}  \u00B7  Date: ${signedDate}`, 15, 103);
+    doc.text(`Signed off by: ${signedBy}  \u00B7  Date: ${signedDate}`, 15, 82);
 
-    // Divider
+    // First divider (y=92)
     doc.setDrawColor(...DIVIDER);
     doc.setLineWidth(0.2);
-    doc.line(15, 112, 195, 112);
+    doc.line(15, 92, 195, 92);
 
-    // Stats row at y=125, columns at x=15, 80, 145
+    // Stats row (y=108)
     const stats: Array<{
       x: number;
       label: string;
@@ -352,24 +362,24 @@ const PunchList = ({
       doc.setFont("helvetica", "bold");
       doc.setFontSize(18);
       doc.setTextColor(...s.color);
-      doc.text(s.value, s.x, 125);
+      doc.text(s.value, s.x, 108);
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
       doc.setTextColor(...TEXT_120);
-      doc.text(s.label, s.x, 132);
+      doc.text(s.label, s.x, 115);
     });
 
-    // Divider
+    // Second divider (y=128)
     doc.setDrawColor(...DIVIDER);
     doc.setLineWidth(0.2);
-    doc.line(15, 145, 195, 145);
+    doc.line(15, 128, 195, 128);
 
-    // Section header
+    // Section header (y=138)
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
     doc.setTextColor(...ACCENT);
-    doc.text("PUNCH LIST ITEMS", 15, 155);
+    doc.text("PUNCH LIST ITEMS", 15, 138);
 
     // Table
     const rows = items.map((it) => [
@@ -382,7 +392,7 @@ const PunchList = ({
     ]);
 
     autoTable(doc, {
-      startY: 162,
+      startY: 145,
       head: [["Item", "Status", "Assignee", "Notes"]],
       body: rows,
       margin: { left: 15, right: 15, bottom: 25 },
