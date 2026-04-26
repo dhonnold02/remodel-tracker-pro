@@ -160,6 +160,51 @@ export type Database = {
           },
         ]
       }
+      company_settings: {
+        Row: {
+          address: string
+          brand_color: string | null
+          company_name: string
+          created_at: string
+          email: string
+          id: string
+          license_number: string
+          logo_url: string | null
+          phone: string
+          updated_at: string
+          user_id: string
+          website: string
+        }
+        Insert: {
+          address?: string
+          brand_color?: string | null
+          company_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          license_number?: string
+          logo_url?: string | null
+          phone?: string
+          updated_at?: string
+          user_id: string
+          website?: string
+        }
+        Update: {
+          address?: string
+          brand_color?: string | null
+          company_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          license_number?: string
+          logo_url?: string | null
+          phone?: string
+          updated_at?: string
+          user_id?: string
+          website?: string
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           amount: number
