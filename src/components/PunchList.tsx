@@ -119,16 +119,17 @@ const PunchList = ({
   const passed = items.filter((i) => i.status === "pass").length;
   const failed = items.filter((i) => i.status === "fail").length;
   const pending = items.filter((i) => i.status === "pending").length;
-  const completedCount = passed + failed;
   const passPercent = total > 0 ? Math.round((passed / total) * 100) : 0;
-  const allResolved = total > 0 && pending === 0;
-  const completionPercent = total > 0 ? (completedCount / total) * 100 : 0;
+  const allResolved =
+    items.length > 0 &&
+    items.every((i) => i.status === "pass" || i.status === "fail");
+  const progressPercent = total > 0 ? (passed / total) * 100 : 0;
   const progressColor =
-    completionPercent >= 100
+    progressPercent >= 100
       ? "bg-success"
-      : completionPercent >= 50
+      : progressPercent >= 50
       ? "bg-warning"
-      : completionPercent > 0
+      : progressPercent > 0
       ? "bg-primary"
       : "bg-primary/30";
 
@@ -320,7 +321,7 @@ const PunchList = ({
         <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
           <div
             className={cn("h-full transition-all duration-300", progressColor)}
-            style={{ width: `${Math.max(0, completionPercent)}%` }}
+            style={{ width: `${Math.max(0, progressPercent)}%` }}
           />
         </div>
         {!locked && isEditor && total > 0 && (
@@ -334,7 +335,7 @@ const PunchList = ({
               Mark Complete & Sign Off
             </Button>
           ) : (
-            <p className="text-xs text-muted-foreground text-center mt-1">
+            <p className="text-xs text-muted-foreground text-center py-2">
               Resolve all pending items to sign off
             </p>
           )
