@@ -24,6 +24,7 @@ interface CompanySettings {
   notify_tasks: boolean;
   notify_notes: boolean;
   notify_invoices: boolean;
+  notify_calendar_events: boolean;
 }
 
 const EMPTY: CompanySettings = {
@@ -38,6 +39,7 @@ const EMPTY: CompanySettings = {
   notify_tasks: false,
   notify_notes: false,
   notify_invoices: false,
+  notify_calendar_events: false,
 };
 
 const Settings = () => {
@@ -81,6 +83,7 @@ const Settings = () => {
           notify_tasks: row.notify_tasks ?? false,
           notify_notes: row.notify_notes ?? false,
           notify_invoices: row.notify_invoices ?? false,
+          notify_calendar_events: (row as any).notify_calendar_events ?? false,
         };
         setData(next);
         if (next.brand_color) applyBrandPrimary(next.brand_color);
@@ -160,6 +163,7 @@ const Settings = () => {
       notify_tasks: data.notify_tasks,
       notify_notes: data.notify_notes,
       notify_invoices: data.notify_invoices,
+      notify_calendar_events: data.notify_calendar_events,
     };
     const { error } = await supabase
       .from("company_settings")
@@ -340,7 +344,7 @@ const Settings = () => {
           <header>
             <h2 className="font-heading text-base font-semibold text-foreground">Notifications</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Choose when we email you about activity on your projects.
+              Choose when Sightline emails you about activity and upcoming events.
             </p>
           </header>
 
@@ -349,6 +353,7 @@ const Settings = () => {
               { key: "notify_tasks" as const,    label: "Email me when a team member completes a task" },
               { key: "notify_notes" as const,    label: "Email me when a note or comment is added" },
               { key: "notify_invoices" as const, label: "Email me when an invoice is added" },
+              { key: "notify_calendar_events" as const, label: "Email me when a calendar event is upcoming (24 hours before)" },
             ].map(({ key, label }) => (
               <div key={key} className="flex items-center justify-between gap-4 rounded-xl border bg-background px-4 py-3">
                 <Label htmlFor={key} className="text-sm font-medium text-foreground cursor-pointer flex-1">
