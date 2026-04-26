@@ -78,11 +78,11 @@ const InvoicesSection = ({ invoices, onChange, totalBudget, totalSpent, readOnly
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="min-w-0 rounded-xl border border-primary/20 bg-accent/50 p-3">
-          <p className="text-[10px] text-accent-foreground/70 uppercase tracking-wider font-medium">Owed by HO</p>
-          <p className="font-heading text-sm font-bold text-accent-foreground mt-1.5">{formatCompact(owedByHomeowner)}</p>
+        <div className="min-w-0 rounded-xl border border-primary/20 bg-primary/10 p-3">
+          <p className="text-[10px] text-primary uppercase tracking-wider font-medium">Owed by HO</p>
+          <p className="font-heading text-sm font-bold text-primary mt-1.5">{formatCompact(owedByHomeowner)}</p>
         </div>
-        <div className="min-w-0 rounded-xl border border-warning/30 bg-warning/5 p-3">
+        <div className="min-w-0 rounded-xl border border-warning/20 bg-warning/10 p-3">
           <p className="text-[10px] text-warning uppercase tracking-wider font-medium">Owed to Subs</p>
           <p className="font-heading text-sm font-bold text-warning mt-1.5">{formatCompact(owedToSubs)}</p>
         </div>
@@ -90,22 +90,43 @@ const InvoicesSection = ({ invoices, onChange, totalBudget, totalSpent, readOnly
 
       {/* Add invoice */}
       {!readOnly && (
-        <div className="flex gap-2 flex-wrap">
-          <Select value={type} onValueChange={(v) => setType(v as any)}>
-            <SelectTrigger className="w-[130px] h-9 text-xs rounded-xl">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="homeowner">Homeowner</SelectItem>
-              <SelectItem value="subcontractor">Subcontractor</SelectItem>
-            </SelectContent>
-          </Select>
-          <Input placeholder="Description…" value={desc} onChange={e => setDesc(e.target.value)} className="flex-1 min-w-[120px] h-9 text-sm rounded-xl" />
-          <div className="relative">
-            <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input type="number" min={0} placeholder="0" value={amount} onChange={e => setAmount(e.target.value)} className="w-24 h-9 text-sm pl-7 rounded-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+        <div className="space-y-2">
+          <div className="flex gap-2 flex-wrap">
+            <Select value={type} onValueChange={(v) => setType(v as any)}>
+              <SelectTrigger className="w-[130px] h-9 text-xs rounded-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="homeowner">Homeowner</SelectItem>
+                <SelectItem value="subcontractor">Subcontractor</SelectItem>
+              </SelectContent>
+            </Select>
+            <Input
+              placeholder="Invoice description..."
+              value={desc}
+              onChange={e => setDesc(e.target.value)}
+              className="flex-1 min-w-[120px] h-9 text-sm rounded-xl"
+            />
+            <div className="relative">
+              <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                type="number"
+                min={0}
+                placeholder="0"
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+                className="w-24 h-9 text-sm pl-7 rounded-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+            </div>
           </div>
-          <Button size="sm" className="h-9 rounded-xl" onClick={handleAdd}><Plus className="h-4 w-4" /></Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full rounded-xl text-xs mt-1"
+            onClick={handleAdd}
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" /> Add Invoice
+          </Button>
         </div>
       )}
 
