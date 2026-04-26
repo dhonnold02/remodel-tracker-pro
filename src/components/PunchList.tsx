@@ -324,22 +324,33 @@ const PunchList = ({
             style={{ width: `${Math.max(0, progressPercent)}%` }}
           />
         </div>
-        {!locked && isEditor && total > 0 && (
-          allResolved ? (
-            <Button
-              size="sm"
-              className="w-full rounded-xl text-xs mt-1 bg-success text-success-foreground hover:bg-success/90"
-              onClick={() => setSignOffOpen(true)}
-            >
-              <Lock className="h-3.5 w-3.5 mr-1.5" />
-              Mark Complete & Sign Off
-            </Button>
-          ) : (
-            <p className="text-xs text-muted-foreground text-center py-2">
-              Resolve all pending items to sign off
-            </p>
-          )
-        )}
+        {isEditor && (() => {
+          const hasPending = items.some((item) => item.status === "pending");
+          const hasItems = items.length > 0;
+          const isLocked = locked;
+
+          if (!isLocked && hasItems && !hasPending) {
+            return (
+              <button
+                onClick={() => setSignOffOpen(true)}
+                className="w-full flex items-center justify-center gap-2 bg-success text-success-foreground hover:bg-success/90 transition-colors rounded-xl py-3 text-sm font-medium"
+              >
+                <Lock className="h-4 w-4" />
+                Mark Complete & Sign Off
+              </button>
+            );
+          }
+
+          if (!isLocked && hasItems && hasPending) {
+            return (
+              <p className="text-xs text-muted-foreground text-center py-2">
+                Resolve all pending items to sign off
+              </p>
+            );
+          }
+
+          return null;
+        })()}
       </div>
 
       {/* Add item row */}
