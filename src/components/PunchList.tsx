@@ -877,6 +877,26 @@ const PunchList = ({
         </AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog open={reopenOpen} onOpenChange={setReopenOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reopen punch list?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will unlock the punch list so items can be added or updated. The previous sign-off will be cleared and you'll need to sign off again when complete.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleReopen}
+              className="bg-warning text-warning-foreground hover:bg-warning/90"
+            >
+              Reopen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Photo lightbox */}
       {lightboxSrc && (
         <div
