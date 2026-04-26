@@ -515,27 +515,44 @@ const PunchList = ({
                   </div>
                 </div>
 
-                {/* Notes input */}
-                {(isExpanded || it.notes) && (
+                {/* Notes input — auto-expanded for failed items, with red border */}
+                {(isExpanded || it.notes || it.status === "fail") && (
                   <Textarea
-                    placeholder="Add notes..."
+                    placeholder={
+                      it.status === "fail"
+                        ? "Describe what needs to be fixed..."
+                        : "Add notes..."
+                    }
                     value={it.notes || ""}
                     onChange={(e) => setNotes(it.id, e.target.value)}
                     disabled={!canEdit}
-                    className="min-h-[60px] text-xs rounded-xl resize-none"
+                    className={cn(
+                      "min-h-[60px] text-xs rounded-xl resize-none",
+                      it.status === "fail" && "border-destructive/50 focus-visible:ring-destructive/30"
+                    )}
                   />
                 )}
 
-                {/* Photo thumbnails */}
+                {/* Photo thumbnails — clickable, opens lightbox */}
                 {it.photos && it.photos.length > 0 && (
                   <div className="flex gap-2 flex-wrap">
                     {it.photos.map((p, idx) => (
-                      <img
+                      <button
                         key={idx}
-                        src={p}
-                        alt={`Punch item photo ${idx + 1}`}
-                        className="h-16 w-16 rounded-lg object-cover border border-border"
-                      />
+                        type="button"
+                        onClick={() => setLightboxSrc(p)}
+                        className="group relative w-20 h-20 rounded-lg overflow-hidden border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+                        aria-label={`Open photo ${idx + 1}`}
+                      >
+                        <img
+                          src={p}
+                          alt={`Punch item photo ${idx + 1}`}
+                          className="w-20 h-20 rounded-lg object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <ZoomIn className="h-5 w-5 text-white" />
+                        </div>
+                      </button>
                     ))}
                   </div>
                 )}
