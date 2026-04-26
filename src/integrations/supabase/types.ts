@@ -170,6 +170,9 @@ export type Database = {
           id: string
           license_number: string
           logo_url: string | null
+          notify_invoices: boolean
+          notify_notes: boolean
+          notify_tasks: boolean
           phone: string
           updated_at: string
           user_id: string
@@ -184,6 +187,9 @@ export type Database = {
           id?: string
           license_number?: string
           logo_url?: string | null
+          notify_invoices?: boolean
+          notify_notes?: boolean
+          notify_tasks?: boolean
           phone?: string
           updated_at?: string
           user_id: string
@@ -198,6 +204,9 @@ export type Database = {
           id?: string
           license_number?: string
           logo_url?: string | null
+          notify_invoices?: boolean
+          notify_notes?: boolean
+          notify_tasks?: boolean
           phone?: string
           updated_at?: string
           user_id?: string
