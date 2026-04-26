@@ -12,7 +12,8 @@ import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
-import { useEffect } from "react";
+import Onboarding from "./pages/Onboarding";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { applyBrandPrimary } from "@/lib/brandColor";
 
@@ -20,7 +21,24 @@ const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
-  if (loading) {
+  const [onboardingState, setOnboardingState] = useState<"checking" | "needs" | "ok">("checking");
+
+  useEffect(() => {
+    if (!user) { setOnboardingState("checking"); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("company_settings")
+        .select("onboarding_complete")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      setOnboardingState(data?.onboarding_complete ? "ok" : "needs");
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  if (loading || (user && onboardingState === "checking")) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-muted-foreground text-sm">Loading…</p>
@@ -28,6 +46,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
   if (!user) return <Navigate to="/auth" replace />;
+  if (onboardingState === "needs") return <Navigate to="/onboarding" replace />;
   return <>{children}</>;
 };
 
@@ -82,6 +101,7 @@ const App = () => (
                 <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                 <Route path="/project/:id" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
