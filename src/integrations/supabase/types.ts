@@ -433,6 +433,42 @@ export type Database = {
           },
         ]
       }
+      punch_lists: {
+        Row: {
+          created_at: string
+          id: string
+          is_locked: boolean
+          items: Json
+          project_id: string
+          signed_off_at: string | null
+          signed_off_by: string | null
+          signed_off_by_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_locked?: boolean
+          items?: Json
+          project_id: string
+          signed_off_at?: string | null
+          signed_off_by?: string | null
+          signed_off_by_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_locked?: boolean
+          items?: Json
+          project_id?: string
+          signed_off_at?: string | null
+          signed_off_by?: string | null
+          signed_off_by_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           completed: boolean
