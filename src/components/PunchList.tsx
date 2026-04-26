@@ -30,6 +30,9 @@ import {
   Check,
   Share2,
   Lock,
+  X,
+  ZoomIn,
+  ClipboardCheck,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -106,6 +109,7 @@ const PunchList = ({
   const [failReason, setFailReason] = useState("");
   const [signOffOpen, setSignOffOpen] = useState(false);
   const [signOffName, setSignOffName] = useState("");
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   const items = data.items || [];
   const locked = data.isLocked || readOnlyShare;
@@ -118,6 +122,23 @@ const PunchList = ({
   const completedCount = passed + failed;
   const passPercent = total > 0 ? Math.round((passed / total) * 100) : 0;
   const allResolved = total > 0 && pending === 0;
+  const completionPercent = total > 0 ? (completedCount / total) * 100 : 0;
+  const progressColor =
+    completionPercent >= 100
+      ? "bg-success"
+      : completionPercent >= 50
+      ? "bg-warning"
+      : "bg-primary";
+
+  // Close lightbox on Escape
+  useEffect(() => {
+    if (!lightboxSrc) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxSrc(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightboxSrc]);
 
   // Pre-fill sign-off name with user display name
   useEffect(() => {
@@ -165,6 +186,9 @@ const PunchList = ({
           : it
       )
     );
+    if (status === "fail") {
+      setExpandedNotes((s) => ({ ...s, [id]: true }));
+    }
   };
 
   const setNotes = (id: string, notes: string) => {
