@@ -325,7 +325,9 @@ const PunchList = ({
           />
         </div>
         {isEditor && (() => {
-          const hasPending = items.some((item) => item.status === "pending");
+          const hasPending = items.some(
+            (item) => item.status === "pending" || item.status === "fail"
+          );
           const hasItems = items.length > 0;
           const isLocked = locked;
 
