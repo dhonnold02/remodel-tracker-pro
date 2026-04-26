@@ -69,6 +69,7 @@ interface PunchListProps {
   data: PunchListData;
   onChange: (next: PunchListData) => void;
   isEditor: boolean;
+  canSignOff?: boolean;
   members: ProjectMember[];
   readOnlyShare?: boolean;
   projectName?: string;
@@ -101,6 +102,7 @@ const PunchList = ({
   data,
   onChange,
   isEditor,
+  canSignOff,
   members,
   readOnlyShare = false,
   projectName,
@@ -124,6 +126,7 @@ const PunchList = ({
   const items = data.items || [];
   const locked = data.isLocked || readOnlyShare;
   const canEdit = isEditor && !locked;
+  const effectiveCanSignOff = (canSignOff ?? isEditor) && !locked;
 
   const total = items.length;
   const passed = items.filter((i) => i.status === "pass").length;
