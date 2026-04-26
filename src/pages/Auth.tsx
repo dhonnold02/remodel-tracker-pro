@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, HardHat, CheckCircle2, Calendar, Users } from "lucide-react";
+import SightlineMark from "@/components/SightlineMark";
 
 const AuthPage = () => {
   const { signIn, signUp } = useAuth();
@@ -74,8 +75,8 @@ const AuthPage = () => {
 
         <div className="relative space-y-12">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-sm">
-              <HardHat className="h-5 w-5 text-primary-foreground" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-sm text-primary-foreground">
+              <SightlineMark size={20} />
             </div>
             <span className="font-heading text-lg font-semibold text-foreground">
               Sightline
@@ -120,8 +121,8 @@ const AuthPage = () => {
         <div className="w-full max-w-sm space-y-8">
           {/* Mobile logo */}
           <div className="flex items-center gap-2.5 lg:hidden">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm">
-              <HardHat className="h-4 w-4 text-primary-foreground" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm text-primary-foreground">
+              <SightlineMark size={16} />
             </div>
             <span className="font-heading text-base font-semibold text-foreground">
               Sightline
