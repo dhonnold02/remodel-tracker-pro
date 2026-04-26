@@ -14,50 +14,40 @@ const SightlineMark = ({ size = 20, className }: SightlineMarkProps) => (
     aria-hidden="true"
   >
     <path
-      d="M16 48 L16 24 L32 12 L48 24 L48 48 Z"
+      d="M10 50 L10 26 L32 10 L54 26 L54 50 Z"
       stroke="currentColor"
-      strokeWidth="1.2"
+      strokeWidth="2.5"
       fill="none"
       strokeLinejoin="round"
     />
     <path
-      d="M22 48 L22 28 L32 20 L42 28 L42 48"
+      d="M20 50 L20 30 L32 20 L44 30 L44 50"
       stroke="currentColor"
-      strokeOpacity="0.5"
-      strokeWidth="0.85"
+      strokeOpacity="0.6"
+      strokeWidth="1.5"
       fill="none"
       strokeLinejoin="round"
     />
-    <line
-      x1="32"
-      y1="12"
-      x2="32"
-      y2="48"
-      stroke="currentColor"
-      strokeOpacity="0.2"
-      strokeWidth="0.75"
-      strokeDasharray="2 3"
-    />
-    <line
-      x1="16"
-      y1="36"
-      x2="48"
-      y2="36"
-      stroke="currentColor"
-      strokeOpacity="0.15"
-      strokeWidth="0.75"
-    />
-    <circle cx="32" cy="12" r="2" fill="currentColor" />
     <rect
-      x="27"
+      x="26"
       y="36"
-      width="10"
-      height="12"
+      width="12"
+      height="14"
       stroke="currentColor"
-      strokeOpacity="0.8"
-      strokeWidth="0.9"
-      fill="none"
+      strokeWidth="2"
+      fill="currentColor"
+      fillOpacity="0.1"
       rx="1"
+    />
+    <circle cx="32" cy="10" r="2.5" fill="currentColor" />
+    <line
+      x1="10"
+      y1="50"
+      x2="54"
+      y2="50"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
     />
   </svg>
 );
