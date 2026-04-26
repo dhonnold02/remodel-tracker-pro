@@ -14,6 +14,14 @@ const BudgetSection = ({ data, onChange }: BudgetSectionProps) => {
   const remaining = data.totalBudget - totalSpent;
   const budgetPercent = data.totalBudget > 0 ? (totalSpent / data.totalBudget) * 100 : 0;
 
+  const formatCompact = (n: number) => {
+    const abs = Math.abs(n);
+    const sign = n < 0 ? "-" : "";
+    if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(1)}M`;
+    if (abs >= 1000) return `${sign}$${Math.round(abs / 1000)}K`;
+    return `${sign}$${abs}`;
+  };
+
   return (
     <div className="premium-card p-6 space-y-5">
       <h2 className="section-title flex items-center gap-2">
@@ -67,19 +75,19 @@ const BudgetSection = ({ data, onChange }: BudgetSectionProps) => {
 
       {/* Summary */}
       <div className="grid grid-cols-3 gap-2">
-        <div className="stat-card bg-secondary rounded-xl">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Spent</p>
-          <p className="font-heading text-sm font-bold text-foreground mt-1">${totalSpent.toLocaleString()}</p>
+        <div className="min-w-0 rounded-xl border bg-card p-3">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Spent</p>
+          <p className="font-heading text-sm font-bold text-foreground mt-1.5">{formatCompact(totalSpent)}</p>
         </div>
-        <div className="stat-card bg-secondary rounded-xl">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Remaining</p>
-          <p className={`font-heading text-sm font-bold mt-1 ${remaining < 0 ? 'text-destructive' : 'text-foreground'}`}>
-            ${remaining.toLocaleString()}
+        <div className="min-w-0 rounded-xl border bg-card p-3">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Remaining</p>
+          <p className={`font-heading text-sm font-bold mt-1.5 ${remaining < 0 ? 'text-destructive' : 'text-foreground'}`}>
+            {formatCompact(remaining)}
           </p>
         </div>
-        <div className="stat-card bg-secondary rounded-xl">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Used</p>
-          <p className="font-heading text-sm font-bold text-foreground mt-1">{Math.round(budgetPercent)}%</p>
+        <div className="min-w-0 rounded-xl border bg-card p-3">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Used</p>
+          <p className="font-heading text-sm font-bold text-foreground mt-1.5">{Math.round(budgetPercent)}%</p>
         </div>
       </div>
 
