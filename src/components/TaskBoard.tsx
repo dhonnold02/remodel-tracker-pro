@@ -314,9 +314,9 @@ const TaskCard = ({
                 disabled={!isEditor}
                 className="h-3.5 w-3.5"
               />
-              <input
+              <TitleInput
                 value={s.title}
-                onChange={(e) => onUpdate(s.id, { title: e.target.value })}
+                onCommit={(v) => onUpdate(s.id, { title: v })}
                 readOnly={!isEditor}
                 placeholder="Subtask…"
                 className={cn(
