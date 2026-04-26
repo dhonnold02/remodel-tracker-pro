@@ -254,6 +254,20 @@ const PunchList = ({
     toast({ title: "Punch list signed off", description: `Locked by ${name}` });
   };
 
+  const handleReopen = () => {
+    onChange({
+      ...data,
+      isLocked: false,
+      signedOffAt: undefined,
+      signedOffBy: undefined,
+    });
+    setReopenOpen(false);
+    toast({
+      title: "Punch list reopened",
+      description: "Items and statuses preserved",
+    });
+  };
+
   const exportSignOffPdf = () => {
     const companyName = brand.brandName?.trim() || "Remodel Tracker Pro";
     const projName = projectName?.trim() || "Project";
