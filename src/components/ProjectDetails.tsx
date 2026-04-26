@@ -2,6 +2,7 @@ import { ProjectData } from "@/types/project";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FileText, MapPin, CalendarDays } from "lucide-react";
+import { DebouncedInput, DebouncedTextarea } from "@/components/inputs/DebouncedInput";
 
 interface ProjectDetailsProps {
   data: ProjectData;
@@ -18,11 +19,11 @@ const ProjectDetails = ({ data, onChange }: ProjectDetailsProps) => {
       <div className="space-y-4">
         <div>
           <Label htmlFor="name" className="text-xs text-muted-foreground font-medium">Project Name</Label>
-          <Input
+          <DebouncedInput
             id="name"
             placeholder="Kitchen Remodel"
             value={data.name}
-            onChange={(e) => onChange({ name: e.target.value })}
+            onDebouncedChange={(v) => onChange({ name: v })}
             className="mt-1.5 rounded-xl h-10"
           />
         </div>
@@ -30,11 +31,11 @@ const ProjectDetails = ({ data, onChange }: ProjectDetailsProps) => {
           <Label htmlFor="address" className="text-xs text-muted-foreground font-medium flex items-center gap-1">
             <MapPin className="h-3 w-3" /> Job Address
           </Label>
-          <textarea
+          <DebouncedTextarea
             id="address"
             placeholder="123 Main St&#10;Apt 4B&#10;New York, NY 10001"
             value={(data as any).address || ""}
-            onChange={(e) => onChange({ address: e.target.value } as any)}
+            onDebouncedChange={(v) => onChange({ address: v } as any)}
             rows={2}
             className="mt-1.5 flex w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
           />
