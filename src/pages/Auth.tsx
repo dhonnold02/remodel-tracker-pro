@@ -199,7 +199,9 @@ const AuthPage = () => {
                   {isSignUp ? "Create account" : "Welcome back"}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {isSignUp
+                  {inviteToken
+                    ? "You've been invited to join a team on Sightline."
+                    : isSignUp
                     ? "Start managing your projects today."
                     : "Sign in to your project dashboard."}
                 </p>
