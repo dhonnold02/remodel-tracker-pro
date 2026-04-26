@@ -269,7 +269,7 @@ const PunchList = ({
   };
 
   const exportSignOffPdf = async () => {
-    const companyName = brand.brandName?.trim() || "Remodel Tracker Pro";
+    const companyName = brand.brandName?.trim() || "Sightline";
     const logoUrl =
       brand.brandLogoUrl ||
       (user?.user_metadata as any)?.avatar_url ||

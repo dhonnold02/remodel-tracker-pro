@@ -75,7 +75,7 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
             )}
             <div className="min-w-0">
               <h2 className="font-heading text-sm font-medium text-foreground truncate leading-none">
-                {brand.brandName || "Remodel Tracker"}
+                {brand.brandName || "Sightline"}
               </h2>
             </div>
             <button onClick={() => setSidebarOpen(false)} className="ml-auto lg:hidden p-1 rounded-md hover:bg-secondary text-muted-foreground">
