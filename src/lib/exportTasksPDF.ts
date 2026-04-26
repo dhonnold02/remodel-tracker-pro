@@ -157,17 +157,8 @@ export function exportTasksPDF({
     margin: 4px 0 8px 0;
   }
   ul.subs > li { color: #4b5563; margin: 3px 0; font-weight: 400; }
-  .cb {
-    display: inline-block;
-    width: 16px;
-    margin-right: 6px;
-    color: #6b7280;
-    font-size: 14px;
-    line-height: 1;
-  }
   li.done { color: #9ca3af; }
   li.done > .title { color: #9ca3af; }
-  li.done > .cb { color: #9ca3af; }
 
   .empty {
     color: #9ca3af;
