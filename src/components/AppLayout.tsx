@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useBranding } from "@/hooks/useBranding";
@@ -7,9 +7,10 @@ import BrandingSettings from "@/components/BrandingSettings";
 import SightlineLogo from "@/components/SightlineLogo";
 import {
   LayoutDashboard, BookTemplate,
-  LogOut, WifiOff, Menu, X, ChevronLeft, Settings,
+  LogOut, WifiOff, Menu, X, ChevronLeft, SlidersHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 const NAV_ITEMS = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/" },
@@ -27,10 +28,27 @@ interface AppLayoutProps {
 const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const { brand } = useBranding();
   const isOnline = useOnlineStatus();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [companyName, setCompanyName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) { setCompanyName(null); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("company_settings")
+        .select("company_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      const name = data?.company_name?.trim();
+      setCompanyName(name && name.length > 0 ? name : null);
+    })();
+    return () => { cancelled = true; };
+  }, [user, location.pathname]);
 
   const currentHash = location.hash;
   const isActive = (path: string) => {
@@ -74,7 +92,7 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
             )}
             <div className="min-w-0">
               <h2 className="font-heading text-sm font-medium text-foreground truncate leading-none">
-                {brand.brandName || "Sightline"}
+                {companyName || brand.brandName || "Sightline"}
               </h2>
             </div>
             <button onClick={() => setSidebarOpen(false)} className="ml-auto lg:hidden p-1 rounded-md hover:bg-secondary text-muted-foreground">
@@ -119,7 +137,7 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
                 : "text-muted-foreground hover:text-foreground hover:bg-secondary"
             )}
           >
-            <Settings className="h-4 w-4" />
+            <SlidersHorizontal className="h-4 w-4" />
             Settings
           </button>
           <div className="flex items-center gap-1">
