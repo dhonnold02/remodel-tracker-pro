@@ -4,9 +4,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBranding } from "@/hooks/useBranding";
 import { useOnlineStatus } from "@/hooks/useOfflineSync";
 import BrandingSettings from "@/components/BrandingSettings";
+import SightlineMark from "@/components/SightlineMark";
 import {
   LayoutDashboard, BookTemplate,
-  LogOut, WifiOff, HardHat, Menu, X, ChevronLeft, Settings,
+  LogOut, WifiOff, Menu, X, ChevronLeft, Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -69,8 +70,8 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
             {brand.brandLogoUrl ? (
               <img src={brand.brandLogoUrl} alt="Logo" className="h-8 w-8 rounded-lg object-contain" />
             ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-sm">
-                <HardHat className="h-4 w-4 text-primary-foreground" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-sm text-primary-foreground">
+                <SightlineMark size={18} />
               </div>
             )}
             <div className="min-w-0">
