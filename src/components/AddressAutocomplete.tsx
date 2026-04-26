@@ -114,11 +114,12 @@ const AddressAutocomplete = ({
           types: ["address"],
           componentRestrictions: { country: "us" },
         });
+        ac.setFields(["formatted_address", "address_components"]);
         autocompleteRef.current = ac;
         ac.addListener("place_changed", () => {
           const place = ac.getPlace();
           const formatted = place?.formatted_address;
-          if (formatted) onChange(formatted);
+          if (formatted) onChange(formatted.replace(/,\s*USA$/, ""));
         });
         setReady(true);
       })
