@@ -288,66 +288,65 @@ const PunchList = ({
     const TABLE_HEAD_BG: [number, number, number] = [245, 245, 245];
     const TABLE_ALT_BG: [number, number, number] = [250, 250, 250];
 
-    // Header band — full width, dark, height 40
+    // Header band — full width, dark, height 28
     doc.setFillColor(...HEADER_BG);
-    doc.rect(0, 0, pageWidth, 40, "F");
+    doc.rect(0, 0, pageWidth, 28, "F");
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
     doc.setTextColor(255, 255, 255);
-    doc.text(companyName, 15, 26);
+    doc.text(companyName, 15, 18);
 
     doc.setFontSize(9);
     doc.setTextColor(...HEADER_SUB);
-    doc.text("Punch Out Report", 195, 26, { align: "right" });
+    doc.text("Punch Out Report", 195, 18, { align: "right" });
 
-    // Project title (y=52)
+    // Project title (y=44)
     doc.setFont("helvetica", "bold");
     doc.setFontSize(22);
     doc.setTextColor(...TEXT_BLACK);
-    doc.text(projName, 15, 52);
+    doc.text(projName, 15, 44);
 
-    // Address — gray RGB(120,120,120) at 9pt, between name and badge
+    // Address — gray RGB(120,120,120) at 9pt (y=52)
     if (projAddr) {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       doc.setTextColor(...TEXT_120);
       const addr = projAddr.replace(/\n+/g, " · ");
-      doc.text(addr, 15, 60);
+      doc.text(addr, 15, 52);
     }
 
-    // Completion badge — small pill 55x10 at y=65
+    // Completion badge — pill 45x8 at x=15, y=60
     {
       const bx = 15;
-      const by = 65;
-      const bw = 55;
-      const bh = 10;
+      const by = 60;
+      const bw = 45;
+      const bh = 8;
       doc.setFillColor(...SUCCESS);
       doc.roundedRect(bx, by, bw, bh, 2, 2, "F");
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(8);
+      doc.setFontSize(6.5);
       doc.setTextColor(255, 255, 255);
-      // Vertically center: baseline ~ by + bh/2 + 1.2
-      doc.text("PROJECT COMPLETE", bx + bw / 2, by + bh / 2 + 1.4, {
+      doc.text("PROJECT COMPLETE", bx + bw / 2, by + bh / 2 + 1.1, {
         align: "center",
         baseline: "alphabetic",
       });
     }
 
-    // Sign-off line (y=82)
+    // Sign-off line (y=76)
     const signedBy = data.signedOffBy || "—";
     const signedDate = data.signedOffAt ? formatDate(data.signedOffAt) : dateLong;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(...TEXT_60);
-    doc.text(`Signed off by: ${signedBy}  \u00B7  Date: ${signedDate}`, 15, 82);
+    doc.text(`Signed off by: ${signedBy}  \u00B7  Date: ${signedDate}`, 15, 76);
 
-    // First divider (y=92)
+    // First divider (y=83)
     doc.setDrawColor(...DIVIDER);
     doc.setLineWidth(0.2);
-    doc.line(15, 92, 195, 92);
+    doc.line(15, 83, 195, 83);
 
-    // Stats row (y=108)
+    // Stats row — numbers y=95, labels y=101
     const stats: Array<{
       x: number;
       label: string;
@@ -360,26 +359,26 @@ const PunchList = ({
     ];
     stats.forEach((s) => {
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(18);
+      doc.setFontSize(14);
       doc.setTextColor(...s.color);
-      doc.text(s.value, s.x, 108);
+      doc.text(s.value, s.x, 95);
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
       doc.setTextColor(...TEXT_120);
-      doc.text(s.label, s.x, 115);
+      doc.text(s.label, s.x, 101);
     });
 
-    // Second divider (y=128)
+    // Second divider (y=110)
     doc.setDrawColor(...DIVIDER);
     doc.setLineWidth(0.2);
-    doc.line(15, 128, 195, 128);
+    doc.line(15, 110, 195, 110);
 
-    // Section header (y=138)
+    // Section header (y=118)
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
     doc.setTextColor(...ACCENT);
-    doc.text("PUNCH LIST ITEMS", 15, 138);
+    doc.text("PUNCH LIST ITEMS", 15, 118);
 
     // Table
     const rows = items.map((it) => [
@@ -392,7 +391,7 @@ const PunchList = ({
     ]);
 
     autoTable(doc, {
-      startY: 145,
+      startY: 125,
       head: [["Item", "Status", "Assignee", "Notes"]],
       body: rows,
       margin: { left: 15, right: 15, bottom: 25 },
