@@ -489,15 +489,28 @@ const PunchList = ({
             </p>
           </div>
           {!readOnlyShare && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="rounded-xl text-xs"
-              onClick={exportSignOffPdf}
-            >
-              <Share2 className="h-3.5 w-3.5 mr-1.5" />
-              Share with Homeowner
-            </Button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-xl text-xs"
+                onClick={exportSignOffPdf}
+              >
+                <Share2 className="h-3.5 w-3.5 mr-1.5" />
+                Share with Homeowner
+              </Button>
+              {isEditor && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="rounded-xl text-xs border-warning/40 text-warning hover:bg-warning/10 hover:text-warning"
+                  onClick={() => setReopenOpen(true)}
+                >
+                  <LockOpen className="h-3.5 w-3.5 mr-1.5" />
+                  Reopen
+                </Button>
+              )}
+            </div>
           )}
         </div>
       )}
