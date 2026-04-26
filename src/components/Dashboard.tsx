@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import { ProjectData } from "@/hooks/useProjects";
 import { getProjectStats, getAggregatedStats } from "@/types/project";
@@ -15,6 +15,22 @@ import { ProjectTemplate } from "@/hooks/useTemplates";
 import AppLayout from "@/components/AppLayout";
 import { cn } from "@/lib/utils";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  rectSortingStrategy,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
 
 interface DashboardProps {
   projects: ProjectData[];
@@ -33,9 +49,26 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
   const [createOpen, setCreateOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [view, setView] = useState<"all" | "open" | "completed">("all");
+  const [projectOrder, setProjectOrder] = useLocalStorage<string[]>("dashboard-project-order", []);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  // Apply persisted order
+  const orderedProjects = useMemo(() => {
+    if (!projectOrder.length) return projects;
+    const indexMap = new Map(projectOrder.map((id, i) => [id, i]));
+    return [...projects].sort((a, b) => {
+      const ai = indexMap.has(a.id) ? indexMap.get(a.id)! : Number.MAX_SAFE_INTEGER;
+      const bi = indexMap.has(b.id) ? indexMap.get(b.id)! : Number.MAX_SAFE_INTEGER;
+      return ai - bi;
+    });
+  }, [projects, projectOrder]);
 
   const filteredProjects = useMemo(() => {
-    let list = projects;
+    let list = orderedProjects;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter((p) =>
@@ -45,7 +78,7 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
       );
     }
     return list;
-  }, [projects, searchQuery]);
+  }, [orderedProjects, searchQuery]);
 
   const isProjectCompleted = (p: ProjectData) => {
     if (p.tasks.length === 0) return false;
@@ -55,6 +88,19 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
   const openProjects = useMemo(() => filteredProjects.filter(p => !isProjectCompleted(p)), [filteredProjects]);
   const completedProjects = useMemo(() => filteredProjects.filter(p => isProjectCompleted(p)), [filteredProjects]);
   const displayProjects = view === "open" ? openProjects : view === "completed" ? completedProjects : filteredProjects;
+
+  const canSort = view === "all" && !searchQuery.trim();
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const ids = orderedProjects.map((p) => p.id);
+    const oldIndex = ids.indexOf(active.id as string);
+    const newIndex = ids.indexOf(over.id as string);
+    if (oldIndex < 0 || newIndex < 0) return;
+    const next = arrayMove(ids, oldIndex, newIndex);
+    setProjectOrder(next);
+  };
 
   const handleAdd = async () => {
     if (!newName.trim() || creating) return;
@@ -276,16 +322,28 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
               </div>
             )
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {displayProjects.map((project) => (
-                <ProjectCard
-                  key={project.id}
-                  project={project}
-                  getSubProjects={getSubProjects}
-                  onDelete={onDelete}
-                />
-              ))}
-            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={displayProjects.map((p) => p.id)}
+                strategy={rectSortingStrategy}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {displayProjects.map((project) => (
+                    <ProjectCard
+                      key={project.id}
+                      project={project}
+                      getSubProjects={getSubProjects}
+                      onDelete={onDelete}
+                      sortable={canSort}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           )}
         </section>
       </div>
