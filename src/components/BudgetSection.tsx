@@ -1,8 +1,8 @@
 import { ProjectData } from "@/types/project";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import ProgressBar from "./ProgressBar";
 import { DollarSign, Wallet } from "lucide-react";
+import { DebouncedNumberInput } from "@/components/inputs/DebouncedInput";
 
 interface BudgetSectionProps {
   data: ProjectData;
@@ -26,13 +26,11 @@ const BudgetSection = ({ data, onChange }: BudgetSectionProps) => {
           <Label htmlFor="budget" className="text-xs text-muted-foreground font-medium">Total Budget</Label>
           <div className="relative mt-1.5">
             <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
+            <DebouncedNumberInput
               id="budget"
-              type="text"
-              inputMode="numeric"
               placeholder="0"
-              value={data.totalBudget ? data.totalBudget.toLocaleString() : ""}
-              onChange={(e) => onChange({ totalBudget: Number(e.target.value.replace(/[^0-9.]/g, "")) || 0 })}
+              value={data.totalBudget}
+              onDebouncedChange={(n) => onChange({ totalBudget: n })}
               className="pl-9 rounded-xl h-10"
             />
           </div>
@@ -42,13 +40,11 @@ const BudgetSection = ({ data, onChange }: BudgetSectionProps) => {
             <Label htmlFor="labor" className="text-xs text-muted-foreground font-medium">Labor</Label>
             <div className="relative mt-1.5">
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
+              <DebouncedNumberInput
                 id="labor"
-                type="text"
-                inputMode="numeric"
                 placeholder="0"
-                value={data.laborCosts ? data.laborCosts.toLocaleString() : ""}
-                onChange={(e) => onChange({ laborCosts: Number(e.target.value.replace(/[^0-9.]/g, "")) || 0 })}
+                value={data.laborCosts}
+                onDebouncedChange={(n) => onChange({ laborCosts: n })}
                 className="pl-9 rounded-xl h-10"
               />
             </div>
@@ -57,13 +53,11 @@ const BudgetSection = ({ data, onChange }: BudgetSectionProps) => {
             <Label htmlFor="material" className="text-xs text-muted-foreground font-medium">Materials</Label>
             <div className="relative mt-1.5">
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
+              <DebouncedNumberInput
                 id="material"
-                type="text"
-                inputMode="numeric"
                 placeholder="0"
-                value={data.materialCosts ? data.materialCosts.toLocaleString() : ""}
-                onChange={(e) => onChange({ materialCosts: Number(e.target.value.replace(/[^0-9.]/g, "")) || 0 })}
+                value={data.materialCosts}
+                onDebouncedChange={(n) => onChange({ materialCosts: n })}
                 className="pl-9 rounded-xl h-10"
               />
             </div>
