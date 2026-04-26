@@ -117,10 +117,11 @@ const Settings = () => {
         .from("company-assets")
         .upload(path, file, { upsert: true, contentType: file.type });
       if (upErr) throw upErr;
-      const { data: urlData } = supabase.storage
+      const { data: urlData, error: urlErr } = await supabase.storage
         .from("company-assets")
-        .getPublicUrl(path);
-      update("logo_url", urlData.publicUrl + "?t=" + Date.now());
+        .createSignedUrl(path, 60 * 60 * 24 * 365);
+      if (urlErr) throw urlErr;
+      update("logo_url", urlData.signedUrl);
       toast.success("Logo uploaded");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Upload failed";

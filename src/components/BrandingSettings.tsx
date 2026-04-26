@@ -54,11 +54,11 @@ const BrandingSettings = () => {
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
+      const { data: urlData, error: urlError } = await supabase.storage
         .from("brand-logos")
-        .getPublicUrl(path);
-
-      setLogoUrl(urlData.publicUrl + "?t=" + Date.now());
+        .createSignedUrl(path, 60 * 60 * 24 * 365);
+      if (urlError) throw urlError;
+      setLogoUrl(urlData.signedUrl);
       toast.success("Logo uploaded!");
     } catch (err: any) {
       toast.error(err?.message || "Upload failed");
