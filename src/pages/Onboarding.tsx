@@ -115,12 +115,32 @@ const Onboarding = () => {
       brand_color: brandColor,
       ...(opts.complete ? { onboarding_complete: true } : {}),
     };
-    const { error } = await supabase
+    const { data: settings, error } = await supabase
       .from("company_settings")
-      .upsert(payload, { onConflict: "user_id" });
+      .upsert(payload, { onConflict: "user_id" })
+      .select("id")
+      .maybeSingle();
     if (error) {
       toast.error("Couldn't save — please try again");
       return false;
+    }
+
+    // Ensure an `owner` membership row exists for this user so the
+    // role-based access system recognises them as the company owner.
+    if (settings?.id) {
+      const { data: existing } = await supabase
+        .from("company_members")
+        .select("id")
+        .eq("company_id", settings.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!existing) {
+        await supabase.from("company_members").insert({
+          company_id: settings.id,
+          user_id: user.id,
+          role: "owner",
+        });
+      }
     }
     return true;
   };
