@@ -634,6 +634,34 @@ const PunchList = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Photo lightbox */}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setLightboxSrc(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightboxSrc(null);
+            }}
+            className="absolute top-4 right-4 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <img
+            src={lightboxSrc}
+            alt="Punch list photo"
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
+          />
+        </div>
+      )}
     </div>
   );
 };
