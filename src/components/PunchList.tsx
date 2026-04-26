@@ -270,6 +270,11 @@ const PunchList = ({
 
   const exportSignOffPdf = async () => {
     const companyName = brand.brandName?.trim() || "Remodel Tracker Pro";
+    const logoUrl =
+      brand.brandLogoUrl ||
+      (user?.user_metadata as any)?.avatar_url ||
+      (user?.user_metadata as any)?.logoUrl ||
+      "";
     const projName = projectName?.trim() || "Project";
     const projAddr = projectAddress?.trim() || "";
     const now = new Date();
@@ -307,17 +312,11 @@ const PunchList = ({
     const rowsHtml = items
       .map((it, idx) => {
         const bg = idx % 2 === 0 ? "#ffffff" : "#f9fafb";
-        const noteParts = [
-          it.notes || "",
-          it.failReason ? `Failed: ${it.failReason}` : "",
-        ].filter(Boolean);
-        const notes = noteParts.length ? escapeHtml(noteParts.join(" · ")) : "—";
         return `
           <tr style="background:${bg}; border-bottom:1px solid #f3f4f6;">
             <td style="padding:12px; color:#0f1117; font-size:12px; vertical-align:top;">${escapeHtml(it.title)}</td>
             <td style="padding:12px; vertical-align:top;">${statusPill(it.status)}</td>
             <td style="padding:12px; color:#374151; font-size:12px; vertical-align:top;">${escapeHtml(it.assignee || "—")}</td>
-            <td style="padding:12px; color:#6b7280; font-size:12px; vertical-align:top;">${notes}</td>
           </tr>
         `;
       })
@@ -328,21 +327,25 @@ const PunchList = ({
 
         <div style="position:absolute; left:0; top:0; width:8px; height:100%; background:#1d4ed8;"></div>
 
-        <div style="padding:40px 48px 32px 56px; border-bottom:1px solid #e5e7eb;">
+        <div style="padding:24px 48px 20px 56px; border-bottom:1px solid #e5e7eb;">
           <div style="display:flex; justify-content:space-between; align-items:flex-start;">
             <div>
               <div style="font-size:11px; font-weight:700; color:#1d4ed8; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:6px;">PUNCH OUT REPORT</div>
-              <div style="font-size:26px; font-weight:700; color:#0f1117; letter-spacing:-0.02em;">${escapeHtml(projName)}</div>
+              <div style="font-size:22px; font-weight:700; color:#0f1117; letter-spacing:-0.02em;">${escapeHtml(projName)}</div>
               <div style="font-size:12px; color:#6b7280; margin-top:4px;">${escapeHtml(projAddr || "—")}</div>
             </div>
-            <div style="text-align:right;">
+            ${
+              logoUrl
+                ? `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(companyName)}" crossorigin="anonymous" style="width:60px; height:60px; object-fit:contain; border-radius:4px;" />`
+                : `<div style="text-align:right;">
               <div style="font-size:13px; font-weight:700; color:#0f1117;">${escapeHtml(companyName)}</div>
               <div style="font-size:11px; color:#6b7280; margin-top:2px;">Licensed Contractor</div>
-            </div>
+            </div>`
+            }
           </div>
         </div>
 
-        <div style="margin:32px 48px 0 56px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:16px 20px; display:flex; align-items:center; justify-content:space-between;">
+        <div style="margin:16px 48px 0 56px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:16px 20px; display:flex; align-items:center; justify-content:space-between;">
           <div style="display:flex; align-items:center; gap:12px;">
             <div style="width:20px; height:20px; background:#16a34a; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:12px; font-weight:bold; flex-shrink:0;">&#10003;</div>
             <div>
@@ -357,7 +360,7 @@ const PunchList = ({
           </div>
         </div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:#e5e7eb; margin:28px 48px 0 56px; border-radius:8px; overflow:hidden;">
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:#e5e7eb; margin:16px 48px 0 56px; border-radius:8px; overflow:hidden;">
           <div style="background:#fff; padding:16px 20px;">
             <div style="font-size:10px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.08em;">Total Items</div>
             <div style="font-size:24px; font-weight:700; color:#0f1117; margin-top:4px;">${total}</div>
@@ -372,7 +375,7 @@ const PunchList = ({
           </div>
         </div>
 
-        <div style="margin:28px 48px 80px 56px;">
+        <div style="margin:16px 48px 80px 56px;">
           <div style="font-size:10px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:12px;">Punch Out Items</div>
           <table style="width:100%; border-collapse:collapse; font-size:12px;">
             <thead>
@@ -380,11 +383,10 @@ const PunchList = ({
                 <th style="text-align:left; padding:10px 12px; font-size:10px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:0.06em;">Item</th>
                 <th style="text-align:left; padding:10px 12px; font-size:10px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:0.06em; width:80px;">Status</th>
                 <th style="text-align:left; padding:10px 12px; font-size:10px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:0.06em; width:120px;">Assignee</th>
-                <th style="text-align:left; padding:10px 12px; font-size:10px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:0.06em;">Notes</th>
               </tr>
             </thead>
             <tbody>
-              ${rowsHtml || `<tr><td colspan="4" style="padding:24px 12px; text-align:center; color:#9ca3af; font-size:12px;">No items</td></tr>`}
+              ${rowsHtml || `<tr><td colspan="3" style="padding:24px 12px; text-align:center; color:#9ca3af; font-size:12px;">No items</td></tr>`}
             </tbody>
           </table>
         </div>
