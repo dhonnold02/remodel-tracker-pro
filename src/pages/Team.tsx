@@ -532,6 +532,65 @@ const Team = () => {
           </div>
         </section>
       </div>
+
+      {/* Role permissions modal */}
+      <Dialog open={permissionsOpen} onOpenChange={setPermissionsOpen}>
+        <DialogContent className="max-w-3xl bg-card border border-border rounded-2xl p-0 overflow-hidden">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
+            <DialogTitle className="font-heading text-lg font-bold text-foreground">
+              Role Permissions
+            </DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[70vh] overflow-auto">
+            <table className="w-full text-sm">
+              <thead className="sticky top-0 bg-card z-10">
+                <tr className="border-b border-border">
+                  <th className="text-left font-medium text-muted-foreground px-4 py-3">
+                    Feature
+                  </th>
+                  {PERMISSION_ROLES.map((r) => (
+                    <th key={r} className="px-3 py-3 text-center">
+                      <span
+                        className={cn(
+                          "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap",
+                          ROLE_BADGE[r]
+                        )}
+                      >
+                        {ROLE_LABEL[r]}
+                      </span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {PERMISSIONS.map((p, i) => (
+                  <tr
+                    key={p.feature}
+                    className={cn(
+                      "border-b border-border/50",
+                      i % 2 === 1 && "bg-secondary/30"
+                    )}
+                  >
+                    <td className="px-4 py-2.5 text-foreground">{p.feature}</td>
+                    {PERMISSION_ROLES.map((r) => {
+                      const ok = p.allowed.includes(r);
+                      return (
+                        <td key={r} className="px-3 py-2.5 text-center">
+                          {ok ? (
+                            <Check className="h-4 w-4 text-green-500 inline-block" />
+                          ) : (
+                            <X className="h-4 w-4 text-red-500 inline-block" />
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };
