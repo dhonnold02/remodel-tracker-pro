@@ -140,6 +140,7 @@ interface TaskCardProps {
   task: Task;
   subtasks: Task[];
   isEditor: boolean;
+  canComplete: boolean;
   expanded: boolean;
   onToggleExpand: () => void;
   onToggleComplete: (id: string) => void;
@@ -150,7 +151,7 @@ interface TaskCardProps {
 }
 
 const TaskCard = ({
-  task, subtasks, isEditor, expanded, onToggleExpand,
+  task, subtasks, isEditor, canComplete, expanded, onToggleExpand,
   onToggleComplete, onUpdate, onAddSubtask, onRemove, isOverlay,
 }: TaskCardProps) => {
   const sortable = useSortable({
@@ -190,8 +191,8 @@ const TaskCard = ({
         )}
         <Checkbox
           checked={task.completed}
-          onCheckedChange={() => isEditor && onToggleComplete(task.id)}
-          disabled={!isEditor}
+          onCheckedChange={() => (isEditor || canComplete) && onToggleComplete(task.id)}
+          disabled={!isEditor && !canComplete}
           className="mt-0.5"
         />
         <TitleInput
@@ -310,8 +311,8 @@ const TaskCard = ({
             <div key={s.id} className="flex items-center gap-2 py-1">
               <Checkbox
                 checked={s.completed}
-                onCheckedChange={() => isEditor && onToggleComplete(s.id)}
-                disabled={!isEditor}
+                onCheckedChange={() => (isEditor || canComplete) && onToggleComplete(s.id)}
+                disabled={!isEditor && !canComplete}
                 className="h-3.5 w-3.5"
               />
               <TitleInput
