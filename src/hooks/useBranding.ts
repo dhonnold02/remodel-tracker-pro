@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 export interface BrandSettings {
   brandColor: string | null;
@@ -15,11 +16,18 @@ export function useBranding() {
 
   const fetchBrand = useCallback(async () => {
     if (!user) { setLoading(false); return; }
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("profiles")
       .select("brand_color, brand_logo_url, brand_name")
       .eq("id", user.id)
       .single();
+
+    if (error && error.code !== "PGRST116") {
+      // PGRST116 = no row found, which is acceptable for a brand-not-set-yet user
+      toast.error("Failed to load branding settings — please refresh");
+      setLoading(false);
+      return;
+    }
 
     if (data) {
       setBrand({

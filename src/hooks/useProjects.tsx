@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef, Re
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { cacheProjects, getCachedProjects } from "@/hooks/useOfflineSync";
+import { toast } from "sonner";
 
 const logActivity = async (
   userId: string,
@@ -147,6 +148,17 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
   const initialLoadDone = useRef(false);
 
+  // Stable refs to sync helpers (declared below) so updateProject's
+  // useCallback deps stay correct without recreating on every render.
+  const syncRef = useRef({
+    syncTasks: null as null | ((projectId: string, tasks: Task[]) => Promise<void>),
+    syncPhotos: null as null | ((projectId: string, photos: FileAttachment[]) => Promise<void>),
+    syncBlueprints: null as null | ((projectId: string, blueprints: FileAttachment[]) => Promise<void>),
+    syncChangeOrders: null as null | ((projectId: string, orders: ChangeOrder[]) => Promise<void>),
+    syncInvoices: null as null | ((projectId: string, invoices: Invoice[]) => Promise<void>),
+    syncEvents: null as null | ((projectId: string, events: ProjectEvent[]) => Promise<void>),
+  });
+
   // Fetch all projects the user is a member of
   const fetchProjects = useCallback(async () => {
     if (!user) { setProjects([]); setLoading(false); return; }
@@ -165,11 +177,17 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     }
     
     // Get project IDs user is member of
-    const { data: memberships } = await supabase
+    const { data: memberships, error: membershipsError } = await supabase
       .from("project_members")
       .select("project_id")
       .eq("user_id", user.id);
-    
+
+    if (membershipsError) {
+      toast.error("Failed to load projects — please refresh");
+      setLoading(false);
+      return;
+    }
+
     if (!memberships || memberships.length === 0) {
       setProjects([]);
       setLoading(false);
@@ -179,11 +197,16 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     const projectIds = memberships.map((m) => m.project_id);
 
     // Fetch projects
-    const { data: projectRows } = await supabase
+    const { data: projectRows, error: projectsError } = await supabase
       .from("projects")
       .select("*")
       .in("id", projectIds);
 
+    if (projectsError) {
+      toast.error("Failed to load projects — please refresh");
+      setLoading(false);
+      return;
+    }
     if (!projectRows) { setProjects([]); setLoading(false); return; }
 
     // Fetch related data for all projects in parallel
@@ -197,6 +220,22 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       supabase.from("change_order_comments").select("*").in("project_id", projectIds).order("created_at"),
       supabase.from("project_events").select("*").in("project_id", projectIds).order("date"),
     ]);
+
+    const relatedErrors: { res: { error: any }; label: string }[] = [
+      { res: tasksRes, label: "tasks" },
+      { res: photosRes, label: "photos" },
+      { res: blueprintsRes, label: "blueprints" },
+      { res: ordersRes, label: "change orders" },
+      { res: membersRes, label: "team members" },
+      { res: invoicesRes, label: "invoices" },
+      { res: commentsRes, label: "comments" },
+      { res: eventsRes, label: "events" },
+    ];
+    for (const { res, label } of relatedErrors) {
+      if (res.error) {
+        toast.error(`Failed to load ${label} — please refresh`);
+      }
+    }
 
     const tasks = tasksRes.data || [];
     const photos = photosRes.data || [];
@@ -395,7 +434,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     if (partial.tasks !== undefined) {
       const oldProject = projectsRef.current.find(p => p.id === id);
       const oldTasks = oldProject?.tasks || [];
-      await syncTasks(id, partial.tasks);
+      await syncRef.current.syncTasks?.(id, partial.tasks);
       // Detect changes for logging
       const newCompleted = partial.tasks.filter(t => t.completed && !oldTasks.find(o => o.id === t.id && o.completed));
       const newTasks = partial.tasks.filter(t => !oldTasks.find(o => o.id === t.id));
@@ -414,7 +453,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     // Sync photos if provided
     if (partial.photos !== undefined) {
       const oldPhotos = projectsRef.current.find(p => p.id === id)?.photos || [];
-      await syncPhotos(id, partial.photos);
+      await syncRef.current.syncPhotos?.(id, partial.photos);
       const addedPhotos = partial.photos.filter(p => !oldPhotos.find(o => o.id === p.id));
       for (const p of addedPhotos) {
         await logActivity(user.id, displayName, id, "photo_uploaded", `uploaded photo "${p.name}"`);
@@ -424,7 +463,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     // Sync blueprints if provided
     if (partial.blueprints !== undefined) {
       const oldBlueprints = projectsRef.current.find(p => p.id === id)?.blueprints || [];
-      await syncBlueprints(id, partial.blueprints);
+      await syncRef.current.syncBlueprints?.(id, partial.blueprints);
       const addedBp = partial.blueprints.filter(b => !oldBlueprints.find(o => o.id === b.id));
       for (const b of addedBp) {
         await logActivity(user.id, displayName, id, "blueprint_uploaded", `uploaded blueprint "${b.name}"`);
@@ -434,7 +473,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     // Sync change orders if provided
     if (partial.changeOrders !== undefined) {
       const oldOrders = projectsRef.current.find(p => p.id === id)?.changeOrders || [];
-      await syncChangeOrders(id, partial.changeOrders);
+      await syncRef.current.syncChangeOrders?.(id, partial.changeOrders);
       const addedOrders = partial.changeOrders.filter(o => !oldOrders.find(old => old.id === o.id));
       for (const o of addedOrders) {
         await logActivity(user.id, displayName, id, "change_order_added", `added change order`);
@@ -443,12 +482,12 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
     // Sync invoices if provided
     if (partial.invoices !== undefined) {
-      await syncInvoices(id, partial.invoices);
+      await syncRef.current.syncInvoices?.(id, partial.invoices);
     }
 
     // Sync events if provided
     if ((partial as any).events !== undefined) {
-      await syncEvents(id, (partial as any).events as ProjectEvent[]);
+      await syncRef.current.syncEvents?.(id, (partial as any).events as ProjectEvent[]);
     }
 
     // Optimistic local update
@@ -668,6 +707,14 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     await supabase.from("projects").delete().eq("id", id);
     setProjects((prev) => prev.filter((p) => p.id !== id && p.parentId !== id));
   }, []);
+
+  // Keep syncRef pointing at the latest closures (they capture `user` etc.)
+  syncRef.current.syncTasks = syncTasks;
+  syncRef.current.syncPhotos = syncPhotos;
+  syncRef.current.syncBlueprints = syncBlueprints;
+  syncRef.current.syncChangeOrders = syncChangeOrders;
+  syncRef.current.syncInvoices = syncInvoices;
+  syncRef.current.syncEvents = syncEvents;
 
   const getProject = useCallback(
     (id: string) => projects.find((p) => p.id === id),

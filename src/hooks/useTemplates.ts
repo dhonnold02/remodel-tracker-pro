@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Task } from "@/hooks/useProjects";
+import { toast } from "sonner";
 
 export interface ProjectTemplate {
   id: string;
@@ -21,11 +22,17 @@ export function useTemplates() {
 
   const fetchTemplates = useCallback(async () => {
     if (!user) { setTemplates([]); setLoading(false); return; }
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("project_templates")
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
+
+    if (error) {
+      toast.error("Failed to load templates — please refresh");
+      setLoading(false);
+      return;
+    }
 
     setTemplates(
       (data || []).map((t: any) => ({
