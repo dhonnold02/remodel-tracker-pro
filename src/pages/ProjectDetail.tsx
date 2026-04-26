@@ -605,6 +605,8 @@ const ProjectDetailPage = () => {
                     onChange={savePunch}
                     isEditor={isEditor}
                     members={project.members}
+                    projectName={project.name}
+                    projectAddress={project.address}
                   />
                 </div>
               </TabsContent>
