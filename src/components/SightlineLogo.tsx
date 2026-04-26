@@ -1,4 +1,4 @@
-const SightlineLogo = ({ size = 22 }: { size?: number }) => (
+export const SightlineLogo = ({ size = 22 }: { size?: number }) => (
   <svg
     width={size}
     height={size}
