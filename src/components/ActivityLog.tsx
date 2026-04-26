@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckSquare, DollarSign, Camera, FileText, FolderPlus, ClipboardList, Activity } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 interface ActivityEntry {
   id: string;
@@ -50,16 +51,21 @@ const ActivityLog = ({ projectId }: ActivityLogProps) => {
   const [filter, setFilter] = useState<CategoryKey>("all");
   const [loading, setLoading] = useState(true);
 
-  const fetchLogs = async () => {
-    const { data } = await supabase
+  const fetchLogs = useCallback(async () => {
+    const { data, error } = await supabase
       .from("activity_logs")
       .select("*")
       .eq("project_id", projectId)
       .order("created_at", { ascending: false })
       .limit(100);
+    if (error) {
+      toast.error("Failed to load activity log — please refresh");
+      setLoading(false);
+      return;
+    }
     setLogs((data as ActivityEntry[]) || []);
     setLoading(false);
-  };
+  }, [projectId]);
 
   useEffect(() => {
     fetchLogs();
@@ -68,7 +74,7 @@ const ActivityLog = ({ projectId }: ActivityLogProps) => {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "activity_logs", filter: `project_id=eq.${projectId}` }, () => fetchLogs())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [projectId]);
+  }, [projectId, fetchLogs]);
 
   const filtered = logs.filter((l) => matchesFilter(l.action_type, filter));
 
