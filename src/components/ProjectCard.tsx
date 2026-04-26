@@ -2,19 +2,55 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ProjectData } from "@/hooks/useProjects";
 import { getProjectStats, getAggregatedStats } from "@/types/project";
-import { Trash2, MapPin, CheckCircle2 } from "lucide-react";
+import { MapPin, CheckCircle2, MoreHorizontal, GripVertical, ExternalLink, Navigation, Trash2 } from "lucide-react";
 import ProgressBar from "@/components/ProgressBar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface ProjectCardProps {
   project: ProjectData;
   getSubProjects: (parentId: string) => ProjectData[];
   onDelete: (id: string) => Promise<void>;
   isSubProject?: boolean;
+  sortable?: boolean;
 }
 
-const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false }: ProjectCardProps) => {
+const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false, sortable = false }: ProjectCardProps) => {
   const navigate = useNavigate();
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: project.id,
+    disabled: !sortable,
+  });
+
+  const dragStyle = sortable
+    ? {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+        zIndex: isDragging ? 50 : "auto",
+      }
+    : undefined;
 
   const subs = getSubProjects(project.id);
   const hasSubs = subs.length > 0;
@@ -27,19 +63,50 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false }
   const taskPercent = stats.taskPercent;
   const isCompleted = project.tasks.length > 0 && project.tasks.every(t => t.completed);
 
+  const projectName = project.name || "Untitled Project";
+  const canDelete = confirmText.trim() === projectName;
+
+  const handleOpen = () => navigate(`/project/${project.id}`);
+  const handleDirections = () => {
+    if (!project.address) return;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(project.address)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+  const handleConfirmDelete = async () => {
+    if (!canDelete) return;
+    await onDelete(project.id);
+    setDeleteOpen(false);
+    setConfirmText("");
+  };
+
   return (
     <div
+      ref={setNodeRef}
+      style={dragStyle}
       className={`premium-card-hover p-5 space-y-4 cursor-pointer group relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:rounded-t-2xl before:bg-primary before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-200 ${
         isCompleted ? "border-l-4 border-l-success" : ""
       }`}
-      onClick={() => navigate(`/project/${project.id}`)}
+      onClick={handleOpen}
     >
+      {/* Drag handle */}
+      {sortable && (
+        <button
+          {...attributes}
+          {...listeners}
+          onClick={(e) => e.stopPropagation()}
+          aria-label="Drag to reorder"
+          className="absolute top-2 left-2 p-1 rounded-md text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing touch-none"
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+      )}
+
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h3 className="font-heading font-semibold text-foreground truncate">
-              {project.name || "Untitled Project"}
+              {projectName}
             </h3>
             {isCompleted && <CheckCircle2 className="h-4 w-4 text-success shrink-0" />}
           </div>
@@ -56,25 +123,50 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false }
               {subs.length} sub
             </span>
           )}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (confirmDelete) {
-                onDelete(project.id);
-                setConfirmDelete(false);
-              } else {
-                setConfirmDelete(true);
-                setTimeout(() => setConfirmDelete(false), 3000);
-              }
-            }}
-            className={`p-1.5 rounded-lg transition-all duration-150 ${
-              confirmDelete
-                ? "text-destructive bg-destructive/10"
-                : "text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100"
-            }`}
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                onClick={(e) => e.stopPropagation()}
+                aria-label="Project actions"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-150"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card border border-border rounded-xl shadow-lg w-48 p-1"
+            >
+              <DropdownMenuItem
+                onSelect={handleOpen}
+                className="text-sm text-foreground hover:bg-secondary focus:bg-secondary rounded-lg cursor-pointer gap-2"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Open project
+              </DropdownMenuItem>
+              {project.address && (
+                <DropdownMenuItem
+                  onSelect={handleDirections}
+                  className="text-sm text-foreground hover:bg-secondary focus:bg-secondary rounded-lg cursor-pointer gap-2"
+                >
+                  <Navigation className="h-4 w-4" />
+                  Get directions
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault();
+                  setDeleteOpen(true);
+                }}
+                className="text-sm text-destructive hover:bg-destructive/10 focus:bg-destructive/10 focus:text-destructive rounded-lg cursor-pointer gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete project
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -91,6 +183,39 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false }
         <ProgressBar label="Budget" value={budgetPercent} variant="budget" />
         <ProgressBar label="Tasks" value={taskPercent} variant="completion" />
       </div>
+
+      <AlertDialog open={deleteOpen} onOpenChange={(o) => { setDeleteOpen(o); if (!o) setConfirmText(""); }}>
+        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this project?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete <span className="font-semibold text-foreground">{projectName}</span> including all tasks, invoices, photos, blueprints, notes, and punch out items. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground">
+              Type the project name to confirm
+            </label>
+            <Input
+              autoFocus
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder={projectName}
+              className="rounded-xl"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={!canDelete}
+              className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50 disabled:pointer-events-none"
+            >
+              Delete Project
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
