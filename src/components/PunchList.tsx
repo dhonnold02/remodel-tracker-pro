@@ -268,153 +268,171 @@ const PunchList = ({
     const safeProj = projName.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "Project";
     const fileName = `${safeProj}-PunchList-${fileDate}.pdf`;
 
-    const doc = new jsPDF({ unit: "pt", format: "letter" });
+    // A4 in mm: 210 x 297
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 48;
 
     // Colors
     const HEADER_BG: [number, number, number] = [15, 17, 23];
+    const HEADER_SUB: [number, number, number] = [150, 150, 150];
     const ACCENT: [number, number, number] = [59, 130, 246];
-    const SUCCESS: [number, number, number] = [22, 163, 74];
-    const DANGER: [number, number, number] = [220, 38, 38];
-    const MUTED: [number, number, number] = [107, 114, 128];
-    const TEXT: [number, number, number] = [17, 24, 39];
+    const SUCCESS: [number, number, number] = [34, 197, 94];
+    const DANGER: [number, number, number] = [239, 68, 68];
+    const TEXT_DARK: [number, number, number] = [40, 40, 40];
+    const TEXT_BLACK: [number, number, number] = [0, 0, 0];
+    const TEXT_60: [number, number, number] = [60, 60, 60];
+    const TEXT_100: [number, number, number] = [100, 100, 100];
+    const TEXT_120: [number, number, number] = [120, 120, 120];
+    const DIVIDER: [number, number, number] = [220, 220, 220];
+    const TABLE_HEAD_BG: [number, number, number] = [245, 245, 245];
+    const TABLE_ALT_BG: [number, number, number] = [250, 250, 250];
 
-    // Dark header bar
+    // Header band — full width, dark, height 40
     doc.setFillColor(...HEADER_BG);
-    doc.rect(0, 0, pageWidth, 56, "F");
+    doc.rect(0, 0, pageWidth, 40, "F");
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
     doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text(companyName, margin, 34);
+    doc.text(companyName, 15, 26);
 
-    // Title
-    let y = 96;
-    doc.setTextColor(...TEXT);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(24);
-    doc.text(projName, margin, y);
+    doc.setFontSize(9);
+    doc.setTextColor(...HEADER_SUB);
+    doc.text("Punch Out Report", 195, 26, { align: "right" });
 
+    // Project title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(...TEXT_BLACK);
+    doc.text(projName, 15, 55);
+
+    // Address
     if (projAddr) {
-      y += 22;
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(11);
-      doc.setTextColor(...MUTED);
-      const addrLines = doc.splitTextToSize(projAddr.replace(/\n/g, " · "), pageWidth - margin * 2);
-      doc.text(addrLines, margin, y);
-      y += (addrLines.length - 1) * 14;
+      doc.setFontSize(10);
+      doc.setTextColor(...TEXT_100);
+      const addr = projAddr.replace(/\n+/g, " · ");
+      doc.text(addr, 15, 68);
     }
 
-    // Complete badge
-    y += 28;
-    const badgeText = "  \u2713  Project Complete  ";
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    const badgeW = doc.getTextWidth(badgeText) + 8;
-    const badgeH = 24;
+    // Completion badge — rounded rect, success green
     doc.setFillColor(...SUCCESS);
-    doc.roundedRect(margin, y - badgeH + 6, badgeW, badgeH, 6, 6, "F");
+    doc.roundedRect(15, 78, 90, 16, 3, 3, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
     doc.setTextColor(255, 255, 255);
-    doc.text(badgeText, margin + 4, y);
+    doc.text("\u2713 PROJECT COMPLETE", 15 + 90 / 2, 88, { align: "center" });
 
-    // Signed off line
-    y += 28;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(...MUTED);
+    // Sign-off line
     const signedBy = data.signedOffBy || "—";
     const signedDate = data.signedOffAt ? formatDate(data.signedOffAt) : dateLong;
-    doc.text(`Signed off by: ${signedBy}    \u00B7    Date: ${signedDate}`, margin, y);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(...TEXT_60);
+    doc.text(`Signed off by: ${signedBy}  \u00B7  Date: ${signedDate}`, 15, 103);
 
-    // Summary stats row
-    y += 32;
-    const statW = (pageWidth - margin * 2) / 3;
-    const stats: Array<{ label: string; value: string; color: [number, number, number] }> = [
-      { label: "Total Items", value: String(total), color: TEXT },
-      { label: "Passed", value: String(passed), color: SUCCESS },
-      { label: "Failed", value: String(failed), color: DANGER },
+    // Divider
+    doc.setDrawColor(...DIVIDER);
+    doc.setLineWidth(0.2);
+    doc.line(15, 112, 195, 112);
+
+    // Stats row at y=125, columns at x=15, 80, 145
+    const stats: Array<{
+      x: number;
+      label: string;
+      value: string;
+      color: [number, number, number];
+    }> = [
+      { x: 15, label: "TOTAL ITEMS", value: String(total), color: TEXT_BLACK },
+      { x: 80, label: "PASSED", value: String(passed), color: SUCCESS },
+      { x: 145, label: "FAILED", value: String(failed), color: DANGER },
     ];
-    stats.forEach((s, i) => {
-      const x = margin + statW * i;
+    stats.forEach((s) => {
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(20);
+      doc.setFontSize(18);
       doc.setTextColor(...s.color);
-      doc.text(s.value, x, y);
+      doc.text(s.value, s.x, 125);
+
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(...MUTED);
-      doc.text(s.label.toUpperCase(), x, y + 14);
+      doc.setFontSize(8);
+      doc.setTextColor(...TEXT_120);
+      doc.text(s.label, s.x, 132);
     });
 
     // Divider
-    y += 32;
-    doc.setDrawColor(...ACCENT);
-    doc.setLineWidth(1);
-    doc.line(margin, y, pageWidth - margin, y);
+    doc.setDrawColor(...DIVIDER);
+    doc.setLineWidth(0.2);
+    doc.line(15, 145, 195, 145);
 
     // Section header
-    y += 22;
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
+    doc.setFontSize(8);
     doc.setTextColor(...ACCENT);
-    doc.text("PUNCH LIST ITEMS", margin, y);
+    doc.text("PUNCH LIST ITEMS", 15, 155);
 
     // Table
     const rows = items.map((it) => [
       it.title,
       it.status === "pass" ? "PASS" : it.status === "fail" ? "FAIL" : "PENDING",
       it.assignee || "—",
-      [it.notes, it.failReason ? `Failed: ${it.failReason}` : ""].filter(Boolean).join("\n") || "—",
+      [it.notes, it.failReason ? `Failed: ${it.failReason}` : ""]
+        .filter(Boolean)
+        .join("\n") || "—",
     ]);
 
     autoTable(doc, {
-      startY: y + 10,
+      startY: 162,
       head: [["Item", "Status", "Assignee", "Notes"]],
       body: rows,
-      margin: { left: margin, right: margin },
+      margin: { left: 15, right: 15, bottom: 25 },
       styles: {
         font: "helvetica",
-        fontSize: 10,
-        cellPadding: 8,
-        textColor: TEXT,
-        lineColor: [229, 231, 235],
-        lineWidth: 0.5,
+        fontSize: 8,
+        textColor: TEXT_DARK,
+        cellPadding: 2.2,
+        lineColor: DIVIDER,
+        lineWidth: 0.1,
       },
       headStyles: {
-        fillColor: HEADER_BG,
-        textColor: [255, 255, 255],
+        fillColor: TABLE_HEAD_BG,
+        textColor: TEXT_60,
         fontStyle: "bold",
-        fontSize: 10,
+        fontSize: 8,
+      },
+      alternateRowStyles: {
+        fillColor: TABLE_ALT_BG,
       },
       columnStyles: {
-        0: { cellWidth: "auto" },
-        1: { cellWidth: 70, halign: "center", fontStyle: "bold" },
-        2: { cellWidth: 90 },
-        3: { cellWidth: 160 },
+        0: { cellWidth: 80 },
+        1: { cellWidth: 30, halign: "center" },
+        2: { cellWidth: 40 },
+        3: { cellWidth: 45 },
       },
       didParseCell: (hookData) => {
         if (hookData.section === "body" && hookData.column.index === 1) {
           const v = String(hookData.cell.raw);
-          if (v === "PASS") hookData.cell.styles.textColor = SUCCESS;
-          else if (v === "FAIL") hookData.cell.styles.textColor = DANGER;
-          else hookData.cell.styles.textColor = MUTED;
+          if (v === "PASS") {
+            hookData.cell.styles.textColor = SUCCESS;
+            hookData.cell.styles.fontStyle = "bold";
+          } else if (v === "FAIL") {
+            hookData.cell.styles.textColor = DANGER;
+            hookData.cell.styles.fontStyle = "bold";
+          }
         }
       },
     });
 
-    // Footer + page numbers on every page
+    // Footer on every page
     const pageCount = doc.getNumberOfPages();
     for (let p = 1; p <= pageCount; p++) {
       doc.setPage(p);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
-      doc.setTextColor(...MUTED);
-      const footer = `${companyName}  \u00B7  Generated by Remodel Tracker Pro  \u00B7  ${dateLong}`;
-      doc.text(footer, margin, pageHeight - 24);
-      const pageLabel = `Page ${p} of ${pageCount}`;
-      const pw = doc.getTextWidth(pageLabel);
-      doc.text(pageLabel, pageWidth - margin - pw, pageHeight - 24);
+      doc.setFontSize(7);
+      doc.setTextColor(...HEADER_SUB);
+      const footer = `${companyName}  \u00B7  Remodel Tracker Pro  \u00B7  ${dateLong}`;
+      doc.text(footer, pageWidth / 2, 285, { align: "center" });
+      doc.text(`Page ${p} of ${pageCount}`, 195, 285, { align: "right" });
     }
 
     doc.save(fileName);
