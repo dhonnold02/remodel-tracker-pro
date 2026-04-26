@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Task, TaskPriority } from "@/hooks/useProjects";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,84 @@ import { exportTasksPDF } from "@/lib/exportTasksPDF";
 import { useBranding } from "@/hooks/useBranding";
 
 const DEFAULT_PHASES = ["Demo", "Framing", "Electrical", "Plumbing", "Finish"];
+
+/* Locally-buffered title input — keeps typing smooth even when the parent
+ * fires a remote write on every change. The parent is updated 400ms after
+ * the user stops typing (or immediately on blur). */
+const TitleInput = ({
+  value,
+  onCommit,
+  readOnly,
+  className,
+  placeholder,
+}: {
+  value: string;
+  onCommit: (next: string) => void;
+  readOnly?: boolean;
+  className?: string;
+  placeholder?: string;
+}) => {
+  const [local, setLocal] = useState(value);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const last = useRef(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const cb = useRef(onCommit);
+  cb.current = onCommit;
+
+  // Re-sync from prop only when not focused, so realtime echoes don't
+  // overwrite what the user is typing.
+  useEffect(() => {
+    if (document.activeElement !== inputRef.current && value !== local) {
+      setLocal(value);
+      last.current = value;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  useEffect(() => {
+    return () => {
+      if (timer.current) {
+        clearTimeout(timer.current);
+        if (local !== last.current) cb.current(local);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const flush = () => {
+    if (timer.current) {
+      clearTimeout(timer.current);
+      timer.current = null;
+    }
+    if (local !== last.current) {
+      last.current = local;
+      cb.current(local);
+    }
+  };
+
+  return (
+    <input
+      ref={inputRef}
+      value={local}
+      readOnly={readOnly}
+      placeholder={placeholder}
+      className={className}
+      onChange={(e) => {
+        const v = e.target.value;
+        setLocal(v);
+        if (timer.current) clearTimeout(timer.current);
+        timer.current = setTimeout(() => {
+          timer.current = null;
+          if (v !== last.current) {
+            last.current = v;
+            cb.current(v);
+          }
+        }, 400);
+      }}
+      onBlur={flush}
+    />
+  );
+};
 
 const PRIORITY_CONFIG: Record<TaskPriority, { label: string; cls: string; dot: string }> = {
   high: { label: "High", cls: "text-red-600 bg-red-500/10", dot: "bg-red-500" },
@@ -116,9 +194,9 @@ const TaskCard = ({
           disabled={!isEditor}
           className="mt-0.5"
         />
-        <input
+        <TitleInput
           value={task.title}
-          onChange={(e) => onUpdate(task.id, { title: e.target.value })}
+          onCommit={(v) => onUpdate(task.id, { title: v })}
           placeholder="Task title…"
           readOnly={!isEditor}
           className={cn(
