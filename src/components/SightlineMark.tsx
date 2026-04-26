@@ -36,10 +36,9 @@ const SightlineMark = ({ size = 20, className }: SightlineMarkProps) => (
       stroke="currentColor"
       strokeWidth="2"
       fill="currentColor"
-      fillOpacity="0.1"
+      fillOpacity="0.15"
       rx="1"
     />
-    <circle cx="32" cy="10" r="2.5" fill="currentColor" />
     <line
       x1="10"
       y1="50"

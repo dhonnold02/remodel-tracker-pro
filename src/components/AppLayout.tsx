@@ -70,8 +70,8 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
             {brand.brandLogoUrl ? (
               <img src={brand.brandLogoUrl} alt="Logo" className="h-8 w-8 rounded-lg object-contain" />
             ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-sm text-primary-foreground">
-                <SightlineMark size={18} />
+              <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#0f1827] ring-1 ring-white/10 shadow-sm text-white">
+                <SightlineMark size={20} />
               </div>
             )}
             <div className="min-w-0">
