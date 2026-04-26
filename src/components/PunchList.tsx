@@ -289,114 +289,123 @@ const PunchList = ({
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    // Colors
-    const HEADER_BG: [number, number, number] = [15, 17, 23];
-    const HEADER_SUB: [number, number, number] = [150, 150, 150];
-    const ACCENT: [number, number, number] = [59, 130, 246];
+    // Premium palette
+    const ACCENT: [number, number, number] = [37, 99, 235];
     const SUCCESS: [number, number, number] = [34, 197, 94];
     const DANGER: [number, number, number] = [239, 68, 68];
-    const TEXT_DARK: [number, number, number] = [40, 40, 40];
-    const TEXT_BLACK: [number, number, number] = [0, 0, 0];
+    const INK: [number, number, number] = [15, 17, 23];
+    const TEXT_BODY: [number, number, number] = [40, 40, 40];
     const TEXT_60: [number, number, number] = [60, 60, 60];
     const TEXT_100: [number, number, number] = [100, 100, 100];
     const TEXT_120: [number, number, number] = [120, 120, 120];
-    const DIVIDER: [number, number, number] = [220, 220, 220];
+    const TEXT_150: [number, number, number] = [150, 150, 150];
+    const TEXT_180: [number, number, number] = [180, 180, 180];
+    const HAIRLINE: [number, number, number] = [230, 230, 230];
+    const ROW_LINE: [number, number, number] = [235, 235, 235];
     const TABLE_HEAD_BG: [number, number, number] = [245, 245, 245];
     const TABLE_ALT_BG: [number, number, number] = [250, 250, 250];
 
-    // Header band — full width, dark, height 28
-    doc.setFillColor(...HEADER_BG);
-    doc.rect(0, 0, pageWidth, 28, "F");
+    // Helper: paint left accent bar on every page
+    const paintAccentBar = () => {
+      doc.setFillColor(...ACCENT);
+      doc.rect(0, 0, 6, 297, "F");
+    };
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.setTextColor(255, 255, 255);
-    doc.text(companyName, 15, 18);
+    paintAccentBar();
 
-    doc.setFontSize(9);
-    doc.setTextColor(...HEADER_SUB);
-    doc.text("Punch Out Report", 195, 18, { align: "right" });
-
-    // Project title (y=44)
+    // --- Top section ---
+    // Company name (y=28)
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.setTextColor(...TEXT_BLACK);
-    doc.text(projName, 15, 44);
+    doc.setFontSize(9);
+    doc.setTextColor(...INK);
+    doc.text(companyName, 18, 28);
 
-    // Address — gray RGB(120,120,120) at 9pt (y=52)
+    // Category label (y=36)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(...ACCENT);
+    doc.text("PUNCH OUT REPORT", 18, 36);
+
+    // Hairline divider (y=42)
+    doc.setDrawColor(...HAIRLINE);
+    doc.setLineWidth(0.2);
+    doc.line(18, 42, 200, 42);
+
+    // Project name (y=57)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.setTextColor(...INK);
+    doc.text(projName, 18, 57);
+
+    // Address (y=65)
     if (projAddr) {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       doc.setTextColor(...TEXT_120);
       const addr = projAddr.replace(/\n+/g, " · ");
-      doc.text(addr, 15, 52);
+      doc.text(addr, 18, 65);
     }
 
-    // Completion badge — pill 45x8 at x=15, y=60
-    {
-      const bx = 15;
-      const by = 60;
-      const bw = 45;
-      const bh = 8;
-      doc.setFillColor(...SUCCESS);
-      doc.roundedRect(bx, by, bw, bh, 2, 2, "F");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(6.5);
-      doc.setTextColor(255, 255, 255);
-      doc.text("PROJECT COMPLETE", bx + bw / 2, by + bh / 2 + 1.1, {
-        align: "center",
-        baseline: "alphabetic",
-      });
-    }
+    // --- Completion block ---
+    // Status dot + line
+    doc.setFillColor(...SUCCESS);
+    doc.circle(18, 80, 1.6, "F");
 
-    // Sign-off line (y=76)
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(...SUCCESS);
+    doc.text("All items passed \u00B7 Project complete", 24, 81);
+
+    // Sign off line
     const signedBy = data.signedOffBy || "—";
     const signedDate = data.signedOffAt ? formatDate(data.signedOffAt) : dateLong;
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setTextColor(...TEXT_60);
-    doc.text(`Signed off by: ${signedBy}  \u00B7  Date: ${signedDate}`, 15, 76);
+    doc.text(`Signed off by ${signedBy}`, 18, 89);
 
-    // First divider (y=83)
-    doc.setDrawColor(...DIVIDER);
+    doc.setTextColor(...TEXT_150);
+    doc.text(`Date: ${signedDate}`, 140, 89);
+
+    // Divider (y=96)
+    doc.setDrawColor(...HAIRLINE);
     doc.setLineWidth(0.2);
-    doc.line(15, 83, 195, 83);
+    doc.line(18, 96, 200, 96);
 
-    // Stats row — numbers y=95, labels y=101
-    const stats: Array<{
+    // --- Stats row ---
+    const statCols: Array<{
       x: number;
       label: string;
       value: string;
       color: [number, number, number];
     }> = [
-      { x: 15, label: "TOTAL ITEMS", value: String(total), color: TEXT_BLACK },
-      { x: 80, label: "PASSED", value: String(passed), color: SUCCESS },
-      { x: 145, label: "FAILED", value: String(failed), color: DANGER },
+      { x: 18, label: "TOTAL ITEMS", value: String(total), color: INK },
+      { x: 85, label: "PASSED", value: String(passed), color: SUCCESS },
+      { x: 150, label: "FAILED", value: String(failed), color: DANGER },
     ];
-    stats.forEach((s) => {
+    statCols.forEach((s) => {
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
-      doc.setTextColor(...s.color);
-      doc.text(s.value, s.x, 95);
+      doc.setFontSize(7);
+      doc.setTextColor(...TEXT_150);
+      doc.text(s.label, s.x, 104);
 
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
-      doc.setTextColor(...TEXT_120);
-      doc.text(s.label, s.x, 101);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.setTextColor(...s.color);
+      doc.text(s.value, s.x, 114);
     });
 
-    // Second divider (y=110)
-    doc.setDrawColor(...DIVIDER);
+    // Divider (y=120)
+    doc.setDrawColor(...HAIRLINE);
     doc.setLineWidth(0.2);
-    doc.line(15, 110, 195, 110);
+    doc.line(18, 120, 200, 120);
 
-    // Section header (y=118)
+    // --- Items section ---
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.setTextColor(...ACCENT);
-    doc.text("PUNCH LIST ITEMS", 15, 118);
+    doc.setFontSize(7);
+    doc.setTextColor(...TEXT_150);
+    doc.text("ITEMS", 18, 128);
 
-    // Table
     const rows = items.map((it) => [
       it.title,
       it.status === "pass" ? "PASS" : it.status === "fail" ? "FAIL" : "PENDING",
@@ -407,32 +416,43 @@ const PunchList = ({
     ]);
 
     autoTable(doc, {
-      startY: 125,
+      startY: 132,
       head: [["Item", "Status", "Assignee", "Notes"]],
       body: rows,
-      margin: { left: 15, right: 15, bottom: 25 },
+      margin: { left: 18, right: 10, bottom: 25 },
+      tableLineWidth: 0,
       styles: {
         font: "helvetica",
         fontSize: 8,
-        textColor: TEXT_DARK,
-        cellPadding: 2.2,
-        lineColor: DIVIDER,
-        lineWidth: 0.1,
+        textColor: TEXT_BODY,
+        cellPadding: 2.4,
+        lineColor: ROW_LINE,
+        lineWidth: 0.3,
       },
       headStyles: {
         fillColor: TABLE_HEAD_BG,
-        textColor: TEXT_60,
+        textColor: TEXT_100,
         fontStyle: "bold",
-        fontSize: 8,
+        fontSize: 7.5,
+        halign: "left",
+        lineWidth: 0,
+      },
+      bodyStyles: {
+        lineColor: ROW_LINE,
+        lineWidth: 0.3,
       },
       alternateRowStyles: {
         fillColor: TABLE_ALT_BG,
       },
       columnStyles: {
-        0: { cellWidth: 80 },
-        1: { cellWidth: 30, halign: "center" },
-        2: { cellWidth: 40 },
+        0: { cellWidth: 85 },
+        1: { cellWidth: 25, halign: "left" },
+        2: { cellWidth: 45 },
         3: { cellWidth: 45 },
+      },
+      didDrawPage: () => {
+        // Repaint the accent bar on every new page
+        paintAccentBar();
       },
       didParseCell: (hookData) => {
         if (hookData.section === "body" && hookData.column.index === 1) {
@@ -448,16 +468,25 @@ const PunchList = ({
       },
     });
 
-    // Footer on every page
+    // --- Footer on every page ---
     const pageCount = doc.getNumberOfPages();
     for (let p = 1; p <= pageCount; p++) {
       doc.setPage(p);
+
+      // Thin line above footer
+      doc.setDrawColor(...HAIRLINE);
+      doc.setLineWidth(0.2);
+      doc.line(18, 278, 200, 278);
+
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
-      doc.setTextColor(...HEADER_SUB);
-      const footer = `${companyName}  \u00B7  Remodel Tracker Pro  \u00B7  ${dateLong}`;
-      doc.text(footer, pageWidth / 2, 285, { align: "center" });
-      doc.text(`Page ${p} of ${pageCount}`, 195, 285, { align: "right" });
+      doc.setTextColor(...TEXT_180);
+      doc.text(
+        `${companyName} \u00B7 Generated by Remodel Tracker Pro`,
+        18,
+        282
+      );
+      doc.text(`Page ${p} of ${pageCount}`, 200, 282, { align: "right" });
     }
 
     doc.save(fileName);
