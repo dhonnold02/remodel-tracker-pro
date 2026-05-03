@@ -18,6 +18,7 @@ const AuthPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
@@ -51,6 +52,12 @@ const AuthPage = () => {
     setConfirmMessage("");
     setLoading(true);
     if (isSignUp) {
+      const VALID_INVITE_CODES = ["MAVSIGHTLINE", "AMAZED123"];
+      if (!VALID_INVITE_CODES.includes(inviteCode.trim().toUpperCase())) {
+        setError("Invalid invite code");
+        setLoading(false);
+        return;
+      }
       const { error } = await signUp(email, password, displayName || email);
       if (error) setError(error.message);
       else setConfirmMessage("Check your email to confirm your account.");
@@ -269,6 +276,23 @@ const AuthPage = () => {
                     className="h-11 rounded-xl"
                   />
                 </div>
+
+                {isSignUp && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="inviteCode" className="text-xs font-medium">
+                      Invite Code
+                    </Label>
+                    <Input
+                      id="inviteCode"
+                      type="text"
+                      placeholder="Enter your invite code"
+                      value={inviteCode}
+                      onChange={(e) => setInviteCode(e.target.value)}
+                      required
+                      className="h-11 rounded-xl"
+                    />
+                  </div>
+                )}
 
                 {error && (
                   <p className="text-xs text-destructive">{error}</p>
