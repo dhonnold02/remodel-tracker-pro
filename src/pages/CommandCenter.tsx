@@ -469,19 +469,43 @@ const CommandCenter = () => {
     setExporting(true);
     try {
       const range = `${format(weekStart, "MMM d")}–${format(addDays(weekStart, 6), "MMM d, yyyy")}`;
-      const tasksDoneThisWeek: { project: string; title: string }[] = [];
-      // We'll approximate "completed this week" as completed tasks with dueDate within week.
       const start = format(weekStart, "yyyy-MM-dd");
       const end = format(addDays(weekStart, 6), "yyyy-MM-dd");
+
+      // Tasks due this week, grouped by project
+      const tasksByProject: { project: string; tasks: { title: string; date: string; done: boolean }[] }[] = [];
       for (const p of projects) {
-        for (const t of p.tasks) {
-          if (t.completed && t.dueDate && t.dueDate >= start && t.dueDate <= end) {
-            tasksDoneThisWeek.push({ project: p.name, title: t.title });
-          }
+        const due = p.tasks.filter(
+          (t) => t.dueDate && t.dueDate >= start && t.dueDate <= end,
+        );
+        if (due.length) {
+          tasksByProject.push({
+            project: p.name,
+            tasks: due
+              .map((t) => ({ title: t.title, date: t.dueDate as string, done: !!t.completed }))
+              .sort((a, b) => a.date.localeCompare(b.date)),
+          });
         }
       }
+
+      // Events grouped by day
+      const eventsByDay = weekDays.map((d) => {
+        const ds = format(d, "yyyy-MM-dd");
+        return {
+          dateLabel: format(d, "EEEE, MMM d"),
+          rows: weekEvents
+            .filter((e) => e.date === ds)
+            .map((e) => ({
+              title: e.title,
+              project: e.project,
+              type: EVENT_LABELS[e.type] || "Other",
+              time: e.time,
+            })),
+        };
+      });
+
       const dispatchByDay = weekDays.map((d) => ({
-        date: format(d, "EEE MMM d"),
+        date: format(d, "EEEE, MMM d"),
           rows: crew.map((c) => {
           const row = dispatchMap.get(`${c.id}::${format(d, "yyyy-MM-dd")}`);
           return {
@@ -497,9 +521,10 @@ const CommandCenter = () => {
           companyName={companyName}
           companyLogo={companyLogo}
           range={range}
+          generatedDate={format(new Date(), "MMM d, yyyy")}
           weather={weather}
-          events={weekEvents}
-          tasksDone={tasksDoneThisWeek}
+          eventsByDay={eventsByDay}
+          tasksByProject={tasksByProject}
           dispatchByDay={dispatchByDay}
           logs={weekLogs.map((l) => ({
             date: l.log_date,
@@ -512,6 +537,7 @@ const CommandCenter = () => {
       const safeName = (companyName || "Company").replace(/[^a-z0-9]+/gi, "-");
       const filename = `${safeName}-WeeklyReport-${format(weekStart, "yyyy-MM-dd")}.pdf`;
       saveAs(blob, filename);
+      toast.success("Weekly report downloaded");
     } catch (err) {
       console.error(err);
       toast.error("Failed to generate report");
