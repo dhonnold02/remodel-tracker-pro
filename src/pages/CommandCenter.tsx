@@ -921,98 +921,217 @@ export default CommandCenter;
 // PDF Document
 // ─────────────────────────────────────────────────────────────────────────────
 const pdfStyles = StyleSheet.create({
-  page: { padding: 36, fontSize: 10, fontFamily: "Helvetica", color: "#1f2937" },
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 20, borderBottom: "1pt solid #e5e7eb", paddingBottom: 12 },
-  logo: { width: 48, height: 48, marginRight: 12, objectFit: "contain" },
-  companyName: { fontSize: 16, fontWeight: 700, color: "#111827" },
-  range: { fontSize: 10, color: "#6b7280", marginTop: 2 },
-  sectionTitle: { fontSize: 12, fontWeight: 700, color: "#111827", marginTop: 14, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 },
-  row: { flexDirection: "row", marginBottom: 3 },
-  label: { width: 90, color: "#6b7280" },
-  value: { flex: 1, color: "#1f2937" },
-  bullet: { marginBottom: 2, color: "#1f2937" },
-  empty: { color: "#9ca3af", fontStyle: "italic" },
-  dispatchDay: { marginBottom: 8 },
-  dispatchDate: { fontWeight: 700, fontSize: 10, color: "#374151", marginBottom: 2 },
-  logBlock: { marginBottom: 8, borderLeft: "2pt solid #3b82f6", paddingLeft: 8 },
-  logMeta: { fontSize: 9, color: "#6b7280", marginBottom: 2 },
+  page: {
+    backgroundColor: "#ffffff",
+    paddingTop: 0,
+    paddingBottom: 50,
+    paddingHorizontal: 0,
+    fontFamily: "Helvetica",
+    fontSize: 10,
+    color: "#0f1117",
+    position: "relative",
+  },
+  accentBar: { position: "absolute", left: 0, top: 0, bottom: 0, width: 6, backgroundColor: "#1d4ed8" },
+  body: { marginLeft: 30, marginRight: 30 },
+  header: {
+    paddingTop: 28,
+    paddingBottom: 18,
+    borderBottom: "1pt solid #e5e7eb",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  eyebrow: { fontSize: 7, color: "#1d4ed8", fontWeight: "bold", letterSpacing: 1.5, marginBottom: 6 },
+  titleText: { fontSize: 20, fontWeight: "bold", color: "#0f1117" },
+  rangeText: { fontSize: 10, color: "#6b7280", marginTop: 3 },
+  logoRight: { width: 70, height: 40, objectFit: "contain" },
+  companyTextRight: { textAlign: "right" },
+  companyNameRight: { fontSize: 11, fontWeight: "bold", color: "#0f1117" },
+  companySubRight: { fontSize: 9, color: "#6b7280", marginTop: 2 },
+  sectionHeading: {
+    fontSize: 8, color: "#9ca3af", letterSpacing: 1.5, marginTop: 18, marginBottom: 8,
+    textTransform: "uppercase", fontWeight: "bold",
+  },
+  card: { border: "1pt solid #e5e7eb", borderRadius: 6, overflow: "hidden" },
+  tableHeader: {
+    backgroundColor: "#f9fafb", flexDirection: "row",
+    paddingVertical: 8, paddingHorizontal: 10, borderBottom: "1pt solid #e5e7eb",
+  },
+  th: { fontSize: 8, color: "#6b7280", fontWeight: "bold", textTransform: "uppercase" },
+  trow: {
+    flexDirection: "row", paddingVertical: 8, paddingHorizontal: 10,
+    borderBottom: "1pt solid #f3f4f6", alignItems: "center",
+  },
+  trowAlt: { backgroundColor: "#f9fafb" },
+  cell: { fontSize: 9, color: "#111827" },
+  empty: { padding: 14, textAlign: "center", color: "#9ca3af", fontSize: 9, fontStyle: "italic" },
+  dayBlock: { marginBottom: 10 },
+  dayHeading: { fontSize: 10, fontWeight: "bold", color: "#374151", marginBottom: 4 },
+  groupTitle: {
+    fontSize: 10, fontWeight: "bold", color: "#1d4ed8",
+    paddingVertical: 6, paddingHorizontal: 10, backgroundColor: "#eff6ff",
+    borderBottom: "1pt solid #dbeafe",
+  },
+  logBlock: {
+    borderLeft: "2pt solid #1d4ed8", paddingLeft: 10, marginBottom: 10,
+    paddingVertical: 4,
+  },
+  logMeta: { fontSize: 9, color: "#6b7280", marginBottom: 3, fontWeight: "bold" },
+  logNotes: { fontSize: 9, color: "#1f2937" },
+  footer: {
+    position: "absolute", bottom: 20, left: 30, right: 30,
+    flexDirection: "row", justifyContent: "space-between",
+    borderTop: "1pt solid #e5e7eb", paddingTop: 8,
+  },
+  footerText: { fontSize: 8, color: "#9ca3af" },
 });
 
 interface WeeklyReportProps {
   companyName: string;
   companyLogo: string | null;
   range: string;
+  generatedDate: string;
   weather: WeatherData | null;
-  events: { date: string; project: string; title: string; type: string; time: string | null }[];
-  tasksDone: { project: string; title: string }[];
+  eventsByDay: { dateLabel: string; rows: { title: string; project: string; type: string; time: string | null }[] }[];
+  tasksByProject: { project: string; tasks: { title: string; date: string; done: boolean }[] }[];
   dispatchByDay: { date: string; rows: { member: string; project: string }[] }[];
   logs: { date: string; project: string; notes: string }[];
 }
 
 const WeeklyReportDocument = ({
-  companyName, companyLogo, range, weather, events, tasksDone, dispatchByDay, logs,
+  companyName, companyLogo, range, generatedDate, weather, eventsByDay, tasksByProject, dispatchByDay, logs,
 }: WeeklyReportProps) => (
   <Document>
     <Page size="LETTER" style={pdfStyles.page}>
-      <View style={pdfStyles.header}>
-        {companyLogo ? <PDFImage src={companyLogo} style={pdfStyles.logo} /> : null}
-        <View>
-          <Text style={pdfStyles.companyName}>{companyName || "Weekly Report"}</Text>
-          <Text style={pdfStyles.range}>Weekly Report · {range}</Text>
+      <View style={pdfStyles.accentBar} fixed />
+
+      <View style={pdfStyles.body}>
+        {/* Header */}
+        <View style={pdfStyles.header}>
+          <View>
+            <Text style={pdfStyles.eyebrow}>WEEKLY REPORT</Text>
+            <Text style={pdfStyles.titleText}>{companyName || "Weekly Report"}</Text>
+            <Text style={pdfStyles.rangeText}>{range}</Text>
+          </View>
+          {companyLogo ? (
+            <PDFImage src={companyLogo} style={pdfStyles.logoRight} />
+          ) : (
+            <View style={pdfStyles.companyTextRight}>
+              <Text style={pdfStyles.companyNameRight}>{companyName || "—"}</Text>
+              <Text style={pdfStyles.companySubRight}>Licensed Contractor</Text>
+            </View>
+          )}
         </View>
+
+        {/* Weather */}
+        <Text style={pdfStyles.sectionHeading}>Weather Forecast</Text>
+        {weather ? (
+          <View style={pdfStyles.card}>
+            <View style={pdfStyles.tableHeader}>
+              <Text style={[pdfStyles.th, { flex: 2 }]}>Day</Text>
+              <Text style={[pdfStyles.th, { flex: 2 }]}>Conditions</Text>
+              <Text style={[pdfStyles.th, { flex: 1, textAlign: "right" }]}>High / Low</Text>
+            </View>
+            {weather.daily.map((d, i) => (
+              <View key={d.date} style={[pdfStyles.trow, i % 2 === 1 ? pdfStyles.trowAlt : {}]} wrap={false}>
+                <Text style={[pdfStyles.cell, { flex: 2 }]}>{format(parseISO(d.date), "EEE MMM d")}</Text>
+                <Text style={[pdfStyles.cell, { flex: 2 }]}>{wmoToInfo(d.code).label}</Text>
+                <Text style={[pdfStyles.cell, { flex: 1, textAlign: "right" }]}>{Math.round(d.max)}° / {Math.round(d.min)}°</Text>
+              </View>
+            ))}
+          </View>
+        ) : <View style={pdfStyles.card}><Text style={pdfStyles.empty}>Weather unavailable</Text></View>}
+
+        {/* Events grouped by day */}
+        <Text style={pdfStyles.sectionHeading}>Calendar Events</Text>
+        {eventsByDay.every((d) => d.rows.length === 0) ? (
+          <View style={pdfStyles.card}><Text style={pdfStyles.empty}>No events this week.</Text></View>
+        ) : (
+          eventsByDay.filter((d) => d.rows.length > 0).map((day) => (
+            <View key={day.dateLabel} style={[pdfStyles.card, { marginBottom: 8 }]} wrap={false}>
+              <Text style={pdfStyles.groupTitle}>{day.dateLabel}</Text>
+              {day.rows.map((e, i) => (
+                <View key={i} style={[pdfStyles.trow, i % 2 === 1 ? pdfStyles.trowAlt : {}]}>
+                  <Text style={[pdfStyles.cell, { flex: 1 }]}>{e.time || "—"}</Text>
+                  <Text style={[pdfStyles.cell, { flex: 3 }]}>{e.title}</Text>
+                  <Text style={[pdfStyles.cell, { flex: 2, color: "#6b7280" }]}>{e.project}</Text>
+                  <Text style={[pdfStyles.cell, { flex: 1, color: "#1d4ed8", textAlign: "right" }]}>{e.type}</Text>
+                </View>
+              ))}
+            </View>
+          ))
+        )}
+
+        {/* Tasks grouped by project */}
+        <Text style={pdfStyles.sectionHeading}>Tasks Due This Week</Text>
+        {tasksByProject.length === 0 ? (
+          <View style={pdfStyles.card}><Text style={pdfStyles.empty}>No tasks due this week.</Text></View>
+        ) : (
+          tasksByProject.map((g) => (
+            <View key={g.project} style={[pdfStyles.card, { marginBottom: 8 }]} wrap={false}>
+              <Text style={pdfStyles.groupTitle}>{g.project}</Text>
+              {g.tasks.map((t, i) => (
+                <View key={i} style={[pdfStyles.trow, i % 2 === 1 ? pdfStyles.trowAlt : {}]}>
+                  <Text style={[pdfStyles.cell, { flex: 4, color: t.done ? "#9ca3af" : "#111827" }]}>
+                    {t.done ? "✓ " : "○ "}{t.title}
+                  </Text>
+                  <Text style={[pdfStyles.cell, { flex: 1, textAlign: "right", color: "#6b7280" }]}>
+                    {format(parseISO(t.date), "EEE MMM d")}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ))
+        )}
+
+        {/* Crew Dispatch */}
+        <Text style={pdfStyles.sectionHeading}>Crew Dispatch</Text>
+        {dispatchByDay.every((d) => d.rows.length === 0) ? (
+          <View style={pdfStyles.card}><Text style={pdfStyles.empty}>No crew assignments.</Text></View>
+        ) : (
+          dispatchByDay.map((d) => (
+            <View key={d.date} style={[pdfStyles.card, { marginBottom: 8 }]} wrap={false}>
+              <Text style={pdfStyles.groupTitle}>{d.date}</Text>
+              {d.rows.length === 0 ? (
+                <Text style={pdfStyles.empty}>No assignments.</Text>
+              ) : (
+                d.rows.map((r, i) => (
+                  <View key={i} style={[pdfStyles.trow, i % 2 === 1 ? pdfStyles.trowAlt : {}]}>
+                    <Text style={[pdfStyles.cell, { flex: 2 }]}>{r.member}</Text>
+                    <Text style={[pdfStyles.cell, { flex: 3, color: r.project === "—" ? "#9ca3af" : "#111827" }]}>
+                      {r.project}
+                    </Text>
+                  </View>
+                ))
+              )}
+            </View>
+          ))
+        )}
+
+        {/* Daily Logs */}
+        <Text style={pdfStyles.sectionHeading}>Daily Log Entries</Text>
+        {logs.length === 0 ? (
+          <View style={pdfStyles.card}><Text style={pdfStyles.empty}>No logs this week.</Text></View>
+        ) : (
+          logs.map((l, i) => (
+            <View key={i} style={pdfStyles.logBlock} wrap={false}>
+              <Text style={pdfStyles.logMeta}>{format(parseISO(l.date), "EEEE, MMM d")} · {l.project}</Text>
+              <Text style={pdfStyles.logNotes}>{l.notes}</Text>
+            </View>
+          ))
+        )}
       </View>
 
-      <Text style={pdfStyles.sectionTitle}>Weather Summary</Text>
-      {weather ? (
-        <>
-          <View style={pdfStyles.row}>
-            <Text style={pdfStyles.label}>Today:</Text>
-            <Text style={pdfStyles.value}>
-              {weather.current.temp}°F · {wmoToInfo(weather.current.code).label} · {weather.current.wind} mph wind
-            </Text>
-          </View>
-          {weather.daily.map((d) => (
-            <View key={d.date} style={pdfStyles.row}>
-              <Text style={pdfStyles.label}>{format(parseISO(d.date), "EEE MMM d")}:</Text>
-              <Text style={pdfStyles.value}>
-                {d.max}° / {d.min}° · {wmoToInfo(d.code).label}
-              </Text>
-            </View>
-          ))}
-        </>
-      ) : <Text style={pdfStyles.empty}>Weather unavailable</Text>}
-
-      <Text style={pdfStyles.sectionTitle}>Calendar Events</Text>
-      {events.length === 0 ? <Text style={pdfStyles.empty}>No events.</Text> : events.map((e, i) => (
-        <Text key={i} style={pdfStyles.bullet}>
-          • {format(parseISO(e.date), "EEE MMM d")}{e.time ? ` ${e.time}` : ""} — {e.title} ({e.project}) [{EVENT_LABELS[e.type] || "Other"}]
+      {/* Footer */}
+      <View style={pdfStyles.footer} fixed>
+        <Text style={pdfStyles.footerText}>
+          {companyName || "Sightline"} · Generated by Sightline · {generatedDate}
         </Text>
-      ))}
-
-      <Text style={pdfStyles.sectionTitle}>Tasks Completed This Week</Text>
-      {tasksDone.length === 0 ? <Text style={pdfStyles.empty}>None recorded.</Text> : tasksDone.map((t, i) => (
-        <Text key={i} style={pdfStyles.bullet}>• {t.title} ({t.project})</Text>
-      ))}
-
-      <Text style={pdfStyles.sectionTitle}>Crew Dispatch</Text>
-      {dispatchByDay.map((d) => (
-        <View key={d.date} style={pdfStyles.dispatchDay}>
-          <Text style={pdfStyles.dispatchDate}>{d.date}</Text>
-          {d.rows.length === 0
-            ? <Text style={pdfStyles.empty}>No assignments.</Text>
-            : d.rows.map((r, i) => (
-                <Text key={i} style={pdfStyles.bullet}>  {r.member} → {r.project}</Text>
-              ))}
-        </View>
-      ))}
-
-      <Text style={pdfStyles.sectionTitle}>Daily Logs</Text>
-      {logs.length === 0 ? <Text style={pdfStyles.empty}>No logs this week.</Text> : logs.map((l, i) => (
-        <View key={i} style={pdfStyles.logBlock}>
-          <Text style={pdfStyles.logMeta}>{format(parseISO(l.date), "EEE MMM d")} · {l.project}</Text>
-          <Text>{l.notes}</Text>
-        </View>
-      ))}
+        <Text
+          style={pdfStyles.footerText}
+          render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`}
+        />
+      </View>
     </Page>
   </Document>
 );
