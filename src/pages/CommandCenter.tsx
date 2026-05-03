@@ -176,6 +176,15 @@ interface DailyLogRow {
   created_by: string;
 }
 
+interface EventRow {
+  id: string;
+  project_id: string;
+  title: string;
+  type: string;
+  date: string;
+  time: string | null;
+}
+
 const CommandCenter = () => {
   const { user } = useAuth();
   const { companyId, loading: roleLoading } = useRole();
@@ -194,6 +203,7 @@ const CommandCenter = () => {
   const [crew, setCrew] = useState<CrewMember[]>([]);
   const [dispatch, setDispatch] = useState<DispatchRow[]>([]);
   const [logs, setLogs] = useState<DailyLogRow[]>([]);
+  const [weekEventRows, setWeekEventRows] = useState<EventRow[]>([]);
 
   // Add crew member UI
   const [addingCrew, setAddingCrew] = useState(false);
@@ -283,7 +293,24 @@ const CommandCenter = () => {
       .order("log_date", { ascending: false })
       .limit(50);
     setLogs((logRows || []) as DailyLogRow[]);
-  }, [companyId, weekStart]);
+
+    // calendar events for the week — query project_events directly
+    // across every project the user can access (same source as Phase Calendar)
+    const projectIds = projects.map((p) => p.id);
+    if (projectIds.length) {
+      const weekStartStr = format(weekStart, "yyyy-MM-dd");
+      const { data: evRows } = await supabase
+        .from("project_events")
+        .select("id, project_id, title, type, date, time")
+        .in("project_id", projectIds)
+        .gte("date", weekStartStr)
+        .lte("date", weekEnd)
+        .order("date", { ascending: true });
+      setWeekEventRows((evRows || []) as EventRow[]);
+    } else {
+      setWeekEventRows([]);
+    }
+  }, [companyId, weekStart, projects]);
 
   useEffect(() => { loadCompanyData(); }, [loadCompanyData]);
 
@@ -318,31 +345,32 @@ const CommandCenter = () => {
   // ── Today events ─────────────────────────────────────────────────────────
   const todayEvents = useMemo(() => {
     const out: { project: string; title: string; type: string; time: string | null }[] = [];
-    for (const p of projects) {
-      for (const e of p.events) {
-        if (e.date === todayKey) out.push({
-          project: p.name, title: e.title, type: e.type, time: e.time || null,
-        });
-      }
+    for (const e of weekEventRows) {
+      if (e.date === todayKey) out.push({
+        project: projectName(e.project_id),
+        title: e.title,
+        type: e.type,
+        time: e.time || null,
+      });
     }
     out.sort((a, b) => (a.time || "99").localeCompare(b.time || "99"));
     return out;
-  }, [projects, todayKey]);
+  }, [weekEventRows, todayKey, projects]);
 
   const weekEvents = useMemo(() => {
-    const start = format(weekStart, "yyyy-MM-dd");
-    const end = format(addDays(weekStart, 6), "yyyy-MM-dd");
     const out: { date: string; project: string; title: string; type: string; time: string | null }[] = [];
-    for (const p of projects) {
-      for (const e of p.events) {
-        if (e.date >= start && e.date <= end) out.push({
-          date: e.date, project: p.name, title: e.title, type: e.type, time: e.time || null,
-        });
-      }
+    for (const e of weekEventRows) {
+      out.push({
+        date: e.date,
+        project: projectName(e.project_id),
+        title: e.title,
+        type: e.type,
+        time: e.time || null,
+      });
     }
     out.sort((a, b) => (a.date + (a.time || "99")).localeCompare(b.date + (b.time || "99")));
     return out;
-  }, [projects, weekStart]);
+  }, [weekEventRows, projects]);
 
   // ── Tasks due today (grouped by project) ─────────────────────────────────
   const tasksDueToday = useMemo(() => {
