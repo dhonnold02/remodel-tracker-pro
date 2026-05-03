@@ -203,15 +203,15 @@ const Settings = () => {
       title="Settings"
       subtitle="Manage your company profile and preferences"
       actions={
-        <Button onClick={handleSave} disabled={saving} className="rounded-xl">
+        <Button onClick={handleSave} disabled={saving} className="rounded-xl hidden md:inline-flex">
           {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
           Save changes
         </Button>
       }
     >
-      <div className="max-w-3xl space-y-8">
+      <div className="max-w-3xl space-y-6 md:space-y-8 pb-24 md:pb-0">
         {/* Company profile */}
-        <section className="rounded-2xl border bg-card p-6 space-y-5">
+        <section className="rounded-2xl border bg-card p-4 md:p-6 space-y-5">
           <header>
             <h2 className="font-heading text-base font-semibold text-foreground">Company Profile</h2>
             <p className="text-xs text-muted-foreground mt-0.5">Used everywhere in the app, including PDF exports.</p>
@@ -288,7 +288,7 @@ const Settings = () => {
         </section>
 
         {/* Brand colors */}
-        <section className="rounded-2xl border bg-card p-6 space-y-5">
+        <section className="rounded-2xl border bg-card p-4 md:p-6 space-y-5">
           <header>
             <h2 className="font-heading text-base font-semibold text-foreground">Brand Color</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -297,7 +297,7 @@ const Settings = () => {
           </header>
 
           <div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3 md:gap-2">
               {BRAND_PRESETS.map((p) => {
                 const selected = (data.brand_color || "").toLowerCase() === p.hex.toLowerCase();
                 return (
@@ -306,19 +306,19 @@ const Settings = () => {
                     type="button"
                     onClick={() => pickColor(p.hex)}
                     title={`${p.name} — ${p.hex}`}
-                    className={`h-8 w-8 rounded-full border-2 transition-all ${selected ? "border-foreground scale-110 ring-2 ring-foreground/20" : "border-transparent hover:scale-105"}`}
+                    className={`h-11 w-11 md:h-8 md:w-8 rounded-full border-2 transition-all ${selected ? "border-foreground scale-110 ring-2 ring-foreground/20" : "border-transparent hover:scale-105"}`}
                     style={{ backgroundColor: p.hex }}
                     aria-label={p.name}
                   />
                 );
               })}
 
-              <label className="ml-2 flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+              <label className="md:ml-2 flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
                 <input
                   type="color"
                   value={data.brand_color && data.brand_color.startsWith("#") ? data.brand_color : "#3b82f6"}
                   onChange={(e) => pickColor(e.target.value)}
-                  className="h-8 w-8 rounded-lg border bg-transparent cursor-pointer"
+                  className="h-11 w-11 md:h-8 md:w-8 rounded-lg border bg-transparent cursor-pointer"
                   aria-label="Custom color"
                 />
                 Custom
@@ -328,7 +328,7 @@ const Settings = () => {
                 <button
                   type="button"
                   onClick={() => { update("brand_color", null); applyBrandPrimary(null); }}
-                  className="ml-1 h-8 px-3 rounded-lg border border-dashed text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                  className="md:ml-1 h-11 md:h-8 px-4 md:px-3 rounded-lg border border-dashed text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                 >
                   Reset
                 </button>
@@ -350,7 +350,7 @@ const Settings = () => {
         </section>
 
         {/* Notifications */}
-        <section className="rounded-2xl border bg-card p-6 space-y-5">
+        <section className="rounded-2xl border bg-card p-4 md:p-6 space-y-5">
           <header>
             <h2 className="font-heading text-base font-semibold text-foreground">Notifications</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -379,12 +379,21 @@ const Settings = () => {
           </div>
         </section>
 
-        <div className="flex justify-end pb-4">
+        {/* Desktop save */}
+        <div className="hidden md:flex justify-end pb-4">
           <Button onClick={handleSave} disabled={saving} size="lg" className="rounded-xl">
             {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
             Save changes
           </Button>
         </div>
+      </div>
+
+      {/* Mobile sticky save */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t bg-background/95 backdrop-blur-sm p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <Button onClick={handleSave} disabled={saving} size="lg" className="w-full rounded-xl">
+          {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
+          Save changes
+        </Button>
       </div>
     </AppLayout>
   );
