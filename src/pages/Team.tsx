@@ -351,11 +351,11 @@ const Team = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-end">
+            <div className="flex items-end sm:col-auto">
               <Button
                 onClick={sendInvite}
                 disabled={inviting || !inviteEmail.trim()}
-                className="h-10 rounded-xl px-5"
+                className="h-10 rounded-xl px-5 w-full sm:w-auto"
               >
                 {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send Invite"}
               </Button>
@@ -381,7 +381,7 @@ const Team = () => {
                     <TableHead>Name / Email</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Joined</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right hidden md:table-cell">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -389,15 +389,15 @@ const Team = () => {
                     const isSelf = m.user_id === user?.id;
                     return (
                       <TableRow key={m.id}>
-                        <TableCell>
-                          <div className="text-sm font-medium text-foreground">
+                        <TableCell className="max-w-[160px] md:max-w-none">
+                          <div className="text-sm font-medium text-foreground truncate">
                             {m.display_name || m.email || "Unknown"}
                             {isSelf && (
                               <span className="text-[10px] text-muted-foreground ml-2">(you)</span>
                             )}
                           </div>
                           {m.email && m.display_name && (
-                            <div className="text-xs text-muted-foreground">{m.email}</div>
+                            <div className="text-xs text-muted-foreground truncate">{m.email}</div>
                           )}
                         </TableCell>
                         <TableCell>
@@ -429,7 +429,7 @@ const Team = () => {
                         <TableCell className="text-xs text-muted-foreground">
                           {formatDate(m.joined_at)}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right hidden md:table-cell">
                           {!isSelf && m.role !== "owner" && (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
