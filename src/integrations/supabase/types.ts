@@ -302,6 +302,72 @@ export type Database = {
         }
         Relationships: []
       }
+      crew_dispatch: {
+        Row: {
+          company_id: string
+          created_at: string
+          dispatch_date: string
+          id: string
+          member_id: string
+          project_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          dispatch_date: string
+          id?: string
+          member_id: string
+          project_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          dispatch_date?: string
+          id?: string
+          member_id?: string
+          project_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_logs: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string
+          id: string
+          log_date: string
+          notes: string
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          log_date: string
+          notes?: string
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          log_date?: string
+          notes?: string
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           amount: number
