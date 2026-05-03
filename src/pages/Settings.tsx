@@ -10,11 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, Upload, X, Check } from "lucide-react";
+import { Loader2, Upload, X, Check, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { applyBrandPrimary, BRAND_PRESETS } from "@/lib/brandColor";
-import { useAuth } from "@/hooks/useAuth";
-import { LogOut } from "lucide-react";
 
 interface CompanySettings {
   company_name: string;
