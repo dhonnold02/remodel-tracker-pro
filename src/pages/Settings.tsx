@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { Loader2, Upload, X, Check, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { applyBrandPrimary, BRAND_PRESETS } from "@/lib/brandColor";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 interface CompanySettings {
   company_name: string;
@@ -240,7 +241,13 @@ const Settings = () => {
             </div>
             <div className="md:col-span-2">
               <Label htmlFor="address" className="text-xs">Physical address</Label>
-              <Textarea id="address" value={data.address} onChange={(e) => update("address", e.target.value)} placeholder="123 Main St, Suite 200&#10;Cityville, ST 12345" rows={3} className="mt-1.5 rounded-xl resize-none" />
+              <div className="mt-1.5">
+                <AddressAutocomplete
+                  value={data.address}
+                  onChange={(v) => update("address", v)}
+                  placeholder="123 Main St, Cityville, ST 12345"
+                />
+              </div>
             </div>
           </div>
 
