@@ -528,7 +528,8 @@ const ProjectDetailPage = () => {
 
           <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-4 sm:p-6 shadow-sm">
             <Tabs defaultValue="timeline" className="space-y-5">
-              <TabsList className="bg-muted/60 h-10 p-1 rounded-xl">
+              <div className="overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0">
+                <TabsList className="bg-muted/60 h-10 p-1 rounded-xl flex flex-nowrap w-max sm:w-auto">
                 <TabsTrigger value="timeline" className="text-xs sm:text-sm rounded-lg gap-1.5">
                   <CalendarDays className="h-3.5 w-3.5" /> Timeline
                 </TabsTrigger>
@@ -551,6 +552,7 @@ const ProjectDetailPage = () => {
                   )}
                 </TabsTrigger>
               </TabsList>
+              </div>
 
               <TabsContent value="timeline" className="space-y-6 mt-0 focus-visible:outline-none">
                 <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} phases={project.taskPhases} />
