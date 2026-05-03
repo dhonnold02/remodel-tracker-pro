@@ -6,12 +6,13 @@ import { useRole } from "@/hooks/useRole";
 import SightlineLogo from "@/components/SightlineLogo";
 import {
   LayoutDashboard, BookTemplate, Users,
-  LogOut, WifiOff, ChevronLeft, SlidersHorizontal,
+  LogOut, WifiOff, ChevronLeft, SlidersHorizontal, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const BASE_NAV_ITEMS = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/" },
+  { label: "Command Center", icon: Zap, path: "/command-center" },
   { label: "Templates", icon: BookTemplate, path: "/#templates" },
 ];
 
@@ -160,9 +161,9 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 flex justify-around items-center h-16 px-2 pb-[env(safe-area-inset-bottom)]">
         {[
           { label: "Dashboard", icon: LayoutDashboard, onClick: () => navigate("/"), active: location.pathname === "/" },
+          { label: "Command Center", icon: Zap, onClick: () => navigate("/command-center"), active: location.pathname.startsWith("/command-center") },
           ...(canInviteMembers ? [{ label: "Team", icon: Users, onClick: () => navigate("/team"), active: location.pathname.startsWith("/team") }] : []),
           ...(canAccessSettings ? [{ label: "Settings", icon: SlidersHorizontal, onClick: () => navigate("/settings"), active: location.pathname.startsWith("/settings") }] : []),
-          { label: "Sign Out", icon: LogOut, onClick: signOut, active: false },
         ].map((tab) => (
           <button
             key={tab.label}
