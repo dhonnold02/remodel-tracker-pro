@@ -220,7 +220,7 @@ const CommandCenter = () => {
 
   // Today / week boundaries
   const today = useMemo(() => new Date(), []);
-  const weekStart = useMemo(() => startOfWeek(today, { weekStartsOn: 1 }), [today]);
+  const weekStart = useMemo(() => startOfWeek(today, { weekStartsOn: 0 }), [today]);
   const weekDays = useMemo(
     () => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)),
     [weekStart],
