@@ -105,7 +105,7 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
           )}
           {canAccessSettings && (
             <button
-              onClick={() => { navigate("/settings"); setSidebarOpen(false); }}
+              onClick={() => navigate("/settings")}
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
                 location.pathname.startsWith("/settings")
