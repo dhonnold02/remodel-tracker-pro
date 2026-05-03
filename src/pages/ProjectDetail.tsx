@@ -375,11 +375,17 @@ const ProjectDetailPage = () => {
                 <TabsContent value="keydates" className="mt-0 focus-visible:outline-none">
                   <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5 space-y-3">
                     <h3 className="section-title flex items-center gap-2"><Target className="h-4 w-4 text-primary" />Key Dates</h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center justify-between py-1.5"><span className="text-xs text-muted-foreground">Start</span><span className="font-medium text-foreground">{project.startDate ? new Date(project.startDate).toLocaleDateString() : "—"}</span></div>
-                      <div className="flex items-center justify-between py-1.5 border-t"><span className="text-xs text-muted-foreground">Target Finish</span><span className="font-medium text-foreground">{project.endDate ? new Date(project.endDate).toLocaleDateString() : "—"}</span></div>
-                      <div className="flex items-center justify-between py-1.5 border-t"><span className="text-xs text-muted-foreground">Tasks Open</span><span className="font-medium text-foreground">{project.tasks.length - completedTasks}</span></div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label htmlFor="m-start" className="text-xs text-muted-foreground font-medium">Start Date</label>
+                        <Input id="m-start" type="date" value={project.startDate || ""} onChange={(e) => isEditor && update({ startDate: e.target.value })} disabled={!isEditor} className="mt-1.5 rounded-xl h-10" />
+                      </div>
+                      <div>
+                        <label htmlFor="m-end" className="text-xs text-muted-foreground font-medium">Target Finish</label>
+                        <Input id="m-end" type="date" value={project.endDate || ""} onChange={(e) => isEditor && update({ endDate: e.target.value })} disabled={!isEditor} className="mt-1.5 rounded-xl h-10" />
+                      </div>
                     </div>
+                    <div className="flex items-center justify-between py-1.5 border-t text-sm"><span className="text-xs text-muted-foreground">Tasks Open</span><span className="font-medium text-foreground">{project.tasks.length - completedTasks}</span></div>
                   </div>
                 </TabsContent>
 
