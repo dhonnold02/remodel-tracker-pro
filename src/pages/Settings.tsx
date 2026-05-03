@@ -209,7 +209,7 @@ const Settings = () => {
         </Button>
       }
     >
-      <div className="max-w-3xl space-y-6 md:space-y-8 pb-24 md:pb-0">
+      <div className="max-w-3xl space-y-6 md:space-y-8 pb-44 md:pb-0">
         {/* Company profile */}
         <section className="rounded-2xl border bg-card p-4 md:p-6 space-y-5">
           <header>
@@ -388,8 +388,8 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* Mobile sticky save */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t bg-background/95 backdrop-blur-sm p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      {/* Mobile sticky save (sits above the bottom tab bar) */}
+      <div className="md:hidden fixed inset-x-0 z-40 border-t bg-background/95 backdrop-blur-sm p-3 bottom-16" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}>
         <Button onClick={handleSave} disabled={saving} size="lg" className="w-full rounded-xl">
           {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
           Save changes
