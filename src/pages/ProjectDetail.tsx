@@ -314,8 +314,9 @@ const ProjectDetailPage = () => {
         )}
 
         {/* Command Center: 2-column layout — primary 65-70%, sidebar 30-35%
-            Each column scrolls independently on desktop based on cursor position. */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+            Each column scrolls independently on desktop based on cursor position.
+            Hidden on mobile — mobile uses the tabbed structure below. */}
+        <div className="hidden md:grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
           {/* PRIMARY column (Work-first) — independent scroll on desktop */}
           <div className="lg:col-span-8 space-y-10">
             {/* WORK MODULE — elevated, primary focus */}
@@ -515,8 +516,8 @@ const ProjectDetailPage = () => {
           </aside>
         </div>
 
-        {/* TERTIARY — Tabbed workspace (Timeline, Photos, Plans, Notes, Files) */}
-        <section className="space-y-4">
+        {/* TERTIARY — Tabbed workspace (Timeline, Photos, Plans, Notes, Files) — desktop only */}
+        <section className="hidden md:block space-y-4">
           <header className="flex items-center gap-2.5 px-1">
             <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
               <FileImage className="h-4 w-4 text-primary" />
