@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useBranding } from "@/hooks/useBranding";
@@ -7,7 +6,7 @@ import { useRole } from "@/hooks/useRole";
 import SightlineLogo from "@/components/SightlineLogo";
 import {
   LayoutDashboard, BookTemplate, Users,
-  LogOut, WifiOff, Menu, X, ChevronLeft, SlidersHorizontal,
+  LogOut, WifiOff, ChevronLeft, SlidersHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +30,6 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
   const { brand } = useBranding();
   const isOnline = useOnlineStatus();
   const { canAccessSettings, canInviteMembers } = useRole();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navItems = canInviteMembers
     ? [...BASE_NAV_ITEMS, { label: "Team", icon: Users, path: "/team" }]
@@ -48,7 +46,6 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
   const handleNav = (path: string) => {
     const [p, h] = path.split("#");
     navigate(h ? `${p}#${h}` : p);
-    setSidebarOpen(false);
     if (h) {
       setTimeout(() => {
         const el = document.getElementById(h);
@@ -59,15 +56,9 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
-      )}
-
       {/* Sidebar */}
       <aside className={cn(
-        "fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-card border-r flex flex-col transition-transform duration-200 ease-out",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        "hidden md:flex sticky top-0 left-0 z-50 h-screen w-64 bg-card border-r flex-col"
       )}>
         {/* Brand header */}
         <div className="px-4 py-3 border-b">
@@ -82,9 +73,6 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
                 {brand.brandName || "Sightline"}
               </h2>
             </div>
-            <button onClick={() => setSidebarOpen(false)} className="ml-auto lg:hidden p-1 rounded-md hover:bg-secondary text-muted-foreground">
-              <X className="h-4 w-4" />
-            </button>
           </div>
         </div>
 
@@ -117,7 +105,7 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
           )}
           {canAccessSettings && (
             <button
-              onClick={() => { navigate("/settings"); setSidebarOpen(false); }}
+              onClick={() => navigate("/settings")}
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
                 location.pathname.startsWith("/settings")
@@ -144,13 +132,6 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
         {/* Top bar */}
         <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b">
           <div className="flex items-center gap-3 px-4 lg:px-8 h-14">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-xl hover:bg-secondary text-muted-foreground transition-colors"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
-
             {backTo && (
               <button
                 onClick={() => navigate(backTo)}
@@ -170,10 +151,32 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-4 lg:p-8">
+        <main className="flex-1 p-4 lg:p-8 pb-20 md:pb-8">
           {children}
         </main>
       </div>
+
+      {/* Mobile bottom tab bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 flex justify-around items-center h-16 px-2">
+        {[
+          { label: "Dashboard", icon: LayoutDashboard, onClick: () => navigate("/"), active: location.pathname === "/" },
+          ...(canInviteMembers ? [{ label: "Team", icon: Users, onClick: () => navigate("/team"), active: location.pathname.startsWith("/team") }] : []),
+          ...(canAccessSettings ? [{ label: "Settings", icon: SlidersHorizontal, onClick: () => navigate("/settings"), active: location.pathname.startsWith("/settings") }] : []),
+          { label: "Sign Out", icon: LogOut, onClick: signOut, active: false },
+        ].map((tab) => (
+          <button
+            key={tab.label}
+            onClick={tab.onClick}
+            className={cn(
+              "flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium transition-colors",
+              tab.active ? "text-primary" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <tab.icon className="h-5 w-5" />
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </nav>
     </div>
   );
 };
