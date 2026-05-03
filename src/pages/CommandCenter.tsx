@@ -17,7 +17,7 @@ import {
 import {
   Cloud, CloudRain, CloudSnow, Sun, CloudLightning, CloudFog,
   ChevronDown, Loader2, FileDown, CalendarClock, ListTodo, Users,
-  ClipboardList, Wind, Thermometer,
+  ClipboardList, Wind, Thermometer, Plus, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays, parseISO, startOfWeek, differenceInCalendarDays } from "date-fns";
@@ -156,9 +156,8 @@ const Section = ({
 const todayISO = () => format(new Date(), "yyyy-MM-dd");
 
 interface CrewMember {
-  id: string;        // company_members.id
-  user_id: string;
-  display_name: string;
+  id: string;        // crew_members.id
+  name: string;
 }
 
 interface DispatchRow {
@@ -195,6 +194,11 @@ const CommandCenter = () => {
   const [crew, setCrew] = useState<CrewMember[]>([]);
   const [dispatch, setDispatch] = useState<DispatchRow[]>([]);
   const [logs, setLogs] = useState<DailyLogRow[]>([]);
+
+  // Add crew member UI
+  const [addingCrew, setAddingCrew] = useState(false);
+  const [newCrewName, setNewCrewName] = useState("");
+  const [savingCrew, setSavingCrew] = useState(false);
 
   // Daily log form
   const [logProjectId, setLogProjectId] = useState<string>("");
@@ -250,23 +254,15 @@ const CommandCenter = () => {
   // ── Load crew + dispatch + daily logs ────────────────────────────────────
   const loadCompanyData = useCallback(async () => {
     if (!companyId) return;
-    // crew
+    // crew (persistent roster — carries across weeks automatically)
     const { data: members } = await supabase
-      .from("company_members")
-      .select("id, user_id")
-      .eq("company_id", companyId);
-    const userIds = (members || []).map((m) => m.user_id);
-    let profileMap = new Map<string, string>();
-    if (userIds.length) {
-      const { data: profiles } = await supabase
-        .from("profiles").select("id, display_name").in("id", userIds);
-      (profiles || []).forEach((p) =>
-        profileMap.set(p.id, p.display_name || "Unnamed"));
-    }
-    setCrew((members || []).map((m) => ({
+      .from("crew_members" as any)
+      .select("id, name")
+      .eq("company_id", companyId)
+      .order("created_at", { ascending: true });
+    setCrew(((members as any[]) || []).map((m) => ({
       id: m.id,
-      user_id: m.user_id,
-      display_name: profileMap.get(m.user_id) || "Unnamed",
+      name: m.name || "Unnamed",
     })));
 
     // dispatch this week
@@ -290,6 +286,34 @@ const CommandCenter = () => {
   }, [companyId, weekStart]);
 
   useEffect(() => { loadCompanyData(); }, [loadCompanyData]);
+
+  // ── Add / remove crew members ────────────────────────────────────────────
+  const handleAddCrew = async () => {
+    if (!user || !companyId) return;
+    const name = newCrewName.trim();
+    if (!name) { toast.error("Enter a name"); return; }
+    setSavingCrew(true);
+    const { error } = await supabase.from("crew_members" as any).insert({
+      company_id: companyId,
+      created_by: user.id,
+      name,
+    } as any);
+    setSavingCrew(false);
+    if (error) { toast.error("Failed to add crew member"); return; }
+    toast.success("Crew member added");
+    setNewCrewName("");
+    setAddingCrew(false);
+    loadCompanyData();
+  };
+
+  const handleRemoveCrew = async (memberId: string) => {
+    const { error } = await supabase.from("crew_members" as any).delete().eq("id", memberId);
+    if (error) { toast.error("Failed to remove crew member"); return; }
+    // also clear any dispatch rows for this member
+    await supabase.from("crew_dispatch").delete().eq("member_id", memberId);
+    toast.success("Crew member removed");
+    loadCompanyData();
+  };
 
   // ── Today events ─────────────────────────────────────────────────────────
   const todayEvents = useMemo(() => {
@@ -428,10 +452,10 @@ const CommandCenter = () => {
       }
       const dispatchByDay = weekDays.map((d) => ({
         date: format(d, "EEE MMM d"),
-        rows: crew.map((c) => {
+          rows: crew.map((c) => {
           const row = dispatchMap.get(`${c.id}::${format(d, "yyyy-MM-dd")}`);
           return {
-            member: c.display_name,
+            member: c.name,
             project: row?.project_id ? projectName(row.project_id) : "—",
           };
         }),
@@ -665,16 +689,52 @@ const CommandCenter = () => {
 
         {/* Crew Dispatch */}
         <Section title="Crew Dispatch" icon={Users}>
-          {crew.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Invite team members from the Team page to start assigning crew.
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <p className="text-xs text-muted-foreground">
+              {crew.length === 0
+                ? "Add crew members to start assigning them to projects."
+                : `${crew.length} crew member${crew.length === 1 ? "" : "s"}`}
             </p>
-          ) : (
+            {!addingCrew && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setAddingCrew(true)}
+                className="rounded-xl"
+              >
+                <Plus className="h-3.5 w-3.5 mr-1" /> Add Crew Member
+              </Button>
+            )}
+          </div>
+          {addingCrew && (
+            <div className="flex items-center gap-2 mb-4 p-3 rounded-xl bg-secondary/30 border border-border">
+              <Input
+                autoFocus
+                value={newCrewName}
+                onChange={(e) => setNewCrewName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleAddCrew(); }}
+                placeholder="Crew member name"
+                className="rounded-lg flex-1"
+              />
+              <Button size="sm" onClick={handleAddCrew} disabled={savingCrew} className="rounded-lg">
+                {savingCrew ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Save"}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => { setAddingCrew(false); setNewCrewName(""); }}
+                className="rounded-lg"
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
+          {crew.length === 0 ? null : (
             <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
               <table className="w-full text-sm border-separate border-spacing-1 min-w-[700px]">
                 <thead>
                   <tr>
-                    <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2 py-2 w-32">
+                    <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2 py-2 w-40">
                       Member
                     </th>
                     {weekDays.map((d) => (
@@ -688,8 +748,18 @@ const CommandCenter = () => {
                 <tbody>
                   {crew.map((m) => (
                     <tr key={m.id}>
-                      <td className="px-2 py-1 text-sm font-medium text-foreground truncate">
-                        {m.display_name}
+                      <td className="px-2 py-1 text-sm font-medium text-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <span className="truncate flex-1">{m.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCrew(m.id)}
+                            className="h-5 w-5 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                            aria-label={`Remove ${m.name}`}
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </td>
                       {weekDays.map((d) => {
                         const row = dispatchMap.get(dispatchKey(m.id, d));

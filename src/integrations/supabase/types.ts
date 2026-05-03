@@ -335,6 +335,30 @@ export type Database = {
         }
         Relationships: []
       }
+      crew_members: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          name?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       daily_logs: {
         Row: {
           company_id: string
