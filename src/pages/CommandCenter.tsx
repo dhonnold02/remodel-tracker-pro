@@ -459,8 +459,7 @@ const CommandCenter = () => {
     loadCompanyData();
   };
 
-  const projectName = (id: string) =>
-    projects.find((p) => p.id === id)?.name || "Unknown";
+  // (projectName moved earlier in the component)
 
   // ── PDF Export ───────────────────────────────────────────────────────────
   const handleExportPDF = async () => {
