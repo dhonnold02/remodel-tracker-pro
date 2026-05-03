@@ -13,6 +13,8 @@ import { Progress } from "@/components/ui/progress";
 import { Loader2, Upload, X, Check } from "lucide-react";
 import { toast } from "sonner";
 import { applyBrandPrimary, BRAND_PRESETS } from "@/lib/brandColor";
+import { useAuth } from "@/hooks/useAuth";
+import { LogOut } from "lucide-react";
 
 interface CompanySettings {
   company_name: string;
@@ -45,7 +47,7 @@ const EMPTY: CompanySettings = {
 };
 
 const Settings = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { canAccessSettings, loading: roleLoading } = useRole();
   const [loading, setLoading] = useState(true);
@@ -384,6 +386,19 @@ const Settings = () => {
           <Button onClick={handleSave} disabled={saving} size="lg" className="rounded-xl">
             {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
             Save changes
+          </Button>
+        </div>
+
+        {/* Sign out (mobile only) */}
+        <div className="md:hidden pt-2">
+          <Button
+            onClick={signOut}
+            variant="outline"
+            size="lg"
+            className="w-full rounded-xl text-muted-foreground"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
           </Button>
         </div>
       </div>
