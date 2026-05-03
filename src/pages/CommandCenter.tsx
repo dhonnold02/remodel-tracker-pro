@@ -20,7 +20,7 @@ import {
   ClipboardList, Wind, Thermometer,
 } from "lucide-react";
 import { toast } from "sonner";
-import { format, addDays, parseISO, startOfWeek, isSameDay, differenceInCalendarDays } from "date-fns";
+import { format, addDays, parseISO, startOfWeek, differenceInCalendarDays } from "date-fns";
 import {
   Document, Page, Text, View, StyleSheet, pdf, Image as PDFImage,
 } from "@react-pdf/renderer";
