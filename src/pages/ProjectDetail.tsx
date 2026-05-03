@@ -313,6 +313,160 @@ const ProjectDetailPage = () => {
           </div>
         )}
 
+        {/* MOBILE-ONLY tabbed workspace */}
+        <div className="md:hidden">
+          <Tabs defaultValue="overview" className="space-y-4">
+            <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+              <TabsList className="bg-muted/60 h-10 p-1 rounded-xl flex flex-nowrap w-max">
+                <TabsTrigger value="overview" className="text-xs rounded-lg gap-1.5"><ListChecks className="h-3.5 w-3.5" />Overview</TabsTrigger>
+                <TabsTrigger value="timeline" className="text-xs rounded-lg gap-1.5"><CalendarDays className="h-3.5 w-3.5" />Timeline</TabsTrigger>
+                <TabsTrigger value="photos" className="text-xs rounded-lg gap-1.5"><Camera className="h-3.5 w-3.5" />Photos</TabsTrigger>
+                <TabsTrigger value="plansfiles" className="text-xs rounded-lg gap-1.5 whitespace-nowrap"><FileImage className="h-3.5 w-3.5" />Plans & Files</TabsTrigger>
+                <TabsTrigger value="notes" className="text-xs rounded-lg gap-1.5"><ClipboardList className="h-3.5 w-3.5" />Notes</TabsTrigger>
+                <TabsTrigger value="closeout" className="text-xs rounded-lg gap-1.5 whitespace-nowrap"><ClipboardCheck className="h-3.5 w-3.5" />Punch Out</TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="overview" className="mt-0 focus-visible:outline-none">
+              <Tabs defaultValue="tasks" className="space-y-4">
+                <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+                  <TabsList className="bg-muted/40 h-9 p-1 rounded-xl flex flex-nowrap w-max">
+                    <TabsTrigger value="tasks" className="text-xs rounded-lg">Tasks</TabsTrigger>
+                    {canViewFinancials && <TabsTrigger value="financials" className="text-xs rounded-lg">Financials</TabsTrigger>}
+                    {canViewFinancials && <TabsTrigger value="invoices" className="text-xs rounded-lg">Invoices</TabsTrigger>}
+                    <TabsTrigger value="keydates" className="text-xs rounded-lg whitespace-nowrap">Key Dates</TabsTrigger>
+                    <TabsTrigger value="details" className="text-xs rounded-lg whitespace-nowrap">Project Details</TabsTrigger>
+                    <TabsTrigger value="team" className="text-xs rounded-lg">Team</TabsTrigger>
+                    {!project.parentId && <TabsTrigger value="subs" className="text-xs rounded-lg whitespace-nowrap">Sub-Projects</TabsTrigger>}
+                  </TabsList>
+                </div>
+
+                <TabsContent value="tasks" className="mt-0 focus-visible:outline-none">
+                  <TaskBoard
+                    tasks={project.tasks}
+                    phases={(project as any).taskPhases || []}
+                    onChangeTasks={(isTaskEditor || canTickTasks) ? (tasks) => update({ tasks }) : () => {}}
+                    onChangePhases={isTaskEditor ? (taskPhases) => update({ taskPhases } as any) : () => {}}
+                    isEditor={isTaskEditor}
+                    canComplete={canTickTasks}
+                    projectName={project.name}
+                    projectAddress={project.address}
+                  />
+                </TabsContent>
+
+                {canViewFinancials && (
+                  <TabsContent value="financials" className="mt-0 focus-visible:outline-none">
+                    <BudgetSection data={project as any} onChange={isEditor ? update : () => {}} />
+                  </TabsContent>
+                )}
+
+                {canViewFinancials && (
+                  <TabsContent value="invoices" className="mt-0 focus-visible:outline-none">
+                    <InvoicesSection
+                      invoices={project.invoices}
+                      onChange={isEditor ? (invoices) => update({ invoices }) : () => {}}
+                      totalBudget={project.totalBudget}
+                      totalSpent={project.laborCosts + project.materialCosts}
+                      readOnly={!isEditor}
+                    />
+                  </TabsContent>
+                )}
+
+                <TabsContent value="keydates" className="mt-0 focus-visible:outline-none">
+                  <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5 space-y-3">
+                    <h3 className="section-title flex items-center gap-2"><Target className="h-4 w-4 text-primary" />Key Dates</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center justify-between py-1.5"><span className="text-xs text-muted-foreground">Start</span><span className="font-medium text-foreground">{project.startDate ? new Date(project.startDate).toLocaleDateString() : "—"}</span></div>
+                      <div className="flex items-center justify-between py-1.5 border-t"><span className="text-xs text-muted-foreground">Target Finish</span><span className="font-medium text-foreground">{project.endDate ? new Date(project.endDate).toLocaleDateString() : "—"}</span></div>
+                      <div className="flex items-center justify-between py-1.5 border-t"><span className="text-xs text-muted-foreground">Tasks Open</span><span className="font-medium text-foreground">{project.tasks.length - completedTasks}</span></div>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="details" className="mt-0 focus-visible:outline-none">
+                  <ProjectDetails data={project as any} onChange={isEditor ? update : () => {}} />
+                </TabsContent>
+
+                <TabsContent value="team" className="mt-0 focus-visible:outline-none">
+                  <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5">
+                    <TeamMembers projectId={project.id} members={project.members} isEditor={isEditor} />
+                  </div>
+                </TabsContent>
+
+                {!project.parentId && (
+                  <TabsContent value="subs" className="mt-0 focus-visible:outline-none">
+                    <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5 space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="section-title flex items-center gap-2"><FolderOpen className="h-4 w-4 text-primary" />Sub-Projects{hasSubs && <span className="text-xs text-muted-foreground font-normal">({subProjects.length})</span>}</h3>
+                        {isEditor && (<Button size="sm" variant="ghost" onClick={() => setShowSubForm(!showSubForm)} className="h-8 text-xs rounded-xl"><Plus className="h-3.5 w-3.5 mr-1" />Add</Button>)}
+                      </div>
+                      {showSubForm && (
+                        <div className="flex gap-2">
+                          <Input placeholder="Sub-project name…" value={newSubName} onChange={(e) => setNewSubName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleAddSub()} className="flex-1 h-9 text-sm rounded-xl" autoFocus />
+                          <Button onClick={handleAddSub} size="sm" className="h-9 text-xs rounded-xl" disabled={creatingSubProject}>Create</Button>
+                        </div>
+                      )}
+                      <div className="space-y-2">
+                        {subProjects.length === 0 ? (
+                          <p className="text-xs text-muted-foreground text-center py-2">No sub-projects yet.</p>
+                        ) : subProjects.map((sub) => (
+                          <button key={sub.id} onClick={() => navigate(`/project/${sub.id}`)} className="w-full text-left rounded-xl border bg-background p-3 space-y-1.5">
+                            <div className="flex items-center justify-between gap-2"><span className="text-sm font-heading font-semibold text-foreground truncate">{sub.name || "Untitled"}</span><ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" /></div>
+                            <div className="flex items-center gap-3 text-[11px] text-muted-foreground"><span>{sub.tasks.filter((t) => t.completed).length}/{sub.tasks.length} tasks</span><span>${(sub.laborCosts + sub.materialCosts).toLocaleString()} spent</span></div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </TabsContent>
+                )}
+              </Tabs>
+            </TabsContent>
+
+            <TabsContent value="timeline" className="mt-0 focus-visible:outline-none space-y-6">
+              <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} phases={project.taskPhases} />
+              <GanttTimeline tasks={project.tasks} startDate={project.startDate} phases={project.taskPhases} />
+              <CalendarView tasks={project.tasks} projectName={project.name} projectId={project.id} phases={project.taskPhases} events={project.events || []} onEventsChange={isEditor ? (events) => update({ events } as any) : undefined} canEdit={isEditor} />
+              <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5">
+                <h3 className="section-title flex items-center gap-2 mb-4"><Activity className="h-4 w-4 text-primary" />Activity Log</h3>
+                <ActivityLog projectId={project.id} />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="photos" className="mt-0 focus-visible:outline-none">
+              <PhotoGallery photos={project.photos} onChange={isEditor ? (photos) => update({ photos }) : () => {}} />
+            </TabsContent>
+
+            <TabsContent value="plansfiles" className="mt-0 focus-visible:outline-none space-y-6">
+              <BlueprintSection blueprints={project.blueprints} onChange={isEditor ? (blueprints) => update({ blueprints }) : () => {}} />
+              {isEditor ? (
+                <ProjectTemplates
+                  currentProject={project}
+                  onCreateFromTemplate={async (template) => {
+                    const subId = await addProject(template.name, project.id);
+                    await updateProject(subId, {
+                      totalBudget: template.totalBudget,
+                      laborCosts: template.laborCosts,
+                      materialCosts: template.materialCosts,
+                      tasks: template.tasks.map((t) => ({ ...t, id: crypto.randomUUID(), completed: false })) as any,
+                    });
+                    navigate(`/project/${subId}`);
+                  }}
+                />
+              ) : (
+                <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">Templates and reusable files are available to editors.</div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="notes" className="mt-0 focus-visible:outline-none">
+              <ChangeOrdersSection orders={project.changeOrders} onChange={isEditor ? (changeOrders) => update({ changeOrders }) : () => {}} />
+            </TabsContent>
+
+            <TabsContent value="closeout" className="mt-0 focus-visible:outline-none">
+              <PunchList projectId={project.id} data={punchData} onChange={savePunch} isEditor={isPunchEditor} canSignOff={isPunchSigner} members={project.members} projectName={project.name} projectAddress={project.address} />
+            </TabsContent>
+          </Tabs>
+        </div>
+
         {/* Command Center: 2-column layout — primary 65-70%, sidebar 30-35%
             Each column scrolls independently on desktop based on cursor position.
             Hidden on mobile — mobile uses the tabbed structure below. */}
