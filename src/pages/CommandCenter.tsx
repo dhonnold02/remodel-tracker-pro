@@ -17,7 +17,7 @@ import {
 import {
   Cloud, CloudRain, CloudSnow, Sun, CloudLightning, CloudFog,
   ChevronDown, Loader2, FileDown, CalendarClock, ListTodo, Users,
-  ClipboardList, Wind, Thermometer,
+  ClipboardList, Wind, Thermometer, Plus, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays, parseISO, startOfWeek, differenceInCalendarDays } from "date-fns";
@@ -156,9 +156,8 @@ const Section = ({
 const todayISO = () => format(new Date(), "yyyy-MM-dd");
 
 interface CrewMember {
-  id: string;        // company_members.id
-  user_id: string;
-  display_name: string;
+  id: string;        // crew_members.id
+  name: string;
 }
 
 interface DispatchRow {
@@ -195,6 +194,11 @@ const CommandCenter = () => {
   const [crew, setCrew] = useState<CrewMember[]>([]);
   const [dispatch, setDispatch] = useState<DispatchRow[]>([]);
   const [logs, setLogs] = useState<DailyLogRow[]>([]);
+
+  // Add crew member UI
+  const [addingCrew, setAddingCrew] = useState(false);
+  const [newCrewName, setNewCrewName] = useState("");
+  const [savingCrew, setSavingCrew] = useState(false);
 
   // Daily log form
   const [logProjectId, setLogProjectId] = useState<string>("");
@@ -250,23 +254,15 @@ const CommandCenter = () => {
   // ── Load crew + dispatch + daily logs ────────────────────────────────────
   const loadCompanyData = useCallback(async () => {
     if (!companyId) return;
-    // crew
+    // crew (persistent roster — carries across weeks automatically)
     const { data: members } = await supabase
-      .from("company_members")
-      .select("id, user_id")
-      .eq("company_id", companyId);
-    const userIds = (members || []).map((m) => m.user_id);
-    let profileMap = new Map<string, string>();
-    if (userIds.length) {
-      const { data: profiles } = await supabase
-        .from("profiles").select("id, display_name").in("id", userIds);
-      (profiles || []).forEach((p) =>
-        profileMap.set(p.id, p.display_name || "Unnamed"));
-    }
-    setCrew((members || []).map((m) => ({
+      .from("crew_members" as any)
+      .select("id, name")
+      .eq("company_id", companyId)
+      .order("created_at", { ascending: true });
+    setCrew(((members as any[]) || []).map((m) => ({
       id: m.id,
-      user_id: m.user_id,
-      display_name: profileMap.get(m.user_id) || "Unnamed",
+      name: m.name || "Unnamed",
     })));
 
     // dispatch this week
@@ -290,6 +286,34 @@ const CommandCenter = () => {
   }, [companyId, weekStart]);
 
   useEffect(() => { loadCompanyData(); }, [loadCompanyData]);
+
+  // ── Add / remove crew members ────────────────────────────────────────────
+  const handleAddCrew = async () => {
+    if (!user || !companyId) return;
+    const name = newCrewName.trim();
+    if (!name) { toast.error("Enter a name"); return; }
+    setSavingCrew(true);
+    const { error } = await supabase.from("crew_members" as any).insert({
+      company_id: companyId,
+      created_by: user.id,
+      name,
+    } as any);
+    setSavingCrew(false);
+    if (error) { toast.error("Failed to add crew member"); return; }
+    toast.success("Crew member added");
+    setNewCrewName("");
+    setAddingCrew(false);
+    loadCompanyData();
+  };
+
+  const handleRemoveCrew = async (memberId: string) => {
+    const { error } = await supabase.from("crew_members" as any).delete().eq("id", memberId);
+    if (error) { toast.error("Failed to remove crew member"); return; }
+    // also clear any dispatch rows for this member
+    await supabase.from("crew_dispatch").delete().eq("member_id", memberId);
+    toast.success("Crew member removed");
+    loadCompanyData();
+  };
 
   // ── Today events ─────────────────────────────────────────────────────────
   const todayEvents = useMemo(() => {
