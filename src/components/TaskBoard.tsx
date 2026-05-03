@@ -405,7 +405,7 @@ const PhaseColumn = ({
     <div
       className={cn(
         "flex flex-col rounded-2xl bg-muted/40 transition-all shrink-0 ring-1 ring-border/40",
-        collapsed ? "w-14" : "w-72 sm:w-80",
+        collapsed ? "w-full md:w-14" : "w-72 sm:w-80",
         isOver && "ring-2 ring-primary/50 bg-primary/5",
       )}
     >
@@ -414,10 +414,16 @@ const PhaseColumn = ({
         className="sticky top-0 z-10 rounded-t-2xl bg-muted/40 backdrop-blur-sm px-4 pt-3 pb-3"
       >
         {collapsed ? (
-          <button onClick={onToggleCollapse} className="flex flex-col items-center gap-2 w-full py-2" title={phase}>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          <button onClick={onToggleCollapse} className="flex md:flex-col items-center gap-2 w-full py-2" title={phase}>
+            <ChevronRight className="h-4 w-4 text-muted-foreground md:block" />
+            <span className="md:hidden flex-1 text-left text-xs font-semibold text-foreground truncate">
+              {phase}
+            </span>
+            <span className="md:hidden text-[10px] font-medium text-muted-foreground tabular-nums px-1.5 py-0.5 rounded-md bg-background/80">
+              {parentTasks.length}
+            </span>
             <span
-              className="text-xs font-semibold text-foreground"
+              className="hidden md:inline text-xs font-semibold text-foreground"
               style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
             >
               {phase} · {parentTasks.length}
