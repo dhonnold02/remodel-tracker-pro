@@ -10,9 +10,10 @@ interface TeamMembersProps {
   projectId: string;
   members: ProjectMember[];
   isEditor: boolean;
+  ownerUserId?: string | null;
 }
 
-const TeamMembers = ({ projectId, members, isEditor }: TeamMembersProps) => {
+const TeamMembers = ({ projectId, members, isEditor, ownerUserId }: TeamMembersProps) => {
   const { addMember, removeMember, updateMemberRole } = useProjects();
   const { user } = useAuth();
   const [showInvite, setShowInvite] = useState(false);
@@ -73,7 +74,9 @@ const TeamMembers = ({ projectId, members, isEditor }: TeamMembersProps) => {
               </p>
             </div>
             <div className="flex items-center gap-1.5">
-              {member.role === "editor" ? (
+              {ownerUserId && member.userId === ownerUserId ? (
+                <span className="flex items-center gap-1 text-[10px] text-primary-foreground bg-primary px-2.5 py-0.5 rounded-full font-medium"><Shield className="h-3 w-3" /> Owner</span>
+              ) : member.role === "editor" ? (
                 <span className="flex items-center gap-1 text-[10px] text-accent-foreground bg-accent px-2.5 py-0.5 rounded-full font-medium"><Shield className="h-3 w-3" /> Editor</span>
               ) : (
                 <span className="flex items-center gap-1 text-[10px] text-muted-foreground bg-secondary px-2.5 py-0.5 rounded-full"><Eye className="h-3 w-3" /> Viewer</span>
