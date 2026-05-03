@@ -378,7 +378,7 @@ const ProjectDetailPage = () => {
 
                 <TabsContent value="team" className="mt-0 focus-visible:outline-none">
                   <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5">
-                    <TeamMembers projectId={project.id} members={project.members} isEditor={isEditor} />
+                    <TeamMembers projectId={project.id} members={project.members} isEditor={isEditor} ownerUserId={project.createdBy} />
                   </div>
                 </TabsContent>
 
@@ -562,7 +562,7 @@ const ProjectDetailPage = () => {
                   <span className="text-xs text-muted-foreground font-normal">({project.members.length})</span>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-4">
-                  <TeamMembers projectId={project.id} members={project.members} isEditor={isEditor} />
+                  <TeamMembers projectId={project.id} members={project.members} isEditor={isEditor} ownerUserId={project.createdBy} />
                 </CollapsibleContent>
               </div>
             </Collapsible>
