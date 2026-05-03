@@ -426,23 +426,29 @@ const ProjectDetailPage = () => {
 
             <TabsContent value="plansfiles" className="mt-0 focus-visible:outline-none space-y-6">
               <BlueprintSection blueprints={project.blueprints} onChange={isEditor ? (blueprints) => update({ blueprints }) : () => {}} />
-              {isEditor ? (
-                <ProjectTemplates
-                  currentProject={project}
-                  onCreateFromTemplate={async (template) => {
-                    const subId = await addProject(template.name, project.id);
-                    await updateProject(subId, {
-                      totalBudget: template.totalBudget,
-                      laborCosts: template.laborCosts,
-                      materialCosts: template.materialCosts,
-                      tasks: template.tasks.map((t) => ({ ...t, id: crypto.randomUUID(), completed: false })) as any,
-                    });
-                    navigate(`/project/${subId}`);
-                  }}
-                />
-              ) : (
-                <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">Templates and reusable files are available to editors.</div>
-              )}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 px-1">
+                  <BookTemplate className="h-3.5 w-3.5 text-primary" />
+                  <h3 className="font-heading text-sm font-bold text-foreground tracking-tight">Files</h3>
+                </div>
+                {isEditor ? (
+                  <ProjectTemplates
+                    currentProject={project}
+                    onCreateFromTemplate={async (template) => {
+                      const subId = await addProject(template.name, project.id);
+                      await updateProject(subId, {
+                        totalBudget: template.totalBudget,
+                        laborCosts: template.laborCosts,
+                        materialCosts: template.materialCosts,
+                        tasks: template.tasks.map((t) => ({ ...t, id: crypto.randomUUID(), completed: false })) as any,
+                      });
+                      navigate(`/project/${subId}`);
+                    }}
+                  />
+                ) : (
+                  <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">Templates and reusable files are available to editors.</div>
+                )}
+              </div>
             </TabsContent>
 
             <TabsContent value="notes" className="mt-0 focus-visible:outline-none">
