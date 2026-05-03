@@ -536,7 +536,7 @@ const PhaseColumn = ({
         >
           <SortableContext items={parentTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
             {parentTasks.length === 0 && !adding && (
-              <div className="text-[11px] text-muted-foreground/70 italic text-center py-6 px-3 rounded-lg border border-dashed">
+              <div className="hidden md:block text-[11px] text-muted-foreground/70 italic text-center py-6 px-3 rounded-lg border border-dashed">
                 Drop tasks here
               </div>
             )}
@@ -794,7 +794,7 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, can
   return (
     <div className="space-y-4">
       {/* Board summary */}
-      <div className="flex items-center justify-between gap-3 px-1">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-1">
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <span>{totalDone}/{totalLeaf.length} tasks complete</span>
           <span className="text-foreground font-medium tabular-nums">{Math.round(totalPercent)}%</span>
@@ -805,7 +805,7 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, can
         <Button
           variant="outline"
           size="sm"
-          className="h-8 text-xs gap-1.5"
+          className="h-9 md:h-8 text-xs gap-1.5 w-full md:w-auto"
           onClick={() =>
             exportTasksPDF({
               projectName: projectName || "Project",
