@@ -213,8 +213,8 @@ const ProjectDetailPage = () => {
             )}
           </div>
 
-          {/* Compact stat pills with inline progress */}
-          <div className="rounded-2xl border bg-card/50 backdrop-blur-sm px-5 py-4">
+          {/* Compact stat pills with inline progress (hidden on mobile) */}
+          <div className="hidden md:block rounded-2xl border bg-card/50 backdrop-blur-sm px-5 py-4">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 lg:divide-x lg:divide-border/60">
               {/* Budget Used */}
               <div className="lg:pl-0 lg:pr-6 space-y-1.5">
