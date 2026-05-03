@@ -95,7 +95,7 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false, 
           {...listeners}
           onClick={(e) => e.stopPropagation()}
           aria-label="Drag to reorder"
-          className="absolute top-2 left-2 p-1 rounded-md text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing touch-none"
+          className="hidden md:block absolute top-2 left-2 p-1 rounded-md text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing touch-none"
         >
           <GripVertical className="h-4 w-4" />
         </button>
