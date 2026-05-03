@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useBranding } from "@/hooks/useBranding";
@@ -7,7 +6,7 @@ import { useRole } from "@/hooks/useRole";
 import SightlineLogo from "@/components/SightlineLogo";
 import {
   LayoutDashboard, BookTemplate, Users,
-  LogOut, WifiOff, Menu, X, ChevronLeft, SlidersHorizontal,
+  LogOut, WifiOff, ChevronLeft, SlidersHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +30,6 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
   const { brand } = useBranding();
   const isOnline = useOnlineStatus();
   const { canAccessSettings, canInviteMembers } = useRole();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navItems = canInviteMembers
     ? [...BASE_NAV_ITEMS, { label: "Team", icon: Users, path: "/team" }]
@@ -48,7 +46,6 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
   const handleNav = (path: string) => {
     const [p, h] = path.split("#");
     navigate(h ? `${p}#${h}` : p);
-    setSidebarOpen(false);
     if (h) {
       setTimeout(() => {
         const el = document.getElementById(h);
