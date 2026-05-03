@@ -17,6 +17,7 @@ import CalendarView from "@/components/CalendarView";
 import TeamMembers from "@/components/TeamMembers";
 import ActivityLog from "@/components/ActivityLog";
 import ProjectTemplates from "@/components/ProjectTemplates";
+import LocalFileUploads from "@/components/LocalFileUploads";
 import ProgressBar from "@/components/ProgressBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -428,8 +429,15 @@ const ProjectDetailPage = () => {
               <BlueprintSection blueprints={project.blueprints} onChange={isEditor ? (blueprints) => update({ blueprints }) : () => {}} />
               <div className="space-y-3">
                 <div className="flex items-center gap-2 px-1">
-                  <BookTemplate className="h-3.5 w-3.5 text-primary" />
+                  <FilePlus2 className="h-3.5 w-3.5 text-primary" />
                   <h3 className="font-heading text-sm font-bold text-foreground tracking-tight">Files</h3>
+                </div>
+                <LocalFileUploads projectId={project.id} isEditor={isEditor} />
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 px-1">
+                  <BookTemplate className="h-3.5 w-3.5 text-primary" />
+                  <h3 className="font-heading text-sm font-bold text-foreground tracking-tight">Templates</h3>
                 </div>
                 {isEditor ? (
                   <ProjectTemplates
