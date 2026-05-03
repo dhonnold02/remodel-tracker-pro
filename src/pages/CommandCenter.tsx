@@ -314,6 +314,9 @@ const CommandCenter = () => {
 
   useEffect(() => { loadCompanyData(); }, [loadCompanyData]);
 
+  const projectName = (id: string) =>
+    projects.find((p) => p.id === id)?.name || "Unknown";
+
   // ── Add / remove crew members ────────────────────────────────────────────
   const handleAddCrew = async () => {
     if (!user || !companyId) return;
