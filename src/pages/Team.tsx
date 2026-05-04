@@ -421,7 +421,7 @@ const Team = () => {
                     const canRemove = !isSelf && m.role !== "owner";
                     const isExpanded = expandedMemberId === m.id;
                     return (
-                      <FragmentWithKey key={m.id}>
+                      <Fragment key={m.id}>
                       <TableRow>
                         <TableCell className="max-w-[160px] md:max-w-none">
                           <div className="flex items-start justify-between gap-2">
@@ -549,7 +549,7 @@ const Team = () => {
                           </TableCell>
                         </TableRow>
                       )}
-                      </FragmentWithKey>
+                      </Fragment>
                     );
                   })}
                 </TableBody>
