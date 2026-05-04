@@ -3,8 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CheckCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { CheckCircle, AlertTriangle } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
 import SightlineLogo from "@/components/SightlineLogo";
 
 const ResetPasswordPage = () => {
@@ -15,19 +15,31 @@ const ResetPasswordPage = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [isRecovery, setIsRecovery] = useState(false);
+  const [checkingToken, setCheckingToken] = useState(true);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
         setIsRecovery(true);
+        setCheckingToken(false);
       }
     });
+    // Also fall back to a short window so we know whether a recovery
+    // session ever fired. Supabase emits PASSWORD_RECOVERY on initial load
+    // when the URL contains a valid recovery token.
+    const timer = setTimeout(() => setCheckingToken(false), 1500);
     return () => subscription.unsubscribe();
+    // eslint-disable-next-line
   }, []);
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!isRecovery) {
+      setError("This reset link is invalid or has expired.");
+      return;
+    }
 
     if (password.length < 6) {
       setError("Password must be at least 6 characters.");
@@ -65,6 +77,26 @@ const ResetPasswordPage = () => {
             <CheckCircle className="h-12 w-12 text-accent mx-auto" />
             <p className="text-sm text-foreground font-medium">Password updated successfully!</p>
             <p className="text-xs text-muted-foreground">Redirecting to dashboard…</p>
+          </div>
+        ) : checkingToken ? (
+          <div className="text-center text-sm text-muted-foreground py-6">
+            Verifying reset link…
+          </div>
+        ) : !isRecovery ? (
+          <div className="text-center space-y-3 py-6">
+            <AlertTriangle className="h-12 w-12 text-destructive mx-auto" />
+            <p className="text-sm text-foreground font-medium">
+              This link is invalid or has expired
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Request a new password reset email to continue.
+            </p>
+            <Link
+              to="/auth"
+              className="inline-block text-sm text-primary hover:underline"
+            >
+              Back to sign in
+            </Link>
           </div>
         ) : (
           <form onSubmit={handleReset} className="space-y-4">
