@@ -160,6 +160,33 @@ export type Database = {
           },
         ]
       }
+      command_center_notes: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          notes: string
+          updated_at: string
+          week_start_date: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          notes?: string
+          updated_at?: string
+          week_start_date: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          notes?: string
+          updated_at?: string
+          week_start_date?: string
+        }
+        Relationships: []
+      }
       company_invitations: {
         Row: {
           accepted_at: string | null
