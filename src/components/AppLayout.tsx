@@ -9,12 +9,9 @@ import {
   LogOut, WifiOff, ChevronLeft, SlidersHorizontal, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const BASE_NAV_ITEMS = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "/" },
-  { label: "Command Center", icon: Zap, path: "/command-center" },
-  { label: "Templates", icon: BookTemplate, path: "/#templates" },
-];
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -27,33 +24,32 @@ interface AppLayoutProps {
 const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const { brand } = useBrandingContext();
   const isOnline = useOnlineStatus();
   const { canAccessSettings, canInviteMembers } = useRole();
 
-  const navItems = canInviteMembers
-    ? [...BASE_NAV_ITEMS, { label: "Team", icon: Users, path: "/team" }]
-    : BASE_NAV_ITEMS;
+  const slimNav: { label: string; icon: typeof LayoutDashboard; path: string; show: boolean }[] = [
+    { label: "Dashboard", icon: LayoutDashboard, path: "/", show: true },
+    { label: "Command Center", icon: Zap, path: "/command-center", show: true },
+    { label: "Team", icon: Users, path: "/team", show: canInviteMembers },
+    { label: "Settings", icon: SlidersHorizontal, path: "/settings", show: canAccessSettings },
+  ].filter((i) => i.show);
 
-  const currentHash = location.hash;
   const isActive = (path: string) => {
-    const [p, h] = path.split("#");
-    if (h) return location.pathname === p && currentHash === `#${h}`;
-    if (p === "/") return location.pathname === "/" && !currentHash;
-    return location.pathname.startsWith(p);
+    if (path === "/") return location.pathname === "/" && !location.hash;
+    return location.pathname.startsWith(path);
   };
 
-  const handleNav = (path: string) => {
-    const [p, h] = path.split("#");
-    navigate(h ? `${p}#${h}` : p);
-    if (h) {
-      setTimeout(() => {
-        const el = document.getElementById(h);
-        el?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 50);
-    }
-  };
+  const userInitials = (() => {
+    const name = (user?.user_metadata as any)?.display_name || user?.email || "?";
+    return name
+      .split(/[\s@.]+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((s: string) => s[0]?.toUpperCase())
+      .join("") || "?";
+  })();
 
   return (
     <div className="min-h-screen bg-page-bg flex">
@@ -63,76 +59,77 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
       >
         Skip to main content
       </a>
-      {/* Sidebar */}
-      <aside className={cn(
-        "hidden md:flex sticky top-0 left-0 z-50 h-screen w-64 bg-card border-r flex-col"
-      )}>
-        {/* Brand header */}
-        <div className="px-4 py-3 border-b">
-          <div className="flex items-center gap-2.5">
-            {brand.brandLogoUrl ? (
-              <img src={brand.brandLogoUrl} alt="Logo" className="h-8 w-8 rounded-xl object-contain" />
-            ) : (
-              <SightlineLogo size={32} />
-            )}
-            <div className="min-w-0">
-              <h2 className="font-heading text-sm font-medium text-foreground truncate leading-none">
-                {brand.brandName || "Sightline"}
-              </h2>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-1">
-          {navItems.map((item) => (
-            <button
-              key={item.path}
-              onClick={() => handleNav(item.path)}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
-                isActive(item.path)
-                  ? "bg-accent text-accent-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-              )}
-            >
-              <item.icon className={cn("h-4 w-4", isActive(item.path) && "text-primary")} />
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        {/* Bottom section */}
-        <div className="p-3 space-y-1 border-t">
-          {!isOnline && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-warning/10 text-warning text-xs font-medium">
-              <WifiOff className="h-3.5 w-3.5" />
-              Offline Mode
-            </div>
-          )}
-          {canAccessSettings && (
-            <button
-              onClick={() => navigate("/settings")}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
-                location.pathname.startsWith("/settings")
-                  ? "bg-accent text-accent-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-              )}
-            >
-              <SlidersHorizontal className={cn("h-4 w-4", location.pathname.startsWith("/settings") && "text-primary")} />
-              Settings
-            </button>
-          )}
+      {/* Slim icon-only sidebar */}
+      <TooltipProvider delayDuration={150}>
+        <aside className="hidden md:flex sticky top-0 left-0 z-50 h-screen w-14 bg-[#0f172a] flex-col items-center py-4">
           <button
-            onClick={signOut}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+            onClick={() => navigate("/")}
+            aria-label="Sightline"
+            className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shrink-0 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
           >
-            <LogOut className="h-4 w-4" />
-            Sign Out
+            <SightlineLogo size={22} />
           </button>
-        </div>
-      </aside>
+
+          <nav className="flex-1 mt-6 flex flex-col items-center gap-2">
+            {slimNav.map((item) => {
+              const active = isActive(item.path);
+              return (
+                <Tooltip key={item.path}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => navigate(item.path)}
+                      aria-label={item.label}
+                      aria-current={active ? "page" : undefined}
+                      className={cn(
+                        "h-10 w-10 rounded-xl flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none",
+                        active ? "bg-white/10 opacity-100" : "opacity-50 hover:opacity-100 hover:bg-white/5"
+                      )}
+                    >
+                      <item.icon className="h-5 w-5 stroke-white" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">{item.label}</TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </nav>
+
+          {!isOnline && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="h-10 w-10 rounded-xl flex items-center justify-center text-warning" aria-label="Offline">
+                  <WifiOff className="h-4 w-4" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="right">Offline Mode</TooltipContent>
+            </Tooltip>
+          )}
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                aria-label="Account menu"
+                className="mt-2 rounded-full focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
+              >
+                <Avatar className="h-9 w-9 border border-white/10">
+                  <AvatarFallback className="bg-white/10 text-white text-xs font-medium">
+                    {userInitials}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent side="right" align="end" className="w-44 p-1">
+              <button
+                onClick={signOut}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </button>
+            </PopoverContent>
+          </Popover>
+        </aside>
+      </TooltipProvider>
 
       {/* Main content */}
       <div className="flex-1 min-w-0 flex flex-col">
@@ -150,8 +147,17 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
             )}
 
             <div className="flex-1 min-w-0">
-              {title && <h1 className="font-heading text-lg font-bold text-foreground truncate">{title}</h1>}
-              {subtitle && <p className="text-xs text-muted-foreground truncate">{subtitle}</p>}
+              <div className="text-sm font-medium text-foreground truncate leading-tight">
+                {brand.brandName || "Sightline"}
+              </div>
+              {title && (
+                <div className="text-xs text-muted-foreground truncate leading-tight">
+                  {title}{subtitle ? ` · ${subtitle}` : ""}
+                </div>
+              )}
+              {!title && subtitle && (
+                <div className="text-xs text-muted-foreground truncate leading-tight">{subtitle}</div>
+              )}
             </div>
 
             {actions && (
