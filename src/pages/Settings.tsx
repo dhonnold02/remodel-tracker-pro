@@ -15,6 +15,7 @@ import { Loader2, Upload, X, Check, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { applyBrandPrimary, BRAND_PRESETS } from "@/lib/brandColor";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import SectionHeader from "@/components/SectionHeader";
 
 interface CompanySettings {
   company_name: string;
