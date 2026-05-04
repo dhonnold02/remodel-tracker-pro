@@ -11,9 +11,9 @@ interface Props {
   className?: string;
 }
 
-const GOOGLE_MAPS_API_KEY =
-  (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined) ||
-  "AIzaSyA_sOPvjxhs8rsD8-6DLsvXdHjpen4Mj7Q";
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as
+  | string
+  | undefined;
 const SCRIPT_ID = "google-maps-places-script";
 const STYLE_ID = "google-pac-dark-theme-overrides";
 
@@ -151,10 +151,11 @@ const AddressAutocomplete = ({
       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
       <Input
         ref={inputRef}
-        placeholder={placeholder}
+        placeholder={GOOGLE_MAPS_API_KEY ? placeholder : "Address autocomplete unavailable"}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
+        disabled={!GOOGLE_MAPS_API_KEY}
         autoComplete="off"
         className={cn("rounded-xl h-11 pl-9", className)}
       />
