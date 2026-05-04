@@ -436,9 +436,9 @@ const Settings = () => {
         <div className="md:hidden pt-2">
           <Button
             onClick={signOut}
-            variant="outline"
+            variant="ghost"
             size="lg"
-            className="w-full rounded-xl text-muted-foreground"
+            className="w-full rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
           >
             <LogOut className="h-4 w-4 mr-2" />
             Sign Out
@@ -447,7 +447,10 @@ const Settings = () => {
       </div>
 
       {/* Mobile sticky save (sits above the bottom tab bar) */}
-      <div className="md:hidden fixed inset-x-0 z-40 border-t bg-background/95 backdrop-blur-sm p-3 bottom-16" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}>
+      <div
+        className="md:hidden fixed inset-x-0 z-40 border-t bg-background/95 backdrop-blur-sm p-3"
+        style={{ bottom: "calc(4rem + env(safe-area-inset-bottom))" }}
+      >
         <Button onClick={handleSave} disabled={saving} size="lg" className="w-full rounded-xl">
           {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
           Save changes

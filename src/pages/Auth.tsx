@@ -151,7 +151,7 @@ const AuthPage = () => {
 
       {/* Right panel — form */}
       <div
-        className="flex-1 flex items-center justify-center p-6 sm:p-10"
+        className="flex-1 flex items-center justify-center p-6 sm:p-10 overflow-y-auto max-h-screen"
         style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}
       >
         <div className="w-full max-w-sm space-y-8">
