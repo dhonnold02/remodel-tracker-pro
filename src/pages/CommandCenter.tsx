@@ -798,7 +798,7 @@ ${logsHtml}
               ) : (
                 <ul className="space-y-1.5">
                   {weekEvents.map((e, i) => (
-                    <li key={i} className="flex items-center gap-3 text-xs px-3 py-1.5 rounded-lg bg-secondary/20">
+                    <li key={i} className="flex items-center gap-3 text-xs px-3 py-1.5 rounded-xl bg-secondary/20">
                       <span className="h-2 w-2 rounded-full shrink-0"
                             style={{ backgroundColor: EVENT_COLORS[e.type] || EVENT_COLORS.other }} />
                       <span className="text-muted-foreground tabular-nums w-16 shrink-0">
@@ -827,7 +827,7 @@ ${logsHtml}
                   </div>
                   <ul className="space-y-1.5">
                     {g.tasks.map((t, j) => (
-                      <li key={j} className="flex items-center gap-3 rounded-lg bg-secondary/30 px-3 py-2">
+                      <li key={j} className="flex items-center gap-3 rounded-xl bg-secondary/30 px-3 py-2">
                         <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
                         <span className="text-sm text-foreground flex-1 truncate">{t.title}</span>
                         <Badge variant="outline" className="text-xs">{t.phase}</Badge>
@@ -893,7 +893,7 @@ ${logsHtml}
                 onChange={(e) => setNewCrewName(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") handleAddCrew(); }}
                 placeholder="Crew member name"
-                className="rounded-lg flex-1"
+                className="rounded-xl flex-1"
               />
               <Button size="sm" onClick={handleAddCrew} disabled={savingCrew} className="rounded-xl">
                 {savingCrew ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Save"}
