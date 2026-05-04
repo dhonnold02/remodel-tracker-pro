@@ -794,7 +794,7 @@ ${logsHtml}
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-3">
               {weekEvents.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No events this week.</p>
+                <EmptyState icon={CalendarX} title="No events this week" />
               ) : (
                 <ul className="space-y-1.5">
                   {weekEvents.map((e, i) => (
@@ -968,49 +968,67 @@ ${logsHtml}
                 </tbody>
               </table>
             </div>
-            {/* Mobile cards */}
+            {/* Mobile cards (collapsible per member) */}
             <div className="md:hidden space-y-3">
-              {crew.map((m) => (
-                <div key={m.id} className="rounded-xl border bg-card/60 p-3 space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-semibold text-foreground truncate">{m.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveCrew(m.id)}
-                      className="h-6 w-6 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                      aria-label={`Remove ${m.name}`}
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                  <ul className="space-y-1.5">
-                    {weekDays.map((d) => {
-                      const row = dispatchMap.get(dispatchKey(m.id, d));
-                      return (
-                        <li key={d.toISOString()} className="flex items-center gap-2">
-                          <span className="w-20 shrink-0 text-xs text-muted-foreground tabular-nums">
-                            {format(d, "EEE MMM d")}
-                          </span>
-                          <Select
-                            value={row?.project_id || "__none__"}
-                            onValueChange={(v) => setAssignment(m, d, v)}
-                          >
-                            <SelectTrigger className="h-9 text-xs rounded-xl bg-secondary/40 border-border flex-1">
-                              <SelectValue placeholder="—" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="__none__">— Unassigned —</SelectItem>
-                              {projects.map((p) => (
-                                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ))}
+              {crew.map((m) => {
+                const assignedCount = weekDays.reduce(
+                  (acc, d) => acc + (dispatchMap.get(dispatchKey(m.id, d))?.project_id ? 1 : 0),
+                  0,
+                );
+                return (
+                  <Collapsible key={m.id}>
+                    <div className="rounded-xl border bg-card/60">
+                      <div className="flex items-center justify-between gap-2 p-3">
+                        <CollapsibleTrigger asChild>
+                          <button className="group flex items-center gap-2 flex-1 min-w-0 text-left focus-visible:outline-none">
+                            <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+                            <span className="text-sm font-semibold text-foreground truncate flex-1">{m.name}</span>
+                            <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
+                              {assignedCount}/{weekDays.length} days
+                            </span>
+                          </button>
+                        </CollapsibleTrigger>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCrew(m.id)}
+                          className="h-8 w-8 inline-flex items-center justify-center rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                          aria-label={`Remove ${m.name}`}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                      <CollapsibleContent>
+                        <ul className="space-y-1.5 px-3 pb-3">
+                          {weekDays.map((d) => {
+                            const row = dispatchMap.get(dispatchKey(m.id, d));
+                            return (
+                              <li key={d.toISOString()} className="flex items-center gap-2">
+                                <span className="w-20 shrink-0 text-xs text-muted-foreground tabular-nums">
+                                  {format(d, "EEE MMM d")}
+                                </span>
+                                <Select
+                                  value={row?.project_id || "__none__"}
+                                  onValueChange={(v) => setAssignment(m, d, v)}
+                                >
+                                  <SelectTrigger className="h-9 text-xs rounded-xl bg-secondary/40 border-border flex-1">
+                                    <SelectValue placeholder="—" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="__none__">— Unassigned —</SelectItem>
+                                    {projects.map((p) => (
+                                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </CollapsibleContent>
+                    </div>
+                  </Collapsible>
+                );
+              })}
             </div>
             </>
           )}
@@ -1079,7 +1097,10 @@ ${logsHtml}
                 ))}
               </ul>
               {logs.length > visibleLogCount && (
-                <div className="mt-3 flex justify-center">
+                <div className="mt-3 flex flex-col items-center gap-2">
+                  <p className="text-xs text-muted-foreground">
+                    Showing {Math.min(visibleLogCount, logs.length)} of {logs.length} entries
+                  </p>
                   <Button
                     variant="outline"
                     size="sm"
