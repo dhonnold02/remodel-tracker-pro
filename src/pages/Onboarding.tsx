@@ -221,16 +221,6 @@ const Onboarding = () => {
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                {step > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => setStep((s) => (Math.max(1, (s as number) - 1) as Step))}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-secondary text-foreground hover:bg-secondary/80 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                    aria-label="Back"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                  </button>
-                )}
                 <SightlineLogo size={32} />
                 <span className="font-heading text-sm font-semibold text-foreground">Sightline</span>
               </div>
@@ -296,15 +286,18 @@ const Onboarding = () => {
                   </div>
                 </div>
 
-                <Button
-                  onClick={handleStep1}
-                  disabled={submitting || !companyName.trim()}
-                  className="w-full h-11 rounded-xl"
-                >
-                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                    <>Continue <ArrowRight className="h-4 w-4 ml-1" /></>
-                  )}
-                </Button>
+                <div className="flex items-center justify-between gap-3">
+                  <span aria-hidden />
+                  <Button
+                    onClick={handleStep1}
+                    disabled={submitting || !companyName.trim()}
+                    className="h-11 rounded-xl flex-1 sm:flex-none sm:min-w-[12rem]"
+                  >
+                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                      <>Continue <ArrowRight className="h-4 w-4 ml-1" /></>
+                    )}
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -417,16 +410,28 @@ const Onboarding = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Button
-                    onClick={() => handleStep2(false)}
-                    disabled={submitting}
-                    className="w-full h-11 rounded-xl"
-                  >
-                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                      <>Continue <ArrowRight className="h-4 w-4 ml-1" /></>
-                    )}
-                  </Button>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setStep(1)}
+                      disabled={submitting}
+                      className="h-11 rounded-xl"
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-1" />
+                      Back
+                    </Button>
+                    <Button
+                      onClick={() => handleStep2(false)}
+                      disabled={submitting}
+                      className="h-11 rounded-xl flex-1 sm:flex-none sm:min-w-[12rem]"
+                    >
+                      {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                        <>Continue <ArrowRight className="h-4 w-4 ml-1" /></>
+                      )}
+                    </Button>
+                  </div>
                   <button
                     type="button"
                     onClick={() => handleStep2(true)}
@@ -474,19 +479,31 @@ const Onboarding = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Button
-                    onClick={finishWithProject}
-                    disabled={submitting || !projectName.trim()}
-                    className="w-full h-11 rounded-xl"
-                  >
-                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                      <>
-                        <Check className="h-4 w-4 mr-1" />
-                        Create Project & Go to Dashboard
-                      </>
-                    )}
-                  </Button>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setStep(2)}
+                      disabled={submitting}
+                      className="h-11 rounded-xl"
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-1" />
+                      Back
+                    </Button>
+                    <Button
+                      onClick={finishWithProject}
+                      disabled={submitting || !projectName.trim()}
+                      className="h-11 rounded-xl flex-1 sm:flex-none sm:min-w-[16rem]"
+                    >
+                      {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                        <>
+                          <Check className="h-4 w-4 mr-1" />
+                          Create & Go to Dashboard
+                        </>
+                      )}
+                    </Button>
+                  </div>
                   <button
                     type="button"
                     onClick={skipToDashboard}
