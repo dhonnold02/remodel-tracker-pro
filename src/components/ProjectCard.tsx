@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ProjectData } from "@/hooks/useProjects";
 import { getProjectStats, getAggregatedStats } from "@/types/project";
-import { MapPin, CheckCircle2, MoreHorizontal, GripVertical, ExternalLink, Navigation, Trash2 } from "lucide-react";
+import { MapPin, CheckCircle2, MoreHorizontal, ExternalLink, Navigation, Trash2 } from "lucide-react";
 import ProgressBar from "@/components/ProgressBar";
 import {
   DropdownMenu,
@@ -63,6 +63,26 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false, 
   const budgetPercent = stats.budgetPercent;
   const taskPercent = stats.taskPercent;
   const isCompleted = project.tasks.length > 0 && project.tasks.every(t => t.completed);
+  const hasTasks = project.tasks.length > 0;
+  const status: "Active" | "Planning" | "Completed" = isCompleted
+    ? "Completed"
+    : hasTasks
+      ? "Active"
+      : "Planning";
+  const statusClass =
+    status === "Completed"
+      ? "bg-success/10 text-success"
+      : status === "Active"
+        ? "bg-primary/10 text-primary"
+        : "bg-muted text-muted-foreground";
+
+  const fmtMoney = (n: number) => {
+    const abs = Math.abs(n);
+    if (abs >= 1_000_000) return `$${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M`;
+    if (abs >= 1_000) return `$${Math.round(n / 1_000)}K`;
+    return `$${n.toLocaleString()}`;
+  };
+  const totalBudget = hasSubs ? (stats as any).totalBudget : project.totalBudget;
 
   const projectName = project.name || "Untitled Project";
   const canDelete = confirmText.trim() === projectName;
@@ -84,24 +104,12 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false, 
     <div
       ref={setNodeRef}
       style={dragStyle}
-      className={`premium-card-hover p-5 space-y-4 cursor-pointer group relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:rounded-t-2xl before:bg-primary before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-200 ${
+      {...(sortable ? attributes : {})}
+      className={`bg-card rounded-xl border border-border p-5 space-y-4 cursor-pointer group relative overflow-hidden transition-all duration-150 hover:shadow-md hover:border-border ${
         isCompleted ? "border-l-4 border-l-success" : ""
       }`}
       onClick={handleOpen}
     >
-      {/* Drag handle */}
-      {sortable && (
-        <button
-          {...attributes}
-          {...listeners}
-          onClick={(e) => e.stopPropagation()}
-          aria-label="Drag to reorder"
-          className="hidden md:inline-flex items-center justify-center absolute top-2 left-2 min-h-[44px] min-w-[44px] rounded-xl text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing touch-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none focus-visible:opacity-100"
-        >
-          <GripVertical className="h-4 w-4" />
-        </button>
-      )}
-
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="min-w-0 flex-1">
@@ -109,7 +117,6 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false, 
             <h3 className="font-heading font-semibold text-foreground truncate">
               {projectName}
             </h3>
-            {isCompleted && <CheckCircle2 className="h-4 w-4 text-success shrink-0" />}
           </div>
           {project.address && (
             <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1 truncate">
@@ -119,6 +126,9 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false, 
           )}
         </div>
         <div className="flex items-center gap-1 shrink-0">
+          <span className={`text-[10px] font-medium uppercase tracking-wider px-2 py-1 rounded-full ${statusClass}`}>
+            {status}
+          </span>
           {hasSubs && (
             <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
               {subs.length} sub
@@ -174,8 +184,8 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false, 
       {/* Stats */}
       <div className="flex items-center gap-4 text-xs text-muted-foreground">
         <span className="font-heading font-semibold text-foreground text-sm">
-          ${totalSpent.toLocaleString()}
-          <span className="text-muted-foreground font-normal text-xs"> / ${(hasSubs ? (stats as any).totalBudget : project.totalBudget).toLocaleString()}</span>
+          {fmtMoney(totalSpent)}
+          <span className="text-muted-foreground font-normal text-xs"> / {fmtMoney(totalBudget)}</span>
         </span>
       </div>
 
