@@ -166,7 +166,7 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
   const newProjectButton = canEditProjects ? (
     <Dialog open={createOpen} onOpenChange={setCreateOpen}>
       <DialogTrigger asChild>
-        <Button className="h-10 px-4 rounded-xl shadow-sm gap-1.5">
+        <Button className="h-11 px-4 rounded-xl shadow-sm gap-1.5">
           <Plus className="h-4 w-4" />
           New Project
         </Button>
@@ -208,8 +208,8 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
 
   return (
     <AppLayout
-      title={brand.brandName ? `${brand.brandName} Dashboard` : "Dashboard"}
-      subtitle={brand.brandName ? "Every job, start to finish." : "Manage your renovation projects"}
+      title={`${brand.brandName || "Sightline"} Dashboard`}
+      subtitle="Every job, start to finish."
       actions={newProjectButton}
     >
       <div className="max-w-6xl mx-auto space-y-8">
