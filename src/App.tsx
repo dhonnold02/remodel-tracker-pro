@@ -155,7 +155,7 @@ const BrandColorLoader = () => {
             event: "*",
             schema: "public",
             table: "company_settings",
-            filter: `company_id=eq.${companyId}`,
+            filter: `id=eq.${companyId}`,
           },
           (payload: any) => {
             const next = payload?.new?.brand_color ?? null;
