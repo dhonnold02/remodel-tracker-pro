@@ -328,7 +328,7 @@ const CalendarView = ({ tasks, phases, events = [], onEventsChange, canEdit = fa
                 {canEdit && (
                   <button
                     onClick={() => handleDeleteEvent(evt.id)}
-                    className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
+                    className="p-2.5 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0 min-h-[44px] min-w-[44px] inline-flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                     aria-label="Delete event"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -405,7 +405,7 @@ const CalendarView = ({ tasks, phases, events = [], onEventsChange, canEdit = fa
                     <select
                       value={newType}
                       onChange={(e) => setNewType(e.target.value as ProjectEventType)}
-                      className="flex-1 rounded-lg border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+                      className="flex-1 rounded-xl border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
                     >
                       {EVENT_TYPES.map((t) => (
                         <option key={t.value} value={t.value}>

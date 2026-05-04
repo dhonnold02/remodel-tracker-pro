@@ -44,7 +44,7 @@ const BlueprintSection = ({ blueprints, onChange }: BlueprintSectionProps) => {
           <FolderOpen className="h-4 w-4 text-primary" />
           Blueprints & Plans
         </h2>
-        <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()} className="rounded-xl h-8 text-xs">
+        <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()} className="rounded-xl h-9 text-xs">
           <FileUp className="h-3.5 w-3.5 mr-1.5" />
           Upload
         </Button>

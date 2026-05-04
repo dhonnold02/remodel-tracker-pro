@@ -96,7 +96,7 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false, 
           {...listeners}
           onClick={(e) => e.stopPropagation()}
           aria-label="Drag to reorder"
-          className="hidden md:block absolute top-2 left-2 p-1 rounded-md text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing touch-none"
+          className="hidden md:inline-flex items-center justify-center absolute top-2 left-2 min-h-[44px] min-w-[44px] rounded-xl text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing touch-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none focus-visible:opacity-100"
         >
           <GripVertical className="h-4 w-4" />
         </button>
@@ -141,7 +141,7 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false, 
             >
               <DropdownMenuItem
                 onSelect={handleOpen}
-                className="text-sm text-foreground hover:bg-secondary focus:bg-secondary rounded-lg cursor-pointer gap-2"
+                className="text-sm text-foreground hover:bg-secondary focus:bg-secondary rounded-xl cursor-pointer gap-2"
               >
                 <ExternalLink className="h-4 w-4" />
                 Open project
@@ -149,7 +149,7 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false, 
               {project.address && (
                 <DropdownMenuItem
                   onSelect={handleDirections}
-                  className="text-sm text-foreground hover:bg-secondary focus:bg-secondary rounded-lg cursor-pointer gap-2"
+                  className="text-sm text-foreground hover:bg-secondary focus:bg-secondary rounded-xl cursor-pointer gap-2"
                 >
                   <Navigation className="h-4 w-4" />
                   Get directions
@@ -161,7 +161,7 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false, 
                   e.preventDefault();
                   setDeleteOpen(true);
                 }}
-                className="text-sm text-destructive hover:bg-destructive/10 focus:bg-destructive/10 focus:text-destructive rounded-lg cursor-pointer gap-2"
+                className="text-sm text-destructive hover:bg-destructive/10 focus:bg-destructive/10 focus:text-destructive rounded-xl cursor-pointer gap-2"
               >
                 <Trash2 className="h-4 w-4" />
                 Delete project

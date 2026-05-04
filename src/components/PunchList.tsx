@@ -573,7 +573,7 @@ const PunchList = ({
                           type="button"
                           title="Attach photo"
                           onClick={() => triggerPhotoUpload(it.id)}
-                          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                          className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors min-h-[44px] min-w-[44px] inline-flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                         >
                           <Camera className="h-3.5 w-3.5" />
                         </button>
@@ -581,7 +581,7 @@ const PunchList = ({
                           size="sm"
                           variant="outline"
                           className={cn(
-                            "h-7 px-2 rounded-lg text-xs border-border",
+                            "h-9 px-2 rounded-xl text-xs border-border",
                             "hover:text-success hover:border-success",
                             it.status === "pass" && "text-success border-success/40"
                           )}
@@ -594,7 +594,7 @@ const PunchList = ({
                           size="sm"
                           variant="outline"
                           className={cn(
-                            "h-7 px-2 rounded-lg text-xs border-border",
+                            "h-9 px-2 rounded-xl text-xs border-border",
                             "hover:text-destructive hover:border-destructive",
                             it.status === "fail" &&
                               "text-destructive border-destructive/40"
@@ -611,7 +611,7 @@ const PunchList = ({
                           type="button"
                           title="Delete item"
                           onClick={() => removeItem(it.id)}
-                          className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive transition-colors"
+                          className="p-2.5 rounded-xl text-muted-foreground hover:text-destructive transition-colors min-h-[44px] min-w-[44px] inline-flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -646,13 +646,13 @@ const PunchList = ({
                         key={idx}
                         type="button"
                         onClick={() => setLightboxSrc(p)}
-                        className="group relative w-20 h-20 rounded-lg overflow-hidden border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="group relative w-20 h-20 rounded-xl overflow-hidden border border-border focus:outline-none focus:ring-2 focus:ring-primary"
                         aria-label={`Open photo ${idx + 1}`}
                       >
                         <img
                           src={p}
                           alt={`Punch item photo ${idx + 1}`}
-                          className="w-20 h-20 rounded-lg object-cover"
+                          className="w-20 h-20 rounded-xl object-cover"
                         />
                         <div className="absolute inset-0 bg-overlay/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <ZoomIn className="h-5 w-5 text-overlay-foreground" />
@@ -783,7 +783,7 @@ const PunchList = ({
             src={lightboxSrc}
             alt="Punch list photo"
             onClick={(e) => e.stopPropagation()}
-            className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
+            className="max-h-[90vh] max-w-[90vw] object-contain rounded-xl shadow-2xl"
           />
         </div>
       )}

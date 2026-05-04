@@ -270,7 +270,7 @@ const GanttTimeline = ({ tasks, startDate, phases }: Props) => {
             <button
               type="button"
               onClick={() => setActivePhase(null)}
-              className="p-1 rounded-md hover:bg-secondary text-muted-foreground"
+              className="p-2.5 rounded-xl hover:bg-secondary text-muted-foreground min-h-[44px] min-w-[44px] inline-flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
               aria-label="Close phase details"
             >
               <X className="h-4 w-4" />
