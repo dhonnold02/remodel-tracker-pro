@@ -275,6 +275,7 @@ export type Database = {
           brand_color: string | null
           company_name: string
           created_at: string
+          dark_mode: boolean
           email: string
           id: string
           license_number: string
@@ -295,6 +296,7 @@ export type Database = {
           brand_color?: string | null
           company_name?: string
           created_at?: string
+          dark_mode?: boolean
           email?: string
           id?: string
           license_number?: string
@@ -315,6 +317,7 @@ export type Database = {
           brand_color?: string | null
           company_name?: string
           created_at?: string
+          dark_mode?: boolean
           email?: string
           id?: string
           license_number?: string

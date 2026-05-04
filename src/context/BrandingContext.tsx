@@ -36,7 +36,7 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
     }
     const { data } = await supabase
       .from("company_settings")
-      .select("company_name, logo_url, brand_color")
+      .select("company_name, logo_url, brand_color, dark_mode")
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -45,6 +45,8 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
       brandLogoUrl: (data as any)?.logo_url || null,
       brandName: (data as any)?.company_name?.trim() || null,
     });
+    if ((data as any)?.dark_mode) document.documentElement.classList.add("dark");
+    else document.documentElement.classList.remove("dark");
     setLoading(false);
   }, [user]);
 
