@@ -151,17 +151,12 @@ const AddressAutocomplete = ({
       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
       <Input
         ref={inputRef}
-        placeholder={GOOGLE_MAPS_API_KEY ? placeholder : "Address autocomplete unavailable"}
+        placeholder={GOOGLE_MAPS_API_KEY ? placeholder : "Enter address manually"}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
-        disabled={!GOOGLE_MAPS_API_KEY}
         autoComplete="off"
-        className={cn(
-          "rounded-xl h-11 pl-9",
-          !GOOGLE_MAPS_API_KEY && "opacity-50 cursor-not-allowed bg-muted",
-          className,
-        )}
+        className={cn("rounded-xl h-11 pl-9", className)}
       />
     </div>
   );
