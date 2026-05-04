@@ -137,8 +137,9 @@ const LocalFileUploads = ({ projectId, isEditor }: Props) => {
               <a
                 href={f.dataUrl}
                 download={f.name}
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 title="Download"
+                aria-label={`Download ${f.name}`}
               >
                 <Download className="h-3.5 w-3.5" />
               </a>
@@ -146,8 +147,9 @@ const LocalFileUploads = ({ projectId, isEditor }: Props) => {
                 <button
                   type="button"
                   onClick={() => remove(f.id)}
-                  className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                  className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                   title="Remove"
+                  aria-label={`Remove ${f.name}`}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>

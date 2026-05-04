@@ -136,7 +136,8 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
             {backTo && (
               <button
                 onClick={() => navigate(backTo)}
-                className="flex h-8 w-8 items-center justify-center rounded-xl bg-secondary text-foreground hover:bg-secondary/80 transition-colors"
+                aria-label="Go back"
+                className="flex h-8 w-8 items-center justify-center rounded-xl bg-secondary text-foreground hover:bg-secondary/80 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -168,8 +169,10 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
           <button
             key={tab.label}
             onClick={tab.onClick}
+            aria-label={tab.label}
+            aria-current={tab.active ? "page" : undefined}
             className={cn(
-              "flex flex-col items-center justify-center gap-0.5 flex-1 mx-1 my-1.5 rounded-xl text-xs font-medium transition-colors",
+              "flex flex-col items-center justify-center gap-0.5 flex-1 mx-1 my-1.5 rounded-xl text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               tab.active
                 ? "bg-accent text-accent-foreground"
                 : "text-muted-foreground hover:text-foreground"
