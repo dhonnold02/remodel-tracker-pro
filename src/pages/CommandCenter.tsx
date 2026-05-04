@@ -458,6 +458,12 @@ const CommandCenter = () => {
     const start = format(weekStart, "yyyy-MM-dd");
     const end = format(addDays(weekStart, 6), "yyyy-MM-dd");
 
+    // Read brand color from CSS variable --primary (HSL components, e.g. "217 91% 60%")
+    const primaryRaw = getComputedStyle(document.documentElement)
+      .getPropertyValue("--primary").trim();
+    const brand = primaryRaw ? `hsl(${primaryRaw})` : "#3b82f6";
+    const brandSoft = primaryRaw ? `hsl(${primaryRaw} / 0.10)` : "#eff6ff";
+
     const esc = (s: string) =>
       String(s ?? "").replace(/[&<>"']/g, (c) => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
@@ -529,11 +535,11 @@ const CommandCenter = () => {
   }
   header {
     display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 2px solid #3b82f6;
+    border-bottom: 2px solid ${brand};
     padding-bottom: 18px; margin-bottom: 32px;
   }
   .eyebrow {
-    font-size: 10px; color: #3b82f6; font-weight: 700;
+    font-size: 10px; color: ${brand}; font-weight: 700;
     letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px;
   }
   h1 { font-size: 26px; font-weight: 700; margin: 0 0 4px 0; color: #0f172a; letter-spacing: -0.3px; }
@@ -547,12 +553,12 @@ const CommandCenter = () => {
     font-size: 11px; color: #0f172a; letter-spacing: 1.8px;
     text-transform: uppercase; font-weight: 700;
     margin: 36px 0 14px 0; padding: 8px 12px;
-    background: #f3f4f6; border-left: 3px solid #3b82f6;
+    background: #f3f4f6; border-left: 3px solid ${brand};
   }
   h2:first-of-type { margin-top: 0; }
 
   h3 {
-    font-size: 11px; color: #3b82f6; font-weight: 700;
+    font-size: 11px; color: ${brand}; font-weight: 700;
     letter-spacing: 0.5px; text-transform: uppercase;
     margin: 18px 0 6px 0; padding: 0;
   }
@@ -578,7 +584,7 @@ const CommandCenter = () => {
   .badge {
     display: inline-block; font-size: 9px; font-weight: 700;
     letter-spacing: 0.8px; text-transform: uppercase;
-    color: #3b82f6; background: #eff6ff;
+    color: ${brand}; background: ${brandSoft};
     padding: 3px 8px; border-radius: 4px;
   }
   .empty {
@@ -587,7 +593,7 @@ const CommandCenter = () => {
   }
 
   .log {
-    border-left: 3px solid #3b82f6; padding: 6px 0 6px 12px;
+    border-left: 3px solid ${brand}; padding: 6px 0 6px 12px;
     margin-bottom: 14px;
   }
   .logmeta {
