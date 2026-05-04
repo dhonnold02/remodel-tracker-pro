@@ -421,8 +421,8 @@ const Team = () => {
                     const canRemove = !isSelf && m.role !== "owner";
                     const isExpanded = expandedMemberId === m.id;
                     return (
-                      <>
-                      <TableRow key={m.id}>
+                      <FragmentWithKey key={m.id}>
+                      <TableRow>
                         <TableCell className="max-w-[160px] md:max-w-none">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
@@ -512,6 +512,44 @@ const Team = () => {
                           )}
                         </TableCell>
                       </TableRow>
+                      {canRemove && isExpanded && (
+                        <TableRow className="md:hidden">
+                          <TableCell colSpan={3} className="bg-muted/30">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  className="rounded-lg"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Remove member
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Remove member?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    {m.display_name || m.email || "This member"} will lose access
+                                    to all company projects immediately. They can rejoin if you
+                                    invite them again.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    onClick={() => removeMember(m.id)}
+                                  >
+                                    Remove
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                      </FragmentWithKey>
                     );
                   })}
                 </TableBody>
