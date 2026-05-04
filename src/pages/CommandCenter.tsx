@@ -69,14 +69,54 @@ interface WeatherData {
 }
 
 async function geocodeAddress(address: string): Promise<{ lat: number; lng: number } | null> {
-  if (!address || !GOOGLE_KEY) return null;
+  if (!address) return null;
+
+  // 1) Try Google Maps Geocoding (if key configured)
+  if (GOOGLE_KEY) {
+    try {
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_KEY}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!res.ok || data?.status !== "OK") {
+        // eslint-disable-next-line no-console
+        console.warn("[CommandCenter] Google geocoding failed:", res.status, data);
+      } else {
+        const loc = data?.results?.[0]?.geometry?.location;
+        if (loc) return { lat: loc.lat, lng: loc.lng };
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn("[CommandCenter] Google geocoding threw:", err);
+    }
+  } else {
+    // eslint-disable-next-line no-console
+    console.info("[CommandCenter] No Google Maps key — using Open-Meteo geocoding.");
+  }
+
+  // 2) Fallback: Open-Meteo geocoding (free, no key)
   try {
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_KEY}`;
+    // Pull a likely city/locality token from the address string.
+    // For "3251 NW Brookside Dr, Grimes, IA 50111" this picks "Grimes".
+    const parts = address.split(",").map((s) => s.trim()).filter(Boolean);
+    const city = parts.length >= 2 ? parts[1] : parts[0] || address;
+    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`;
     const res = await fetch(url);
     const data = await res.json();
-    const loc = data?.results?.[0]?.geometry?.location;
-    if (loc) return { lat: loc.lat, lng: loc.lng };
-  } catch { /* ignore */ }
+    if (!res.ok) {
+      // eslint-disable-next-line no-console
+      console.warn("[CommandCenter] Open-Meteo geocoding failed:", res.status, data);
+      return null;
+    }
+    const r = data?.results?.[0];
+    if (r?.latitude != null && r?.longitude != null) {
+      return { lat: r.latitude, lng: r.longitude };
+    }
+    // eslint-disable-next-line no-console
+    console.warn("[CommandCenter] Open-Meteo returned no results for:", city, data);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn("[CommandCenter] Open-Meteo geocoding threw:", err);
+  }
   return null;
 }
 
