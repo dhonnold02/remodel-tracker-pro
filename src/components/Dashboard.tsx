@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useRole } from "@/hooks/useRole";
-import { useBranding } from "@/hooks/useBranding";
+import { useBrandingContext } from "@/context/BrandingContext";
 import {
   DndContext,
   closestCenter,
@@ -50,7 +50,7 @@ interface DashboardProps {
 const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdateProject }: DashboardProps) => {
   const navigate = useNavigate();
   const { canEditProjects } = useRole();
-  const { brand } = useBranding();
+  const { brand } = useBrandingContext();
   const [newName, setNewName] = useState("");
   const [newAddress, setNewAddress] = useState("");
   const [creating, setCreating] = useState(false);

@@ -29,7 +29,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { exportTasksPDF } from "@/lib/exportTasksPDF";
-import { useBranding } from "@/hooks/useBranding";
+import { useBrandingContext } from "@/context/BrandingContext";
 
 const DEFAULT_PHASES = ["Demo", "Framing", "Electrical", "Plumbing", "Finish"];
 
@@ -616,7 +616,7 @@ interface TaskBoardProps {
 
 const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, canComplete, projectName, projectAddress }: TaskBoardProps) => {
   const effectiveCanComplete = canComplete ?? isEditor;
-  const { brand } = useBranding();
+  const { brand } = useBrandingContext();
   const effectivePhases = useMemo(() => {
     const base = phases && phases.length > 0 ? [...phases] : [...DEFAULT_PHASES];
     // Ensure any phase referenced by an existing task is included (legacy / "General")

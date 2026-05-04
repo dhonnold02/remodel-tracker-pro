@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useBranding } from "@/hooks/useBranding";
+import { useBrandingContext } from "@/context/BrandingContext";
 import { useOnlineStatus } from "@/hooks/useOfflineSync";
 import { useRole } from "@/hooks/useRole";
 import SightlineLogo from "@/components/SightlineLogo";
@@ -28,7 +28,7 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut } = useAuth();
-  const { brand } = useBranding();
+  const { brand } = useBrandingContext();
   const isOnline = useOnlineStatus();
   const { canAccessSettings, canInviteMembers } = useRole();
 
