@@ -79,7 +79,7 @@ export function applyBrandPrimary(value: string | null | undefined) {
 }
 
 /** Returns "0 0% 5%" or "0 0% 100%" depending on perceived luminance of an HSL triplet. */
-function computeReadableForeground(triplet: string): string {
+export function computeReadableForeground(triplet: string): string {
   const m = triplet.match(/^(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%$/);
   if (!m) return "0 0% 100%";
   const h = parseFloat(m[1]) / 360;
@@ -110,6 +110,13 @@ function computeReadableForeground(triplet: string): string {
   const lin = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
   const luminance = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
   return luminance > 0.5 ? "0 0% 5%" : "0 0% 100%";
+}
+
+/** Convenience: accepts hex/hsl and returns a CSS color string for readable foreground. */
+export function readableForegroundColor(value: string | null | undefined): string {
+  const triplet = toHslTriplet(value);
+  if (!triplet) return "hsl(var(--primary-foreground))";
+  return `hsl(${computeReadableForeground(triplet)})`;
 }
 
 export const BRAND_PRESETS: { name: string; hex: string }[] = [
