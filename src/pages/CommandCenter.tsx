@@ -938,7 +938,7 @@ ${logsHtml}
                           <button
                             type="button"
                             onClick={() => handleRemoveCrew(m.id)}
-                            className="h-5 w-5 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                            className="h-9 w-9 inline-flex items-center justify-center rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors min-h-[44px] min-w-[44px] focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                             aria-label={`Remove ${m.name}`}
                           >
                             <X className="h-3.5 w-3.5" />

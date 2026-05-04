@@ -344,7 +344,7 @@ const Team = () => {
                     e.stopPropagation();
                     setPermissionsOpen(true);
                   }}
-                  className="p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors min-h-[44px] min-w-[44px] inline-flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                   title="View role permissions"
                   aria-label="View role permissions"
                 >
