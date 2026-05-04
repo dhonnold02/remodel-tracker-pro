@@ -418,18 +418,36 @@ const Team = () => {
                 <TableBody>
                   {sortedMembers.map((m) => {
                     const isSelf = m.user_id === user?.id;
+                    const canRemove = !isSelf && m.role !== "owner";
+                    const isExpanded = expandedMemberId === m.id;
                     return (
+                      <>
                       <TableRow key={m.id}>
                         <TableCell className="max-w-[160px] md:max-w-none">
-                          <div className="text-sm font-medium text-foreground truncate">
-                            {m.display_name || m.email || "Unknown"}
-                            {isSelf && (
-                              <span className="text-[10px] text-muted-foreground ml-2">(you)</span>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="text-sm font-medium text-foreground truncate">
+                                {m.display_name || m.email || "Unknown"}
+                                {isSelf && (
+                                  <span className="text-[10px] text-muted-foreground ml-2">(you)</span>
+                                )}
+                              </div>
+                              {m.email && m.display_name && (
+                                <div className="text-xs text-muted-foreground truncate">{m.email}</div>
+                              )}
+                            </div>
+                            {canRemove && (
+                              <button
+                                type="button"
+                                onClick={() => setExpandedMemberId(isExpanded ? null : m.id)}
+                                className="md:hidden p-1.5 -mr-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+                                aria-label={isExpanded ? "Hide actions" : "Show actions"}
+                                aria-expanded={isExpanded}
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                              </button>
                             )}
                           </div>
-                          {m.email && m.display_name && (
-                            <div className="text-xs text-muted-foreground truncate">{m.email}</div>
-                          )}
                         </TableCell>
                         <TableCell>
                           {m.role === "owner" || isSelf ? (
