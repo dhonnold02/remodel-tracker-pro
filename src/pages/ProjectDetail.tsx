@@ -5,6 +5,7 @@ import { useProjects } from "@/hooks/useProjects";
 import { useRole } from "@/hooks/useRole";
 import { getAggregatedStats } from "@/types/project";
 import AppLayout from "@/components/AppLayout";
+import PageLoader from "@/components/PageLoader";
 import ProjectDetails from "@/components/ProjectDetails";
 import BudgetSection from "@/components/BudgetSection";
 import InvoicesSection from "@/components/InvoicesSection";
