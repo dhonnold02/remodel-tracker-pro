@@ -170,14 +170,14 @@ const PhotoGallery = ({ photos, onChange }: PhotoGalleryProps) => {
 
       {activePhoto && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-overlay/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200"
           onClick={closeLightbox}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
           {/* Top bar */}
           <div
-            className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 text-white z-10"
+            className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 text-overlay-foreground z-10"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-sm font-medium opacity-80">
@@ -186,21 +186,21 @@ const PhotoGallery = ({ photos, onChange }: PhotoGalleryProps) => {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setZoom((z) => Math.max(z - 0.25, 1))}
-                className="rounded-full bg-white/10 hover:bg-white/20 p-2 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                className="rounded-full bg-overlay-foreground/10 hover:bg-overlay-foreground/20 p-2 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 aria-label="Zoom out"
               >
                 <ZoomOut className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setZoom((z) => Math.min(z + 0.25, 4))}
-                className="rounded-full bg-white/10 hover:bg-white/20 p-2 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                className="rounded-full bg-overlay-foreground/10 hover:bg-overlay-foreground/20 p-2 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 aria-label="Zoom in"
               >
                 <ZoomIn className="h-4 w-4" />
               </button>
               <button
                 onClick={closeLightbox}
-                className="rounded-full bg-white/10 hover:bg-white/20 p-2 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                className="rounded-full bg-overlay-foreground/10 hover:bg-overlay-foreground/20 p-2 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 aria-label="Close"
               >
                 <X className="h-5 w-5" />
@@ -216,7 +216,7 @@ const PhotoGallery = ({ photos, onChange }: PhotoGalleryProps) => {
                   e.stopPropagation();
                   goPrev();
                 }}
-                className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 p-3 text-white transition-colors z-10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-overlay-foreground/10 hover:bg-overlay-foreground/20 p-3 text-overlay-foreground transition-colors z-10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 aria-label="Previous"
               >
                 <ChevronLeft className="h-6 w-6" />
@@ -226,7 +226,7 @@ const PhotoGallery = ({ photos, onChange }: PhotoGalleryProps) => {
                   e.stopPropagation();
                   goNext();
                 }}
-                className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 p-3 text-white transition-colors z-10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-overlay-foreground/10 hover:bg-overlay-foreground/20 p-3 text-overlay-foreground transition-colors z-10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 aria-label="Next"
               >
                 <ChevronRight className="h-6 w-6" />

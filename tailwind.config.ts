@@ -63,6 +63,15 @@ export default {
           DEFAULT: "hsl(var(--info))",
           foreground: "hsl(var(--info-foreground))",
         },
+        overlay: {
+          DEFAULT: "hsl(var(--overlay))",
+          foreground: "hsl(var(--overlay-foreground))",
+        },
+        "role-owner": "hsl(var(--role-owner))",
+        "role-pm": "hsl(var(--role-pm))",
+        "role-supervisor": "hsl(var(--role-supervisor))",
+        "role-crew": "hsl(var(--role-crew))",
+        "role-subcontractor": "hsl(var(--role-subcontractor))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

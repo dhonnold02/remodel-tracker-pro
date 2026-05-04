@@ -654,8 +654,8 @@ const PunchList = ({
                           alt={`Punch item photo ${idx + 1}`}
                           className="w-20 h-20 rounded-lg object-cover"
                         />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <ZoomIn className="h-5 w-5 text-white" />
+                        <div className="absolute inset-0 bg-overlay/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <ZoomIn className="h-5 w-5 text-overlay-foreground" />
                         </div>
                       </button>
                     ))}
@@ -763,7 +763,7 @@ const PunchList = ({
       {/* Photo lightbox */}
       {lightboxSrc && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-overlay/90 flex items-center justify-center p-4"
           onClick={() => setLightboxSrc(null)}
           role="dialog"
           aria-modal="true"
@@ -774,7 +774,7 @@ const PunchList = ({
               e.stopPropagation();
               setLightboxSrc(null);
             }}
-            className="absolute top-4 right-4 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+            className="absolute top-4 right-4 p-2 rounded-full bg-overlay/60 text-overlay-foreground hover:bg-overlay/80 transition-colors"
             aria-label="Close"
           >
             <X className="h-5 w-5" />

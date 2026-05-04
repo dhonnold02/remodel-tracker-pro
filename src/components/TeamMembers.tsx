@@ -75,11 +75,11 @@ const TeamMembers = ({ projectId, members, isEditor, ownerUserId }: TeamMembersP
             </div>
             <div className="flex items-center gap-1.5">
               {ownerUserId && member.userId === ownerUserId ? (
-                <span className="inline-flex items-center gap-1 text-xs bg-primary/15 text-primary px-2.5 py-1 rounded-full font-medium"><Shield className="h-3 w-3" /> Owner</span>
+                <span className="inline-flex items-center gap-1 text-xs bg-role-owner/15 text-role-owner px-2.5 py-1 rounded-full font-medium"><Shield className="h-3 w-3" /> Owner</span>
               ) : member.role === "editor" ? (
-                <span className="inline-flex items-center gap-1 text-xs bg-purple-500/15 text-purple-400 px-2.5 py-1 rounded-full font-medium"><Shield className="h-3 w-3" /> Project Manager</span>
+                <span className="inline-flex items-center gap-1 text-xs bg-role-pm/15 text-role-pm px-2.5 py-1 rounded-full font-medium"><Shield className="h-3 w-3" /> Project Manager</span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-xs bg-amber-500/15 text-amber-400 px-2.5 py-1 rounded-full font-medium"><Eye className="h-3 w-3" /> Field Supervisor</span>
+                <span className="inline-flex items-center gap-1 text-xs bg-role-supervisor/15 text-role-supervisor px-2.5 py-1 rounded-full font-medium"><Eye className="h-3 w-3" /> Field Supervisor</span>
               )}
               {isEditor && member.userId !== user?.id && (
                 <div className="flex items-center gap-1">
