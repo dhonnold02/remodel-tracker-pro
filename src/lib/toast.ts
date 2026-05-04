@@ -1,4 +1,4 @@
-import { toast } from "sonner";
+import { toast, type ExternalToast } from "sonner";
 
 const SUCCESS_DURATION = 4000;
 const ERROR_DURATION = 6000;
@@ -6,23 +6,28 @@ const INFO_DURATION = 4000;
 
 const baseOptions = { richColors: true } as const;
 
-export const showSuccess = (message: string, description?: string) =>
+type Detail = string | ExternalToast | undefined;
+
+const normalize = (detail: Detail): ExternalToast =>
+  typeof detail === "string" ? { description: detail } : detail || {};
+
+export const showSuccess = (message: string, detail?: Detail) =>
   toast.success(message, {
     ...baseOptions,
     duration: SUCCESS_DURATION,
-    description,
+    ...normalize(detail),
   });
 
-export const showError = (message: string, description?: string) =>
+export const showError = (message: string, detail?: Detail) =>
   toast.error(message, {
     ...baseOptions,
     duration: ERROR_DURATION,
-    description,
+    ...normalize(detail),
   });
 
-export const showInfo = (message: string, description?: string) =>
+export const showInfo = (message: string, detail?: Detail) =>
   toast(message, {
     ...baseOptions,
     duration: INFO_DURATION,
-    description,
+    ...normalize(detail),
   });
