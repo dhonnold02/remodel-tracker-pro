@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useRole } from "@/hooks/useRole";
+import { useBranding } from "@/hooks/useBranding";
 import {
   DndContext,
   closestCenter,
