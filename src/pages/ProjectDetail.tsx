@@ -6,6 +6,8 @@ import { useRole } from "@/hooks/useRole";
 import { getAggregatedStats } from "@/types/project";
 import AppLayout from "@/components/AppLayout";
 import PageLoader from "@/components/PageLoader";
+import SkeletonCard from "@/components/SkeletonCard";
+import { Skeleton } from "@/components/ui/skeleton";
 import ProjectDetails from "@/components/ProjectDetails";
 import BudgetSection from "@/components/BudgetSection";
 import InvoicesSection from "@/components/InvoicesSection";
@@ -72,8 +74,19 @@ const ProjectDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <PageLoader message="Loading project…" />
+      <div className="min-h-screen bg-background p-4 md:p-8 space-y-6 max-w-6xl mx-auto">
+        <Skeleton className="h-8 w-1/3 rounded-xl" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 rounded-xl" />
+          ))}
+        </div>
+        <div className="flex gap-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-9 w-24 rounded-xl" />
+          ))}
+        </div>
+        <SkeletonCard lines={6} />
       </div>
     );
   }
