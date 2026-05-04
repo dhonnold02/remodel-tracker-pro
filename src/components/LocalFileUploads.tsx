@@ -1,3 +1,4 @@
+import { uuidv4 } from "@/lib/uuid";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, Trash2, FileText, Download } from "lucide-react";
@@ -66,7 +67,7 @@ const LocalFileUploads = ({ projectId, isEditor }: Props) => {
       try {
         const dataUrl = await readFile(f);
         added.push({
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           name: f.name,
           type: f.type || "application/octet-stream",
           size: f.size,

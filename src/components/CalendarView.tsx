@@ -1,3 +1,4 @@
+import { uuidv4 } from "@/lib/uuid";
 import { useMemo, useState } from "react";
 import { Task, ProjectEvent, ProjectEventType } from "@/hooks/useProjects";
 import { Calendar } from "@/components/ui/calendar";
@@ -176,7 +177,7 @@ const CalendarView = ({ tasks, phases, events = [], onEventsChange, canEdit = fa
   const handleSaveEvent = () => {
     if (!selectedDate || !newTitle.trim() || !onEventsChange) return;
     const evt: ProjectEvent = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       title: newTitle.trim(),
       type: newType,
       date: format(selectedDate, "yyyy-MM-dd"),

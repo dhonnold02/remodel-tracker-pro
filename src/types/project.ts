@@ -55,7 +55,7 @@ export interface ProjectData {
 }
 
 export const createProject = (name = "", parentId?: string): ProjectData => ({
-  id: crypto.randomUUID(),
+  id: uuidv4(),
   name,
   ...(parentId ? { parentId } : {}),
   totalBudget: 0,
@@ -71,7 +71,7 @@ export const createProject = (name = "", parentId?: string): ProjectData => ({
 });
 
 export const createTask = (title: string, parentTaskId: string | null = null): Task => ({
-  id: crypto.randomUUID(),
+  id: uuidv4(),
   title,
   notes: "",
   completed: false,

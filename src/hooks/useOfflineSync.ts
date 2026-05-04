@@ -1,3 +1,4 @@
+import { uuidv4 } from "@/lib/uuid";
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -33,7 +34,7 @@ export function getCachedProjects(): { projects: any[]; cachedAt: number } | nul
 export function queueOfflineAction(action: Omit<QueuedAction, "id" | "timestamp">) {
   try {
     const queue = getOfflineQueue();
-    queue.push({ ...action, id: crypto.randomUUID(), timestamp: Date.now() });
+    queue.push({ ...action, id: uuidv4(), timestamp: Date.now() });
     localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
   } catch { /* storage full */ }
 }

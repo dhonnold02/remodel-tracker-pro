@@ -1,3 +1,4 @@
+import { uuidv4 } from "@/lib/uuid";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -177,7 +178,7 @@ const PunchList = ({
     const title = newTitle.trim();
     if (!title) return;
     const item: PunchListItem = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       title,
       status: "pending",
       assignee: newAssignee && newAssignee !== "__none__" ? newAssignee : undefined,

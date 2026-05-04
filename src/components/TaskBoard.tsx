@@ -1,3 +1,4 @@
+import { uuidv4 } from "@/lib/uuid";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { Task, TaskPriority } from "@/hooks/useProjects";
 import { Button } from "@/components/ui/button";
@@ -677,7 +678,7 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, can
 
   const addTask = (phase: string, title: string) => {
     const newTask: Task = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       title, notes: "", completed: false,
       parentTaskId: null, dueDate: null, priority: "medium", tags: [], phase,
     };
@@ -687,7 +688,7 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, can
   const addSubtask = (parentId: string) => {
     const parent = tasks.find(t => t.id === parentId);
     const newSub: Task = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       title: "", notes: "", completed: false,
       parentTaskId: parentId, dueDate: null, priority: "medium", tags: [],
       phase: parent?.phase || "General",
