@@ -5,7 +5,7 @@ import { useOnlineStatus } from "@/hooks/useOfflineSync";
 import { useRole } from "@/hooks/useRole";
 import SightlineLogo from "@/components/SightlineLogo";
 import {
-  LayoutDashboard, BookTemplate, Users,
+  LayoutDashboard, Users,
   LogOut, WifiOff, ChevronLeft, SlidersHorizontal, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
