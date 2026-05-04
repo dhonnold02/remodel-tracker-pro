@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,7 @@ const friendlyAuthError = (msg: string | undefined | null): string => {
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
+  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -45,6 +46,10 @@ const ResetPasswordPage = () => {
     return () => {
       clearTimeout(timer);
       subscription.unsubscribe();
+      if (successTimerRef.current) {
+        clearTimeout(successTimerRef.current);
+        successTimerRef.current = null;
+      }
     };
     // eslint-disable-next-line
   }, []);
@@ -73,7 +78,7 @@ const ResetPasswordPage = () => {
       setError(friendlyAuthError(error.message));
     } else {
       setSuccess(true);
-      setTimeout(() => navigate("/"), 2000);
+      successTimerRef.current = setTimeout(() => navigate("/"), 2000);
     }
     setLoading(false);
   };
