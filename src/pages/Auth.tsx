@@ -231,6 +231,7 @@ const AuthPage = () => {
                       placeholder="Your name"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
+                      disabled={loading}
                       className="h-11 rounded-xl"
                     />
                   </div>
@@ -247,6 +248,7 @@ const AuthPage = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    disabled={loading}
                     className="h-11 rounded-xl"
                   />
                 </div>
@@ -278,6 +280,7 @@ const AuthPage = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={6}
+                    disabled={loading}
                     className="h-11 rounded-xl"
                   />
                 </div>
@@ -294,6 +297,7 @@ const AuthPage = () => {
                       value={inviteCode}
                       onChange={(e) => setInviteCode(e.target.value)}
                       required
+                      disabled={loading}
                       className="h-11 rounded-xl"
                     />
                   </div>
