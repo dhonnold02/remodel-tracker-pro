@@ -463,13 +463,6 @@ const CommandCenter = () => {
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
       }[c] as string));
 
-    // Weather
-    const weatherHtml = weather
-      ? `<table><thead><tr><th>Day</th><th>Conditions</th><th style="text-align:right">High / Low</th></tr></thead><tbody>${
-          weather.daily.map((d) => `<tr><td>${esc(format(parseISO(d.date), "EEE MMM d"))}</td><td>${esc(wmoToInfo(d.code).label)}</td><td style="text-align:right">${Math.round(d.max)}° / ${Math.round(d.min)}°</td></tr>`).join("")
-        }</tbody></table>`
-      : `<p class="empty">Weather unavailable.</p>`;
-
     // Events grouped by day
     const eventsByDay = weekDays.map((d) => {
       const ds = format(d, "yyyy-MM-dd");
@@ -480,8 +473,8 @@ const CommandCenter = () => {
     }).filter((d) => d.rows.length > 0);
     const eventsHtml = eventsByDay.length === 0
       ? `<p class="empty">No events this week.</p>`
-      : eventsByDay.map((day) => `<h3>${esc(day.label)}</h3><table><tbody>${
-          day.rows.map((e) => `<tr><td style="width:60px">${esc(e.time || "—")}</td><td>${esc(e.title)}</td><td class="muted">${esc(e.project)}</td><td style="text-align:right" class="label">${esc(EVENT_LABELS[e.type] || "Other")}</td></tr>`).join("")
+      : eventsByDay.map((day) => `<h3>${esc(day.label)}</h3><table><thead><tr><th style="width:70px">Time</th><th>Event</th><th>Project</th><th style="text-align:right">Type</th></tr></thead><tbody>${
+          day.rows.map((e) => `<tr><td>${esc(e.time || "—")}</td><td>${esc(e.title)}</td><td class="muted">${esc(e.project)}</td><td style="text-align:right"><span class="badge">${esc(EVENT_LABELS[e.type] || "Other")}</span></td></tr>`).join("")
         }</tbody></table>`).join("");
 
     // Tasks grouped by project
@@ -498,7 +491,7 @@ const CommandCenter = () => {
     }
     const tasksHtml = tasksByProject.length === 0
       ? `<p class="empty">No tasks due this week.</p>`
-      : tasksByProject.map((g) => `<h3>${esc(g.project)}</h3><table><tbody>${
+      : tasksByProject.map((g) => `<h3>${esc(g.project)}</h3><table><thead><tr><th>Task</th><th style="text-align:right">Due</th></tr></thead><tbody>${
           g.tasks.map((t) => `<tr><td>${t.done ? "✓" : "○"} ${esc(t.title)}</td><td style="text-align:right" class="muted">${esc(format(parseISO(t.date), "EEE MMM d"))}</td></tr>`).join("")
         }</tbody></table>`).join("");
 
@@ -512,8 +505,8 @@ const CommandCenter = () => {
     }));
     const dispatchHtml = crew.length === 0
       ? `<p class="empty">No crew members.</p>`
-      : dispatchByDay.map((d) => `<h3>${esc(d.label)}</h3><table><tbody>${
-          d.rows.map((r) => `<tr><td style="width:40%">${esc(r.member)}</td><td class="${r.project === "—" ? "muted" : ""}">${esc(r.project)}</td></tr>`).join("")
+      : dispatchByDay.map((d) => `<h3>${esc(d.label)}</h3><table><thead><tr><th style="width:40%">Crew Member</th><th>Project</th></tr></thead><tbody>${
+          d.rows.map((r) => `<tr><td>${esc(r.member)}</td><td class="${r.project === "—" ? "muted" : ""}">${esc(r.project)}</td></tr>`).join("")
         }</tbody></table>`).join("");
 
     // Logs
@@ -528,35 +521,95 @@ const CommandCenter = () => {
     const html = `<!doctype html><html><head><meta charset="utf-8"><title>${esc(docTitle)}</title>
 <style>
   * { box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: #0f1117; background: #ffffff; margin: 32px; font-size: 12px; line-height: 1.4; }
-  header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #e5e7eb; padding-bottom: 16px; margin-bottom: 20px; }
-  .eyebrow { font-size: 9px; color: #1d4ed8; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 4px; }
-  h1 { font-size: 22px; margin: 0 0 4px 0; color: #0f1117; }
-  .range { color: #6b7280; font-size: 12px; }
-  .logo { max-height: 50px; max-width: 140px; object-fit: contain; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #111827; background: #ffffff; margin: 40px;
+    font-size: 12px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 2px solid #3b82f6;
+    padding-bottom: 18px; margin-bottom: 32px;
+  }
+  .eyebrow {
+    font-size: 10px; color: #3b82f6; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  h1 { font-size: 26px; font-weight: 700; margin: 0 0 4px 0; color: #0f172a; letter-spacing: -0.3px; }
+  .range { color: #6b7280; font-size: 13px; font-weight: 400; }
+  .logo { max-height: 56px; max-width: 160px; object-fit: contain; }
   .companyRight { text-align: right; }
-  .companyRight .name { font-weight: 700; font-size: 13px; }
-  .companyRight .sub { color: #6b7280; font-size: 11px; }
-  h2 { font-size: 10px; color: #9ca3af; letter-spacing: 1.5px; text-transform: uppercase; margin: 24px 0 8px 0; font-weight: 700; }
-  h3 { font-size: 11px; color: #1d4ed8; background: #eff6ff; border: 1px solid #dbeafe; padding: 6px 10px; margin: 8px 0 0 0; border-radius: 4px 4px 0 0; }
-  table { width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
-  h3 + table { border-top: 0; border-radius: 0 0 4px 4px; }
-  th, td { text-align: left; padding: 6px 10px; font-size: 11px; border-bottom: 1px solid #f3f4f6; }
-  th { background: #f9fafb; color: #6b7280; text-transform: uppercase; font-size: 9px; font-weight: 700; }
-  tr:last-child td { border-bottom: 0; }
-  tr:nth-child(even) td { background: #f9fafb; }
+  .companyRight .name { font-weight: 700; font-size: 14px; color: #0f172a; }
+  .companyRight .sub { color: #6b7280; font-size: 11px; margin-top: 2px; }
+
+  h2 {
+    font-size: 11px; color: #0f172a; letter-spacing: 1.8px;
+    text-transform: uppercase; font-weight: 700;
+    margin: 36px 0 14px 0; padding: 8px 12px;
+    background: #f3f4f6; border-left: 3px solid #3b82f6;
+  }
+  h2:first-of-type { margin-top: 0; }
+
+  h3 {
+    font-size: 11px; color: #3b82f6; font-weight: 700;
+    letter-spacing: 0.5px; text-transform: uppercase;
+    margin: 18px 0 6px 0; padding: 0;
+  }
+
+  table {
+    width: 100%; border-collapse: collapse;
+    margin-bottom: 4px;
+  }
+  th, td {
+    text-align: left; padding: 9px 12px; font-size: 11px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  th {
+    color: #6b7280; text-transform: uppercase;
+    font-size: 9px; font-weight: 700; letter-spacing: 1px;
+    border-bottom: 1px solid #e5e7eb; background: #ffffff;
+  }
+  tbody tr:nth-child(odd) td { background: #ffffff; }
+  tbody tr:nth-child(even) td { background: #fafafa; }
+  tbody tr:last-child td { border-bottom: 0; }
+
   .muted { color: #6b7280; }
-  .label { color: #1d4ed8; }
-  .empty { color: #9ca3af; font-style: italic; padding: 12px; text-align: center; border: 1px solid #e5e7eb; border-radius: 4px; }
-  .log { border-left: 3px solid #1d4ed8; padding: 4px 0 4px 10px; margin-bottom: 10px; }
-  .logmeta { font-weight: 700; color: #6b7280; font-size: 11px; margin-bottom: 2px; }
-  .lognotes { color: #1f2937; white-space: pre-wrap; }
-  footer { margin-top: 28px; padding-top: 8px; border-top: 1px solid #e5e7eb; color: #9ca3af; font-size: 10px; display: flex; justify-content: space-between; }
-  @media print { body { margin: 16mm; } }
+  .badge {
+    display: inline-block; font-size: 9px; font-weight: 700;
+    letter-spacing: 0.8px; text-transform: uppercase;
+    color: #3b82f6; background: #eff6ff;
+    padding: 3px 8px; border-radius: 4px;
+  }
+  .empty {
+    color: #9ca3af; font-style: italic; padding: 14px;
+    text-align: center; background: #fafafa; border-radius: 4px;
+  }
+
+  .log {
+    border-left: 3px solid #3b82f6; padding: 6px 0 6px 12px;
+    margin-bottom: 14px;
+  }
+  .logmeta {
+    font-weight: 700; color: #0f172a; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px;
+  }
+  .lognotes { color: #1f2937; white-space: pre-wrap; font-size: 11px; }
+
+  footer {
+    margin-top: 40px; padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+    color: #9ca3af; font-size: 10px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  footer .center { flex: 1; text-align: center; }
+  footer .right { text-align: right; }
+
+  @media print { body { margin: 16mm; } h2 { page-break-after: avoid; } h3 { page-break-after: avoid; } .log, tr { page-break-inside: avoid; } }
 </style></head><body>
 <header>
   <div>
-    <div class="eyebrow">WEEKLY REPORT</div>
+    <div class="eyebrow">Weekly Report</div>
     <h1>${esc(companyName || "Weekly Report")}</h1>
     <div class="range">${esc(range)}</div>
   </div>
@@ -564,9 +617,6 @@ const CommandCenter = () => {
     ? `<img class="logo" src="${esc(companyLogo)}" alt="${esc(companyName)}" />`
     : `<div class="companyRight"><div class="name">${esc(companyName || "—")}</div><div class="sub">Licensed Contractor</div></div>`}
 </header>
-
-<h2>Weather Forecast</h2>
-${weatherHtml}
 
 <h2>Calendar Events</h2>
 ${eventsHtml}
@@ -577,11 +627,13 @@ ${tasksHtml}
 <h2>Crew Dispatch</h2>
 ${dispatchHtml}
 
-<h2>Daily Log Entries</h2>
+<h2>Daily Log</h2>
 ${logsHtml}
 
 <footer>
-  <span>${esc(companyName || "Sightline")} · Generated by Sightline · ${esc(format(new Date(), "MMM d, yyyy"))}</span>
+  <span>${esc(companyName || "Sightline")}</span>
+  <span class="center">Generated by Sightline</span>
+  <span class="right">${esc(format(new Date(), "MMM d, yyyy"))}</span>
 </footer>
 </body></html>`;
 
