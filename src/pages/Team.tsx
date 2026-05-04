@@ -404,9 +404,7 @@ const Team = () => {
           </div>
           <div className="rounded-2xl border bg-card overflow-hidden">
             {loading ? (
-              <div className="p-10 text-center text-sm text-muted-foreground">
-                <Loader2 className="h-5 w-5 animate-spin inline-block" />
-              </div>
+              <PageLoader variant="inline" />
             ) : (
               <Table>
                 <TableHeader>
@@ -568,10 +566,12 @@ const Team = () => {
           </div>
           <div className="rounded-2xl border bg-card overflow-hidden">
             {invitations.length === 0 ? (
-              <div className="p-8 text-center">
-                <Mail className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">No pending invitations</p>
-              </div>
+              <EmptyState
+                icon={Mail}
+                title="No pending invitations"
+                description="Invite teammates above to get started."
+                className="border-0 bg-transparent"
+              />
             ) : (
               <Table>
                 <TableHeader>
