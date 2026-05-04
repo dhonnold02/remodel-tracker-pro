@@ -5,6 +5,7 @@ import { useProjects } from "@/hooks/useProjects";
 import { useRole } from "@/hooks/useRole";
 import { getAggregatedStats } from "@/types/project";
 import AppLayout from "@/components/AppLayout";
+import PageLoader from "@/components/PageLoader";
 import ProjectDetails from "@/components/ProjectDetails";
 import BudgetSection from "@/components/BudgetSection";
 import InvoicesSection from "@/components/InvoicesSection";
@@ -72,10 +73,7 @@ const ProjectDetailPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="inline-flex items-center gap-3 text-muted-foreground text-sm">
-          <div className="h-5 w-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-          Loading…
-        </div>
+        <PageLoader message="Loading project…" />
       </div>
     );
   }

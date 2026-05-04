@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole, type Role } from "@/hooks/useRole";
 import AppLayout from "@/components/AppLayout";
+import PageLoader from "@/components/PageLoader";
+import EmptyState from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -294,7 +296,7 @@ const Team = () => {
   if (roleLoading || !isOwner) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        <PageLoader />
       </div>
     );
   }
@@ -402,9 +404,7 @@ const Team = () => {
           </div>
           <div className="rounded-2xl border bg-card overflow-hidden">
             {loading ? (
-              <div className="p-10 text-center text-sm text-muted-foreground">
-                <Loader2 className="h-5 w-5 animate-spin inline-block" />
-              </div>
+              <PageLoader variant="inline" />
             ) : (
               <Table>
                 <TableHeader>
@@ -464,7 +464,7 @@ const Team = () => {
                               value={m.role}
                               onValueChange={(v) => changeRole(m.id, v as Role)}
                             >
-                              <SelectTrigger className="h-8 w-[180px] rounded-lg text-xs">
+                              <SelectTrigger className="h-9 w-[180px] rounded-xl text-xs">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -566,10 +566,12 @@ const Team = () => {
           </div>
           <div className="rounded-2xl border bg-card overflow-hidden">
             {invitations.length === 0 ? (
-              <div className="p-8 text-center">
-                <Mail className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">No pending invitations</p>
-              </div>
+              <EmptyState
+                icon={Mail}
+                title="No pending invitations"
+                description="Invite teammates above to get started."
+                className="border-0 bg-transparent"
+              />
             ) : (
               <Table>
                 <TableHeader>

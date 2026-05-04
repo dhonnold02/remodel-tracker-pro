@@ -14,6 +14,8 @@ import ProjectCard from "@/components/ProjectCard";
 import ProjectTemplates from "@/components/ProjectTemplates";
 import { ProjectTemplate } from "@/hooks/useTemplates";
 import AppLayout from "@/components/AppLayout";
+import PageLoader from "@/components/PageLoader";
+import EmptyState from "@/components/EmptyState";
 import { cn } from "@/lib/utils";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
@@ -216,7 +218,7 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
             placeholder="Search projects, tasks, addresses…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-11 h-12 rounded-xl bg-card border shadow-sm text-sm"
+            className="pl-11 h-11 rounded-xl bg-card border shadow-sm text-sm"
           />
           {searchQuery && (
             <button
@@ -282,10 +284,10 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
                     key={tab.key}
                     onClick={() => setView(tab.key)}
                     className={cn(
-                      "px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-150",
+                      "px-3 py-1.5 text-xs font-medium rounded-xl transition-all duration-150",
                       view === tab.key
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                        ? "bg-accent text-accent-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
                     )}
                   >
                     {tab.label}
@@ -296,39 +298,38 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
           </div>
 
           {loading ? (
-            <div className="text-center py-24">
-              <div className="inline-flex items-center gap-3 text-muted-foreground text-sm">
-                <div className="h-5 w-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                Loading projects…
-              </div>
-            </div>
+            <PageLoader message="Loading projects…" />
           ) : displayProjects.length === 0 ? (
             searchQuery ? (
-              <p className="text-sm text-muted-foreground text-center py-12">No projects match "{searchQuery}"</p>
+              <EmptyState
+                icon={Search}
+                title={`No projects match "${searchQuery}"`}
+                description="Try a different search term."
+              />
             ) : view !== "all" ? (
-              <p className="text-sm text-muted-foreground text-center py-12">
-                No {view === "completed" ? "completed" : "open"} projects.
-              </p>
+              <EmptyState
+                icon={view === "completed" ? CheckCircle2 : Clock}
+                title={`No ${view === "completed" ? "completed" : "open"} projects`}
+              />
             ) : (
-              <div className="text-center py-24 space-y-4 rounded-2xl border border-dashed bg-card/40">
-                <div className="mx-auto w-20 h-20 rounded-2xl bg-accent flex items-center justify-center">
-                  <FolderPlus className="h-10 w-10 text-accent-foreground/40" />
-                </div>
-                <div>
-                  <p className="text-foreground font-medium">No projects yet</p>
-                  <p className="text-muted-foreground text-sm mt-1">
-                    {canEditProjects
-                      ? "Create your first renovation project to get started"
-                      : "Your team hasn't created any projects yet"}
-                  </p>
-                </div>
-                {canEditProjects && (
-                  <Button onClick={() => setCreateOpen(true)} className="rounded-xl mt-2">
-                    <Plus className="h-4 w-4 mr-1.5" />
-                    New Project
-                  </Button>
-                )}
-              </div>
+              <EmptyState
+                variant="page"
+                icon={FolderPlus}
+                title="No projects yet"
+                description={
+                  canEditProjects
+                    ? "Create your first renovation project to get started."
+                    : "Your team hasn't created any projects yet."
+                }
+                action={
+                  canEditProjects ? (
+                    <Button onClick={() => setCreateOpen(true)} className="rounded-xl h-11">
+                      <Plus className="h-4 w-4 mr-1.5" />
+                      New Project
+                    </Button>
+                  ) : undefined
+                }
+              />
             )
           ) : (
             <DndContext

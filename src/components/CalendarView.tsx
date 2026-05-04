@@ -395,7 +395,7 @@ const CalendarView = ({ tasks, phases, events = [], onEventsChange, canEdit = fa
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
                     placeholder="e.g. City inspection, Owner walkthrough, Delivery..."
-                    className="rounded-lg"
+                    className="rounded-xl"
                   />
                   <div className="flex items-center gap-2">
                     <span
@@ -418,17 +418,17 @@ const CalendarView = ({ tasks, phases, events = [], onEventsChange, canEdit = fa
                     value={newTime}
                     onChange={(e) => setNewTime(e.target.value)}
                     placeholder="e.g. 9:00 AM (optional)"
-                    className="rounded-lg"
+                    className="rounded-xl"
                   />
                   <div className="flex items-center gap-2 justify-end">
-                    <Button variant="ghost" size="sm" onClick={resetForm} className="rounded-lg">
+                    <Button variant="ghost" size="sm" onClick={resetForm} className="rounded-xl">
                       Cancel
                     </Button>
                     <Button
                       size="sm"
                       onClick={handleSaveEvent}
                       disabled={!newTitle.trim()}
-                      className="rounded-lg"
+                      className="rounded-xl"
                     >
                       Save Event
                     </Button>

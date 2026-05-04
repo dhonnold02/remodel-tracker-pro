@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import SightlineLogo from "@/components/SightlineLogo";
+import PageLoader from "@/components/PageLoader";
 import { applyBrandPrimary, BRAND_PRESETS } from "@/lib/brandColor";
 import { Loader2, Upload, X, ArrowRight, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -195,7 +196,7 @@ const Onboarding = () => {
   if (authLoading || checking) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        <PageLoader />
       </div>
     );
   }
@@ -338,10 +339,10 @@ const Onboarding = () => {
                     <div className="flex items-center gap-3 rounded-xl border bg-secondary/40 p-3">
                       <img src={logoUrl} alt="Logo" className="h-12 w-12 rounded-lg bg-background object-contain border" />
                       <div className="flex-1 text-xs text-muted-foreground truncate">Logo uploaded</div>
-                      <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="rounded-lg">
+                      <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="rounded-xl">
                         {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Replace"}
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => setLogoUrl(null)} className="rounded-lg">
+                      <Button variant="ghost" size="sm" onClick={() => setLogoUrl(null)} className="rounded-xl">
                         <X className="h-3.5 w-3.5" />
                       </Button>
                     </div>
