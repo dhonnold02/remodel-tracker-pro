@@ -148,7 +148,9 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
               {subtitle && <p className="text-xs text-muted-foreground truncate">{subtitle}</p>}
             </div>
 
-            {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+            {actions && (
+              <div className="flex items-center gap-2 shrink-0 min-w-0">{actions}</div>
+            )}
           </div>
         </header>
 
