@@ -9,8 +9,8 @@ import { Label } from "@/components/ui/label";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import SightlineLogo from "@/components/SightlineLogo";
 import PageLoader from "@/components/PageLoader";
-import { applyBrandPrimary, BRAND_PRESETS } from "@/lib/brandColor";
-import { Loader2, Upload, X, ArrowRight, Check } from "lucide-react";
+import { applyBrandPrimary, BRAND_PRESETS, readableForegroundColor } from "@/lib/brandColor";
+import { Loader2, Upload, X, ArrowRight, ArrowLeft, Check } from "lucide-react";
 import { toast } from "sonner";
 
 type Step = 1 | 2 | 3;
@@ -217,23 +217,31 @@ const Onboarding = () => {
       <div className="relative w-full max-w-lg">
         <div className="rounded-2xl border bg-card shadow-xl p-6 sm:p-8 space-y-6">
           {/* Logo + step indicator */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <SightlineLogo size={32} />
-              <span className="font-heading text-sm font-semibold text-foreground">Sightline</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              {[1, 2, 3].map((n) => (
-                <span
-                  key={n}
-                  className={`h-1.5 rounded-full transition-all ${
-                    n === step ? "w-6 bg-primary" : n < step ? "w-1.5 bg-primary/60" : "w-1.5 bg-border"
-                  }`}
-                />
-              ))}
-              <span className="ml-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                {step > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setStep((s) => (Math.max(1, (s as number) - 1) as Step))}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-secondary text-foreground hover:bg-secondary/80 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                    aria-label="Back"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
+                )}
+                <SightlineLogo size={32} />
+                <span className="font-heading text-sm font-semibold text-foreground">Sightline</span>
+              </div>
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
                 Step {step} of 3
               </span>
+            </div>
+            <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-300"
+                style={{ width: `${(step / 3) * 100}%` }}
+              />
             </div>
           </div>
 
@@ -380,8 +388,11 @@ const Onboarding = () => {
                         <img src={logoUrl} alt="" className="h-10 w-10 rounded-xl bg-background object-contain border" />
                       ) : (
                         <div
-                          className="h-10 w-10 rounded-xl flex items-center justify-center text-white text-sm font-semibold"
-                          style={{ backgroundColor: brandColor || "hsl(var(--primary))" }}
+                          className="h-10 w-10 rounded-xl flex items-center justify-center text-sm font-semibold"
+                          style={{
+                            backgroundColor: brandColor || "hsl(var(--primary))",
+                            color: readableForegroundColor(brandColor),
+                          }}
                         >
                           {(companyName || "S").charAt(0).toUpperCase()}
                         </div>
@@ -393,8 +404,11 @@ const Onboarding = () => {
                         <div className="text-xs text-muted-foreground">Sample project</div>
                       </div>
                       <span
-                        className="px-2 py-0.5 rounded-full text-[10px] font-medium text-white"
-                        style={{ backgroundColor: brandColor || "hsl(var(--primary))" }}
+                        className="px-2 py-0.5 rounded-full text-[10px] font-medium"
+                        style={{
+                          backgroundColor: brandColor || "hsl(var(--primary))",
+                          color: readableForegroundColor(brandColor),
+                        }}
                       >
                         Active
                       </span>
