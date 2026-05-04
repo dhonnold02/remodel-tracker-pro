@@ -1066,6 +1066,9 @@ ${logsHtml}
               rows={4}
               className="rounded-xl"
             />
+            {logNotes.length > 0 && !logNotes.trim() && (
+              <p className="text-xs text-muted-foreground">Notes cannot be empty</p>
+            )}
             <Button
               onClick={handleSaveLog}
               disabled={savingLog || !logProjectId || !logNotes.trim()}
