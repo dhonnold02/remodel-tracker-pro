@@ -39,7 +39,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { ProjectMember } from "@/hooks/useProjects";
-import { useBranding } from "@/hooks/useBranding";
+import { useBrandingContext } from "@/context/BrandingContext";
 import { pdf } from "@react-pdf/renderer";
 import { PunchOutPdfDocument } from "@/lib/PunchOutPdfDocument";
 
@@ -110,7 +110,7 @@ const PunchList = ({
   projectAddress,
 }: PunchListProps) => {
   const { user } = useAuth();
-  const { brand } = useBranding();
+  const { brand } = useBrandingContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [photoTargetId, setPhotoTargetId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");

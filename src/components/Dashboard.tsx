@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useRole } from "@/hooks/useRole";
-import { useBranding } from "@/hooks/useBranding";
+import { useBrandingContext } from "@/context/BrandingContext";
 import {
   DndContext,
   closestCenter,
@@ -50,7 +50,7 @@ interface DashboardProps {
 const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdateProject }: DashboardProps) => {
   const navigate = useNavigate();
   const { canEditProjects } = useRole();
-  const { brand } = useBranding();
+  const { brand } = useBrandingContext();
   const [newName, setNewName] = useState("");
   const [newAddress, setNewAddress] = useState("");
   const [creating, setCreating] = useState(false);
@@ -214,6 +214,26 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
       actions={newProjectButton}
     >
       <div className="max-w-6xl mx-auto space-y-8">
+        {loading && (
+          <>
+            {/* Search skeleton */}
+            <Skeleton className="h-11 max-w-2xl mx-auto w-full rounded-xl" />
+            {/* Stat cards skeleton */}
+            <div className="grid grid-cols-3 gap-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-20 rounded-xl" />
+              ))}
+            </div>
+            {/* Project cards skeleton */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <SkeletonCard key={i} lines={4} />
+              ))}
+            </div>
+          </>
+        )}
+        {!loading && (
+        <>
         {/* Search */}
         <div className="relative max-w-2xl mx-auto w-full">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -235,7 +255,7 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
         </div>
 
         {/* Stats row — secondary, lighter visual weight */}
-        {!loading && projects.length > 0 && (
+        {projects.length > 0 && (
           <div className="grid grid-cols-3 gap-3">
             {statsCards.map((stat) => (
               <button
@@ -276,7 +296,7 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
                 {view !== "all" && ` · ${view === "open" ? "in progress" : "completed"}`}
               </p>
             </div>
-            {!loading && projects.length > 0 && (
+            {projects.length > 0 && (
               <div className="inline-flex items-center gap-1 rounded-xl border bg-card p-1 shadow-sm">
                 {([
                   { key: "all", label: "All" },
@@ -300,20 +320,7 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
             )}
           </div>
 
-          {loading ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-3">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-20 rounded-xl" />
-                ))}
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <SkeletonCard key={i} lines={4} />
-                ))}
-              </div>
-            </div>
-          ) : displayProjects.length === 0 ? (
+          {displayProjects.length === 0 ? (
             searchQuery ? (
               <EmptyState
                 icon={Search}
@@ -370,6 +377,8 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
             </DndContext>
           )}
         </section>
+        </>
+        )}
       </div>
     </AppLayout>
   );

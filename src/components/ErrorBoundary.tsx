@@ -23,7 +23,6 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[ErrorBoundary]", error, info.componentStack);
-    this.setState({ errorInfo: info.componentStack || "" });
   }
 
   render() {
@@ -45,7 +44,7 @@ class ErrorBoundary extends Component<Props, State> {
               </p>
             </div>
             <Button
-              onClick={() => window.location.reload()}
+              onClick={() => { window.location.href = "/"; }}
               className="h-11 rounded-xl w-full"
             >
               Reload page
