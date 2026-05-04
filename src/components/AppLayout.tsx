@@ -84,7 +84,7 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
               key={item.path}
               onClick={() => handleNav(item.path)}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 isActive(item.path)
                   ? "bg-accent text-accent-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -108,7 +108,7 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
             <button
               onClick={() => navigate("/settings")}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 location.pathname.startsWith("/settings")
                   ? "bg-accent text-accent-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -120,7 +120,7 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
           )}
           <button
             onClick={signOut}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
           >
             <LogOut className="h-4 w-4" />
             Sign Out

@@ -63,6 +63,8 @@ const Settings = () => {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [data, setData] = useState<CompanySettings>(EMPTY);
+  const [savedSnapshot, setSavedSnapshot] = useState<CompanySettings>(EMPTY);
+  const hasUnsavedChanges = JSON.stringify(data) !== JSON.stringify(savedSnapshot);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load existing settings
@@ -101,12 +103,44 @@ const Settings = () => {
           notify_calendar_events: (row as any).notify_calendar_events ?? false,
         };
         setData(next);
+        setSavedSnapshot(next);
         if (next.brand_color) applyBrandPrimary(next.brand_color);
       }
       setLoading(false);
     })();
     return () => { cancelled = true; };
   }, [user]);
+
+  // Warn before unload when there are unsaved changes
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [hasUnsavedChanges]);
+
+  // Intercept in-app (React Router) navigation while there are unsaved changes
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const originalPush = window.history.pushState;
+    const originalReplace = window.history.replaceState;
+    const confirmMsg = "You have unsaved changes. Are you sure you want to leave?";
+    window.history.pushState = function (...args) {
+      if (!window.confirm(confirmMsg)) return;
+      return originalPush.apply(this, args as any);
+    };
+    window.history.replaceState = function (...args) {
+      if (!window.confirm(confirmMsg)) return;
+      return originalReplace.apply(this, args as any);
+    };
+    return () => {
+      window.history.pushState = originalPush;
+      window.history.replaceState = originalReplace;
+    };
+  }, [hasUnsavedChanges]);
 
   const update = <K extends keyof CompanySettings>(key: K, value: CompanySettings[K]) => {
     setData((d) => ({ ...d, [key]: value }));
@@ -191,6 +225,7 @@ const Settings = () => {
       return;
     }
     applyBrandPrimary(data.brand_color);
+    setSavedSnapshot(data);
     toast.success("Settings saved");
   };
 
