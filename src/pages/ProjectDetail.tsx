@@ -311,9 +311,9 @@ const ProjectDetailPage = () => {
         )}
 
         {/* MOBILE-ONLY tabbed workspace */}
-        <div className="md:hidden">
+        <div className="md:hidden" style={{ touchAction: "pan-y" }}>
           <Tabs defaultValue="overview" className="space-y-4">
-            <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+            <div className="overflow-x-auto scrollbar-hide -mx-4 px-4" style={{ touchAction: "pan-x" }}>
               <TabsList className="bg-muted/60 h-10 p-1 rounded-xl flex flex-nowrap w-max">
                 <TabsTrigger value="overview" className="text-xs rounded-lg gap-1.5"><ListChecks className="h-3.5 w-3.5" />Overview</TabsTrigger>
                 <TabsTrigger value="timeline" className="text-xs rounded-lg gap-1.5"><CalendarDays className="h-3.5 w-3.5" />Timeline</TabsTrigger>
@@ -325,8 +325,53 @@ const ProjectDetailPage = () => {
             </div>
 
             <TabsContent value="overview" className="mt-0 focus-visible:outline-none">
+              {/* Mobile 2x2 stat grid */}
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                <div className="rounded-xl border bg-card/50 p-3 space-y-1">
+                  <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                    <TrendingUp className="h-3 w-3" /> Budget Used
+                  </div>
+                  <div className={`text-lg font-heading font-bold tabular-nums ${budgetPercent > 100 ? "text-destructive" : "text-foreground"}`}>
+                    {Math.round(budgetPercent)}%
+                  </div>
+                  <div className="h-1 w-full rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${budgetPercent > 100 ? "bg-destructive" : "bg-primary"}`}
+                      style={{ width: `${Math.min(100, budgetPercent)}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="rounded-xl border bg-card/50 p-3 space-y-1">
+                  <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                    <CheckCircle2 className="h-3 w-3" /> Tasks Done
+                  </div>
+                  <div className="text-lg font-heading font-bold text-foreground tabular-nums">
+                    {Math.round(taskPercent)}%
+                  </div>
+                  <div className="h-1 w-full rounded-full bg-secondary overflow-hidden">
+                    <div className="h-full rounded-full bg-success" style={{ width: `${Math.min(100, taskPercent)}%` }} />
+                  </div>
+                </div>
+                <div className="rounded-xl border bg-card/50 p-3 space-y-1">
+                  <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                    <Wallet className="h-3 w-3" /> Remaining
+                  </div>
+                  <div className={`text-lg font-heading font-bold tabular-nums ${remainingBudget < 0 ? "text-destructive" : "text-foreground"}`}>
+                    ${Math.abs(remainingBudget).toLocaleString()}
+                  </div>
+                </div>
+                <div className="rounded-xl border bg-card/50 p-3 space-y-1">
+                  <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                    <Receipt className="h-3 w-3" /> Outstanding
+                  </div>
+                  <div className="text-lg font-heading font-bold text-foreground tabular-nums">
+                    ${invoicesOutstanding.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
               <Tabs defaultValue="tasks" className="space-y-4">
-                <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+                <div className="overflow-x-auto scrollbar-hide -mx-4 px-4" style={{ touchAction: "pan-x" }}>
                   <TabsList className="bg-muted/40 h-9 p-1 rounded-xl flex flex-nowrap w-max">
                     <TabsTrigger value="tasks" className="text-xs rounded-lg">Tasks</TabsTrigger>
                     {canViewFinancials && <TabsTrigger value="financials" className="text-xs rounded-lg">Financials</TabsTrigger>}
