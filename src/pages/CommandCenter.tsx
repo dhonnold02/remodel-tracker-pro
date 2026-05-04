@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
 import { useProjects } from "@/hooks/useProjects";
 import { supabase } from "@/integrations/supabase/client";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -21,9 +21,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays, parseISO, startOfWeek, differenceInCalendarDays } from "date-fns";
-import {
-  Document, Page, Text, View, StyleSheet, PDFDownloadLink, Image as PDFImage,
-} from "@react-pdf/renderer";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -455,98 +452,175 @@ const CommandCenter = () => {
 
   // (projectName moved earlier in the component)
 
-  // ── PDF Export ───────────────────────────────────────────────────────────
-  const weeklyReport = useMemo(() => {
-    const range = `${format(weekStart, "MMM d")}–${format(addDays(weekStart, 6), "MMM d, yyyy")}`;
+  // ── Print Export (browser print-to-PDF, Safari-friendly) ────────────────
+  const handleExportPrint = useCallback(() => {
+    const range = `${format(weekStart, "MMM d")} – ${format(addDays(weekStart, 6), "MMM d, yyyy")}`;
     const start = format(weekStart, "yyyy-MM-dd");
     const end = format(addDays(weekStart, 6), "yyyy-MM-dd");
-    const safeName = (companyName || "Company").replace(/[^a-z0-9]+/gi, "-");
 
+    const esc = (s: string) =>
+      String(s ?? "").replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+      }[c] as string));
+
+    // Weather
+    const weatherHtml = weather
+      ? `<table><thead><tr><th>Day</th><th>Conditions</th><th style="text-align:right">High / Low</th></tr></thead><tbody>${
+          weather.daily.map((d) => `<tr><td>${esc(format(parseISO(d.date), "EEE MMM d"))}</td><td>${esc(wmoToInfo(d.code).label)}</td><td style="text-align:right">${Math.round(d.max)}° / ${Math.round(d.min)}°</td></tr>`).join("")
+        }</tbody></table>`
+      : `<p class="empty">Weather unavailable.</p>`;
+
+    // Events grouped by day
+    const eventsByDay = weekDays.map((d) => {
+      const ds = format(d, "yyyy-MM-dd");
+      return {
+        label: format(d, "EEEE, MMM d"),
+        rows: weekEvents.filter((e) => e.date === ds),
+      };
+    }).filter((d) => d.rows.length > 0);
+    const eventsHtml = eventsByDay.length === 0
+      ? `<p class="empty">No events this week.</p>`
+      : eventsByDay.map((day) => `<h3>${esc(day.label)}</h3><table><tbody>${
+          day.rows.map((e) => `<tr><td style="width:60px">${esc(e.time || "—")}</td><td>${esc(e.title)}</td><td class="muted">${esc(e.project)}</td><td style="text-align:right" class="label">${esc(EVENT_LABELS[e.type] || "Other")}</td></tr>`).join("")
+        }</tbody></table>`).join("");
+
+    // Tasks grouped by project
     const tasksByProject: { project: string; tasks: { title: string; date: string; done: boolean }[] }[] = [];
     for (const p of projects) {
-      const due = p.tasks.filter(
-        (t) => t.dueDate && t.dueDate >= start && t.dueDate <= end,
-      );
+      const due = p.tasks.filter((t) => t.dueDate && t.dueDate >= start && t.dueDate <= end);
       if (due.length) {
         tasksByProject.push({
           project: p.name,
-          tasks: due
-            .map((t) => ({ title: t.title, date: t.dueDate as string, done: !!t.completed }))
+          tasks: due.map((t) => ({ title: t.title, date: t.dueDate as string, done: !!t.completed }))
             .sort((a, b) => a.date.localeCompare(b.date)),
         });
       }
     }
+    const tasksHtml = tasksByProject.length === 0
+      ? `<p class="empty">No tasks due this week.</p>`
+      : tasksByProject.map((g) => `<h3>${esc(g.project)}</h3><table><tbody>${
+          g.tasks.map((t) => `<tr><td>${t.done ? "✓" : "○"} ${esc(t.title)}</td><td style="text-align:right" class="muted">${esc(format(parseISO(t.date), "EEE MMM d"))}</td></tr>`).join("")
+        }</tbody></table>`).join("");
 
-    const eventsByDay = weekDays.map((d) => {
-      const ds = format(d, "yyyy-MM-dd");
-      return {
-        dateLabel: format(d, "EEEE, MMM d"),
-        rows: weekEvents
-          .filter((e) => e.date === ds)
-          .map((e) => ({
-            title: e.title,
-            project: e.project,
-            type: EVENT_LABELS[e.type] || "Other",
-            time: e.time,
-          })),
-      };
-    });
-
+    // Dispatch
     const dispatchByDay = weekDays.map((d) => ({
-      date: format(d, "EEEE, MMM d"),
+      label: format(d, "EEEE, MMM d"),
       rows: crew.map((c) => {
         const row = dispatchMap.get(`${c.id}::${format(d, "yyyy-MM-dd")}`);
-        return {
-          member: c.name,
-          project: row?.project_id ? projectName(row.project_id) : "—",
-        };
+        return { member: c.name, project: row?.project_id ? projectName(row.project_id) : "—" };
       }),
     }));
-    const weekLogs = logs.filter((l) => l.log_date >= start && l.log_date <= end);
+    const dispatchHtml = crew.length === 0
+      ? `<p class="empty">No crew members.</p>`
+      : dispatchByDay.map((d) => `<h3>${esc(d.label)}</h3><table><tbody>${
+          d.rows.map((r) => `<tr><td style="width:40%">${esc(r.member)}</td><td class="${r.project === "—" ? "muted" : ""}">${esc(r.project)}</td></tr>`).join("")
+        }</tbody></table>`).join("");
 
-    return {
-      filename: `${safeName}-WeeklyReport-${format(weekStart, "yyyy-MM-dd")}.pdf`,
-      document: (
-        <WeeklyReportDocument
-          companyName={companyName}
-          companyLogo={companyLogo}
-          range={range}
-          generatedDate={format(new Date(), "MMM d, yyyy")}
-          weather={weather}
-          eventsByDay={eventsByDay}
-          tasksByProject={tasksByProject}
-          dispatchByDay={dispatchByDay}
-          logs={weekLogs.map((l) => ({
-            date: l.log_date,
-            project: projectName(l.project_id),
-            notes: l.notes,
-          }))}
-        />
-      ),
+    // Logs
+    const weekLogs = logs.filter((l) => l.log_date >= start && l.log_date <= end);
+    const logsHtml = weekLogs.length === 0
+      ? `<p class="empty">No logs this week.</p>`
+      : weekLogs.map((l) => `<div class="log"><div class="logmeta">${esc(format(parseISO(l.log_date), "EEEE, MMM d"))} · ${esc(projectName(l.project_id))}</div><div class="lognotes">${esc(l.notes)}</div></div>`).join("");
+
+    const safeName = (companyName || "Company").replace(/[^a-z0-9]+/gi, "-");
+    const docTitle = `${safeName}-WeeklyReport-${format(weekStart, "yyyy-MM-dd")}`;
+
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${esc(docTitle)}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: #0f1117; background: #ffffff; margin: 32px; font-size: 12px; line-height: 1.4; }
+  header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #e5e7eb; padding-bottom: 16px; margin-bottom: 20px; }
+  .eyebrow { font-size: 9px; color: #1d4ed8; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 4px; }
+  h1 { font-size: 22px; margin: 0 0 4px 0; color: #0f1117; }
+  .range { color: #6b7280; font-size: 12px; }
+  .logo { max-height: 50px; max-width: 140px; object-fit: contain; }
+  .companyRight { text-align: right; }
+  .companyRight .name { font-weight: 700; font-size: 13px; }
+  .companyRight .sub { color: #6b7280; font-size: 11px; }
+  h2 { font-size: 10px; color: #9ca3af; letter-spacing: 1.5px; text-transform: uppercase; margin: 24px 0 8px 0; font-weight: 700; }
+  h3 { font-size: 11px; color: #1d4ed8; background: #eff6ff; border: 1px solid #dbeafe; padding: 6px 10px; margin: 8px 0 0 0; border-radius: 4px 4px 0 0; }
+  table { width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+  h3 + table { border-top: 0; border-radius: 0 0 4px 4px; }
+  th, td { text-align: left; padding: 6px 10px; font-size: 11px; border-bottom: 1px solid #f3f4f6; }
+  th { background: #f9fafb; color: #6b7280; text-transform: uppercase; font-size: 9px; font-weight: 700; }
+  tr:last-child td { border-bottom: 0; }
+  tr:nth-child(even) td { background: #f9fafb; }
+  .muted { color: #6b7280; }
+  .label { color: #1d4ed8; }
+  .empty { color: #9ca3af; font-style: italic; padding: 12px; text-align: center; border: 1px solid #e5e7eb; border-radius: 4px; }
+  .log { border-left: 3px solid #1d4ed8; padding: 4px 0 4px 10px; margin-bottom: 10px; }
+  .logmeta { font-weight: 700; color: #6b7280; font-size: 11px; margin-bottom: 2px; }
+  .lognotes { color: #1f2937; white-space: pre-wrap; }
+  footer { margin-top: 28px; padding-top: 8px; border-top: 1px solid #e5e7eb; color: #9ca3af; font-size: 10px; display: flex; justify-content: space-between; }
+  @media print { body { margin: 16mm; } }
+</style></head><body>
+<header>
+  <div>
+    <div class="eyebrow">WEEKLY REPORT</div>
+    <h1>${esc(companyName || "Weekly Report")}</h1>
+    <div class="range">${esc(range)}</div>
+  </div>
+  ${companyLogo
+    ? `<img class="logo" src="${esc(companyLogo)}" alt="${esc(companyName)}" />`
+    : `<div class="companyRight"><div class="name">${esc(companyName || "—")}</div><div class="sub">Licensed Contractor</div></div>`}
+</header>
+
+<h2>Weather Forecast</h2>
+${weatherHtml}
+
+<h2>Calendar Events</h2>
+${eventsHtml}
+
+<h2>Tasks Due This Week</h2>
+${tasksHtml}
+
+<h2>Crew Dispatch</h2>
+${dispatchHtml}
+
+<h2>Daily Log Entries</h2>
+${logsHtml}
+
+<footer>
+  <span>${esc(companyName || "Sightline")} · Generated by Sightline · ${esc(format(new Date(), "MMM d, yyyy"))}</span>
+</footer>
+</body></html>`;
+
+    const w = window.open("", "_blank");
+    if (!w) {
+      toast.error("Please allow pop-ups to export the Weekly Report.");
+      return;
+    }
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+    w.document.title = docTitle;
+
+    const triggerPrint = () => {
+      try { w.focus(); w.print(); } catch { /* ignore */ }
     };
+    // Wait for images (logo) to load before printing
+    const imgs = Array.from(w.document.images || []);
+    if (imgs.length === 0) {
+      setTimeout(triggerPrint, 250);
+    } else {
+      let remaining = imgs.length;
+      const done = () => { if (--remaining <= 0) setTimeout(triggerPrint, 100); };
+      imgs.forEach((img) => {
+        if (img.complete) done();
+        else { img.addEventListener("load", done); img.addEventListener("error", done); }
+      });
+    }
+
+    toast.success("Weekly Report ready", {
+      description: `Choose "Save as PDF" in the print dialog to download.`,
+    });
   }, [companyLogo, companyName, crew, dispatchMap, logs, projects, weather, weekDays, weekEvents, weekStart]);
 
-  const exportLinkClass = (className: string) =>
-    buttonVariants({ className: `rounded-xl ${className}` });
-
-  const renderExportLink = (className: string) => (
-    <PDFDownloadLink
-      document={weeklyReport.document}
-      fileName={weeklyReport.filename}
-      className={exportLinkClass(className)}
-      onClick={() => {
-        toast.success("Weekly Report saved", {
-          description: `${weeklyReport.filename} was saved to your downloads folder.`,
-        });
-      }}
-    >
-      {({ loading }) => (
-        <>
-          {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileDown className="h-4 w-4 mr-2" />}
-          Export Weekly Report
-        </>
-      )}
-    </PDFDownloadLink>
+  const renderExportButton = (className: string) => (
+    <Button onClick={handleExportPrint} className={`rounded-xl ${className}`}>
+      <FileDown className="h-4 w-4 mr-2" />
+      Export Weekly Report
+    </Button>
   );
 
   if (roleLoading) {
@@ -563,13 +637,11 @@ const CommandCenter = () => {
     <AppLayout
       title="Command Center"
       subtitle="Daily operations dashboard"
-      actions={
-        renderExportLink("hidden md:inline-flex")
-      }
+      actions={renderExportButton("hidden md:inline-flex")}
     >
       <div className="max-w-6xl space-y-5 md:space-y-6 pb-8">
         {/* Mobile export button */}
-        {renderExportLink("md:hidden w-full")}
+        {renderExportButton("md:hidden w-full")}
 
         {/* Weather */}
         <Section title="Weather" icon={Cloud}>
@@ -905,222 +977,3 @@ const CommandCenter = () => {
 };
 
 export default CommandCenter;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PDF Document
-// ─────────────────────────────────────────────────────────────────────────────
-const pdfStyles = StyleSheet.create({
-  page: {
-    backgroundColor: "#ffffff",
-    paddingTop: 0,
-    paddingBottom: 50,
-    paddingHorizontal: 0,
-    fontFamily: "Helvetica",
-    fontSize: 10,
-    color: "#0f1117",
-    position: "relative",
-  },
-  accentBar: { position: "absolute", left: 0, top: 0, bottom: 0, width: 6, backgroundColor: "#1d4ed8" },
-  body: { marginLeft: 30, marginRight: 30 },
-  header: {
-    paddingTop: 28,
-    paddingBottom: 18,
-    borderBottom: "1pt solid #e5e7eb",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
-  eyebrow: { fontSize: 7, color: "#1d4ed8", fontWeight: "bold", letterSpacing: 1.5, marginBottom: 6 },
-  titleText: { fontSize: 20, fontWeight: "bold", color: "#0f1117" },
-  rangeText: { fontSize: 10, color: "#6b7280", marginTop: 3 },
-  logoRight: { width: 70, height: 40, objectFit: "contain" },
-  companyTextRight: { textAlign: "right" },
-  companyNameRight: { fontSize: 11, fontWeight: "bold", color: "#0f1117" },
-  companySubRight: { fontSize: 9, color: "#6b7280", marginTop: 2 },
-  sectionHeading: {
-    fontSize: 8, color: "#9ca3af", letterSpacing: 1.5, marginTop: 18, marginBottom: 8,
-    textTransform: "uppercase", fontWeight: "bold",
-  },
-  card: { border: "1pt solid #e5e7eb", borderRadius: 6, overflow: "hidden" },
-  tableHeader: {
-    backgroundColor: "#f9fafb", flexDirection: "row",
-    paddingVertical: 8, paddingHorizontal: 10, borderBottom: "1pt solid #e5e7eb",
-  },
-  th: { fontSize: 8, color: "#6b7280", fontWeight: "bold", textTransform: "uppercase" },
-  trow: {
-    flexDirection: "row", paddingVertical: 8, paddingHorizontal: 10,
-    borderBottom: "1pt solid #f3f4f6", alignItems: "center",
-  },
-  trowAlt: { backgroundColor: "#f9fafb" },
-  cell: { fontSize: 9, color: "#111827" },
-  empty: { padding: 14, textAlign: "center", color: "#9ca3af", fontSize: 9, fontStyle: "italic" },
-  dayBlock: { marginBottom: 10 },
-  dayHeading: { fontSize: 10, fontWeight: "bold", color: "#374151", marginBottom: 4 },
-  groupTitle: {
-    fontSize: 10, fontWeight: "bold", color: "#1d4ed8",
-    paddingVertical: 6, paddingHorizontal: 10, backgroundColor: "#eff6ff",
-    borderBottom: "1pt solid #dbeafe",
-  },
-  logBlock: {
-    borderLeft: "2pt solid #1d4ed8", paddingLeft: 10, marginBottom: 10,
-    paddingVertical: 4,
-  },
-  logMeta: { fontSize: 9, color: "#6b7280", marginBottom: 3, fontWeight: "bold" },
-  logNotes: { fontSize: 9, color: "#1f2937" },
-  footer: {
-    position: "absolute", bottom: 20, left: 30, right: 30,
-    flexDirection: "row", justifyContent: "space-between",
-    borderTop: "1pt solid #e5e7eb", paddingTop: 8,
-  },
-  footerText: { fontSize: 8, color: "#9ca3af" },
-});
-
-interface WeeklyReportProps {
-  companyName: string;
-  companyLogo: string | null;
-  range: string;
-  generatedDate: string;
-  weather: WeatherData | null;
-  eventsByDay: { dateLabel: string; rows: { title: string; project: string; type: string; time: string | null }[] }[];
-  tasksByProject: { project: string; tasks: { title: string; date: string; done: boolean }[] }[];
-  dispatchByDay: { date: string; rows: { member: string; project: string }[] }[];
-  logs: { date: string; project: string; notes: string }[];
-}
-
-const WeeklyReportDocument = ({
-  companyName, companyLogo, range, generatedDate, weather, eventsByDay, tasksByProject, dispatchByDay, logs,
-}: WeeklyReportProps) => (
-  <Document>
-    <Page size="LETTER" style={pdfStyles.page}>
-      <View style={pdfStyles.accentBar} fixed />
-
-      <View style={pdfStyles.body}>
-        {/* Header */}
-        <View style={pdfStyles.header}>
-          <View>
-            <Text style={pdfStyles.eyebrow}>WEEKLY REPORT</Text>
-            <Text style={pdfStyles.titleText}>{companyName || "Weekly Report"}</Text>
-            <Text style={pdfStyles.rangeText}>{range}</Text>
-          </View>
-          {companyLogo ? (
-            <PDFImage src={companyLogo} style={pdfStyles.logoRight} />
-          ) : (
-            <View style={pdfStyles.companyTextRight}>
-              <Text style={pdfStyles.companyNameRight}>{companyName || "—"}</Text>
-              <Text style={pdfStyles.companySubRight}>Licensed Contractor</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Weather */}
-        <Text style={pdfStyles.sectionHeading}>Weather Forecast</Text>
-        {weather ? (
-          <View style={pdfStyles.card}>
-            <View style={pdfStyles.tableHeader}>
-              <Text style={[pdfStyles.th, { flex: 2 }]}>Day</Text>
-              <Text style={[pdfStyles.th, { flex: 2 }]}>Conditions</Text>
-              <Text style={[pdfStyles.th, { flex: 1, textAlign: "right" }]}>High / Low</Text>
-            </View>
-            {weather.daily.map((d, i) => (
-              <View key={d.date} style={[pdfStyles.trow, i % 2 === 1 ? pdfStyles.trowAlt : {}]} wrap={false}>
-                <Text style={[pdfStyles.cell, { flex: 2 }]}>{format(parseISO(d.date), "EEE MMM d")}</Text>
-                <Text style={[pdfStyles.cell, { flex: 2 }]}>{wmoToInfo(d.code).label}</Text>
-                <Text style={[pdfStyles.cell, { flex: 1, textAlign: "right" }]}>{Math.round(d.max)}° / {Math.round(d.min)}°</Text>
-              </View>
-            ))}
-          </View>
-        ) : <View style={pdfStyles.card}><Text style={pdfStyles.empty}>Weather unavailable</Text></View>}
-
-        {/* Events grouped by day */}
-        <Text style={pdfStyles.sectionHeading}>Calendar Events</Text>
-        {eventsByDay.every((d) => d.rows.length === 0) ? (
-          <View style={pdfStyles.card}><Text style={pdfStyles.empty}>No events this week.</Text></View>
-        ) : (
-          eventsByDay.filter((d) => d.rows.length > 0).map((day) => (
-            <View key={day.dateLabel} style={[pdfStyles.card, { marginBottom: 8 }]} wrap={false}>
-              <Text style={pdfStyles.groupTitle}>{day.dateLabel}</Text>
-              {day.rows.map((e, i) => (
-                <View key={i} style={[pdfStyles.trow, i % 2 === 1 ? pdfStyles.trowAlt : {}]}>
-                  <Text style={[pdfStyles.cell, { flex: 1 }]}>{e.time || "—"}</Text>
-                  <Text style={[pdfStyles.cell, { flex: 3 }]}>{e.title}</Text>
-                  <Text style={[pdfStyles.cell, { flex: 2, color: "#6b7280" }]}>{e.project}</Text>
-                  <Text style={[pdfStyles.cell, { flex: 1, color: "#1d4ed8", textAlign: "right" }]}>{e.type}</Text>
-                </View>
-              ))}
-            </View>
-          ))
-        )}
-
-        {/* Tasks grouped by project */}
-        <Text style={pdfStyles.sectionHeading}>Tasks Due This Week</Text>
-        {tasksByProject.length === 0 ? (
-          <View style={pdfStyles.card}><Text style={pdfStyles.empty}>No tasks due this week.</Text></View>
-        ) : (
-          tasksByProject.map((g) => (
-            <View key={g.project} style={[pdfStyles.card, { marginBottom: 8 }]} wrap={false}>
-              <Text style={pdfStyles.groupTitle}>{g.project}</Text>
-              {g.tasks.map((t, i) => (
-                <View key={i} style={[pdfStyles.trow, i % 2 === 1 ? pdfStyles.trowAlt : {}]}>
-                  <Text style={[pdfStyles.cell, { flex: 4, color: t.done ? "#9ca3af" : "#111827" }]}>
-                    {t.done ? "✓ " : "○ "}{t.title}
-                  </Text>
-                  <Text style={[pdfStyles.cell, { flex: 1, textAlign: "right", color: "#6b7280" }]}>
-                    {format(parseISO(t.date), "EEE MMM d")}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          ))
-        )}
-
-        {/* Crew Dispatch */}
-        <Text style={pdfStyles.sectionHeading}>Crew Dispatch</Text>
-        {dispatchByDay.every((d) => d.rows.length === 0) ? (
-          <View style={pdfStyles.card}><Text style={pdfStyles.empty}>No crew assignments.</Text></View>
-        ) : (
-          dispatchByDay.map((d) => (
-            <View key={d.date} style={[pdfStyles.card, { marginBottom: 8 }]} wrap={false}>
-              <Text style={pdfStyles.groupTitle}>{d.date}</Text>
-              {d.rows.length === 0 ? (
-                <Text style={pdfStyles.empty}>No assignments.</Text>
-              ) : (
-                d.rows.map((r, i) => (
-                  <View key={i} style={[pdfStyles.trow, i % 2 === 1 ? pdfStyles.trowAlt : {}]}>
-                    <Text style={[pdfStyles.cell, { flex: 2 }]}>{r.member}</Text>
-                    <Text style={[pdfStyles.cell, { flex: 3, color: r.project === "—" ? "#9ca3af" : "#111827" }]}>
-                      {r.project}
-                    </Text>
-                  </View>
-                ))
-              )}
-            </View>
-          ))
-        )}
-
-        {/* Daily Logs */}
-        <Text style={pdfStyles.sectionHeading}>Daily Log Entries</Text>
-        {logs.length === 0 ? (
-          <View style={pdfStyles.card}><Text style={pdfStyles.empty}>No logs this week.</Text></View>
-        ) : (
-          logs.map((l, i) => (
-            <View key={i} style={pdfStyles.logBlock} wrap={false}>
-              <Text style={pdfStyles.logMeta}>{format(parseISO(l.date), "EEEE, MMM d")} · {l.project}</Text>
-              <Text style={pdfStyles.logNotes}>{l.notes}</Text>
-            </View>
-          ))
-        )}
-      </View>
-
-      {/* Footer */}
-      <View style={pdfStyles.footer} fixed>
-        <Text style={pdfStyles.footerText}>
-          {companyName || "Sightline"} · Generated by Sightline · {generatedDate}
-        </Text>
-        <Text
-          style={pdfStyles.footerText}
-          render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`}
-        />
-      </View>
-    </Page>
-  </Document>
-);
