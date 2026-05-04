@@ -8,6 +8,19 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Wallet, ClipboardCheck, Users, FolderOpen } from "lucide-react";
 import SightlineLogo from "@/components/SightlineLogo";
 import { stashInviteToken } from "@/lib/inviteFlow";
+import { cn } from "@/lib/utils";
+
+const friendlyAuthError = (msg: string | undefined | null): string => {
+  if (!msg) return "Something went wrong. Please try again.";
+  const m = msg.toLowerCase();
+  if (m.includes("invalid login credentials"))
+    return "Incorrect email or password. Please try again.";
+  if (m.includes("already registered") || m.includes("user already registered") || m.includes("already exists"))
+    return "An account with this email already exists. Try signing in instead.";
+  if (m.includes("password should be at least") || m.includes("password must"))
+    return "Password must be at least 6 characters long.";
+  return "Something went wrong. Please try again.";
+};
 
 const AuthPage = () => {
   const { signIn, signUp } = useAuth();
@@ -41,7 +54,7 @@ const AuthPage = () => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
-    if (error) setError(error.message);
+    if (error) setError(friendlyAuthError(error.message));
     else setConfirmMessage("Check your email for a password reset link.");
     setLoading(false);
   };
@@ -64,11 +77,11 @@ const AuthPage = () => {
         return;
       }
       const { error } = await signUp(email, password, displayName || email);
-      if (error) setError(error.message);
+      if (error) setError(friendlyAuthError(error.message));
       else setConfirmMessage("Check your email to confirm your account.");
     } else {
       const { error } = await signIn(email, password);
-      if (error) setError(error.message);
+      if (error) setError(friendlyAuthError(error.message));
     }
     setLoading(false);
   };
@@ -137,7 +150,10 @@ const AuthPage = () => {
       </div>
 
       {/* Right panel — form */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
+      <div
+        className="flex-1 flex items-center justify-center p-6 sm:p-10"
+        style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}
+      >
         <div className="w-full max-w-sm space-y-8">
           {/* Mobile logo */}
           <div className="flex items-center gap-2.5 lg:hidden">
@@ -220,8 +236,13 @@ const AuthPage = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                {isSignUp && (
-                  <div className="space-y-1.5">
+                <div
+                  className={cn(
+                    "transition-all duration-200 ease-in-out overflow-hidden",
+                    isSignUp ? "max-h-32 opacity-100" : "max-h-0 opacity-0"
+                  )}
+                >
+                  <div className="space-y-1.5 pb-1">
                     <Label htmlFor="displayName" className="text-xs font-medium">
                       Display Name
                     </Label>
@@ -235,7 +256,7 @@ const AuthPage = () => {
                       className="h-11 rounded-xl"
                     />
                   </div>
-                )}
+                </div>
 
                 <div className="space-y-1.5">
                   <Label htmlFor="email" className="text-xs font-medium">
@@ -285,8 +306,13 @@ const AuthPage = () => {
                   />
                 </div>
 
-                {isSignUp && (
-                  <div className="space-y-1.5">
+                <div
+                  className={cn(
+                    "transition-all duration-200 ease-in-out overflow-hidden",
+                    isSignUp ? "max-h-32 opacity-100" : "max-h-0 opacity-0"
+                  )}
+                >
+                  <div className="space-y-1.5 pb-1">
                     <Label htmlFor="inviteCode" className="text-xs font-medium">
                       Invite Code
                     </Label>
@@ -296,12 +322,12 @@ const AuthPage = () => {
                       placeholder="Enter your invite code"
                       value={inviteCode}
                       onChange={(e) => setInviteCode(e.target.value)}
-                      required
+                      required={isSignUp}
                       disabled={loading}
                       className="h-11 rounded-xl"
                     />
                   </div>
-                )}
+                </div>
 
                 {error && (
                   <p className="text-xs text-destructive">{error}</p>

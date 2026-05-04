@@ -74,10 +74,10 @@ const ROLE_LABEL: Record<Role, string> = {
 };
 
 const ROLE_BADGE: Record<Role, string> = {
-  owner: "bg-blue-500/15 text-blue-400 ring-1 ring-blue-500/30",
-  project_manager: "bg-purple-500/15 text-purple-400 ring-1 ring-purple-500/30",
-  field_supervisor: "bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/30",
-  crew: "bg-green-500/15 text-green-400 ring-1 ring-green-500/30",
+  owner: "bg-primary/15 text-primary ring-1 ring-primary/30",
+  project_manager: "bg-accent/60 text-accent-foreground ring-1 ring-border",
+  field_supervisor: "bg-accent/40 text-accent-foreground ring-1 ring-border",
+  crew: "bg-secondary text-foreground ring-1 ring-border",
   subcontractor: "bg-muted text-muted-foreground ring-1 ring-border",
 };
 
@@ -170,13 +170,15 @@ const Team = () => {
       .order("joined_at", { ascending: true });
 
     const userIds = (rawMembers || []).map((m) => m.user_id);
-    const profileMap = new Map<string, { display_name: string | null }>();
+    const profileMap = new Map<string, { display_name: string | null; email: string | null }>();
     if (userIds.length > 0) {
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, display_name")
+        .select("id, display_name, email")
         .in("id", userIds);
-      (profiles || []).forEach((p) => profileMap.set(p.id, { display_name: p.display_name }));
+      (profiles || []).forEach((p: any) =>
+        profileMap.set(p.id, { display_name: p.display_name, email: p.email })
+      );
     }
 
     const enriched: MemberRow[] = (rawMembers || []).map((m) => ({
@@ -185,7 +187,9 @@ const Team = () => {
       role: m.role as Role,
       joined_at: m.joined_at,
       display_name: profileMap.get(m.user_id)?.display_name ?? null,
-      email: m.user_id === user?.id ? user?.email ?? null : null,
+      email:
+        profileMap.get(m.user_id)?.email ??
+        (m.user_id === user?.id ? user?.email ?? null : null),
     }));
     setMembers(enriched);
 
@@ -432,7 +436,7 @@ const Team = () => {
                                   <span className="text-[10px] text-muted-foreground ml-2">(you)</span>
                                 )}
                               </div>
-                              {m.email && m.display_name && (
+                              {m.email && m.email !== m.display_name && (
                                 <div className="text-xs text-muted-foreground truncate">{m.email}</div>
                               )}
                             </div>
@@ -635,14 +639,12 @@ const Team = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="max-h-[70vh] overflow-auto">
-            <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-card z-10">
-                <tr className="border-b border-border">
-                  <th className="text-left font-medium text-muted-foreground px-4 py-3">
-                    Feature
-                  </th>
+            <Table>
+              <TableHeader className="sticky top-0 bg-card z-10">
+                <TableRow>
+                  <TableHead>Feature</TableHead>
                   {PERMISSION_ROLES.map((r) => (
-                    <th key={r} className="px-3 py-3 text-center">
+                    <TableHead key={r} className="text-center">
                       <span
                         className={cn(
                           "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap",
@@ -651,36 +653,33 @@ const Team = () => {
                       >
                         {ROLE_LABEL[r]}
                       </span>
-                    </th>
+                    </TableHead>
                   ))}
-                </tr>
-              </thead>
-              <tbody>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {PERMISSIONS.map((p, i) => (
-                  <tr
+                  <TableRow
                     key={p.feature}
-                    className={cn(
-                      "border-b border-border/50",
-                      i % 2 === 1 && "bg-secondary/30"
-                    )}
+                    className={cn(i % 2 === 1 && "bg-secondary/30")}
                   >
-                    <td className="px-4 py-2.5 text-foreground">{p.feature}</td>
+                    <TableCell className="text-foreground">{p.feature}</TableCell>
                     {PERMISSION_ROLES.map((r) => {
                       const ok = p.allowed.includes(r);
                       return (
-                        <td key={r} className="px-3 py-2.5 text-center">
+                        <TableCell key={r} className="text-center">
                           {ok ? (
-                            <Check className="h-4 w-4 text-green-500 inline-block" />
+                            <Check className="h-4 w-4 text-success inline-block" />
                           ) : (
-                            <X className="h-4 w-4 text-red-500 inline-block" />
+                            <X className="h-4 w-4 text-muted-foreground inline-block" />
                           )}
-                        </td>
+                        </TableCell>
                       );
                     })}
-                  </tr>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </DialogContent>
       </Dialog>

@@ -105,7 +105,29 @@ const BrandColorLoader = () => {
         applyBrandPrimary(data.brand_color);
       }
     })();
-    return () => { cancelled = true; };
+
+    // Live-update brand color when company_settings changes.
+    const channel = supabase
+      .channel(`brand_color_${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "company_settings",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload: any) => {
+          const next = payload?.new?.brand_color ?? null;
+          applyBrandPrimary(next);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
   }, [user]);
   return null;
 };
