@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
 import AppLayout from "@/components/AppLayout";
+import PageLoader from "@/components/PageLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -196,10 +197,7 @@ const Settings = () => {
   if (loading) {
     return (
       <AppLayout title="Settings">
-        <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">
-          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          Loading settings…
-        </div>
+        <PageLoader message="Loading settings…" />
       </AppLayout>
     );
   }
