@@ -74,10 +74,10 @@ const ROLE_LABEL: Record<Role, string> = {
 };
 
 const ROLE_BADGE: Record<Role, string> = {
-  owner: "bg-blue-500/15 text-blue-400 ring-1 ring-blue-500/30",
-  project_manager: "bg-purple-500/15 text-purple-400 ring-1 ring-purple-500/30",
-  field_supervisor: "bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/30",
-  crew: "bg-green-500/15 text-green-400 ring-1 ring-green-500/30",
+  owner: "bg-primary/15 text-primary ring-1 ring-primary/30",
+  project_manager: "bg-accent/60 text-accent-foreground ring-1 ring-border",
+  field_supervisor: "bg-accent/40 text-accent-foreground ring-1 ring-border",
+  crew: "bg-secondary text-foreground ring-1 ring-border",
   subcontractor: "bg-muted text-muted-foreground ring-1 ring-border",
 };
 
@@ -170,13 +170,15 @@ const Team = () => {
       .order("joined_at", { ascending: true });
 
     const userIds = (rawMembers || []).map((m) => m.user_id);
-    const profileMap = new Map<string, { display_name: string | null }>();
+    const profileMap = new Map<string, { display_name: string | null; email: string | null }>();
     if (userIds.length > 0) {
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, display_name")
+        .select("id, display_name, email")
         .in("id", userIds);
-      (profiles || []).forEach((p) => profileMap.set(p.id, { display_name: p.display_name }));
+      (profiles || []).forEach((p: any) =>
+        profileMap.set(p.id, { display_name: p.display_name, email: p.email })
+      );
     }
 
     const enriched: MemberRow[] = (rawMembers || []).map((m) => ({
@@ -185,7 +187,9 @@ const Team = () => {
       role: m.role as Role,
       joined_at: m.joined_at,
       display_name: profileMap.get(m.user_id)?.display_name ?? null,
-      email: m.user_id === user?.id ? user?.email ?? null : null,
+      email:
+        profileMap.get(m.user_id)?.email ??
+        (m.user_id === user?.id ? user?.email ?? null : null),
     }));
     setMembers(enriched);
 
