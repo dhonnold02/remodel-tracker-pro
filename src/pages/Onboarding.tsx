@@ -31,6 +31,7 @@ const Onboarding = () => {
   // Step 2
   const [brandColor, setBrandColor] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [logoPath, setLogoPath] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -79,9 +80,10 @@ const Onboarding = () => {
       if (upErr) throw upErr;
       const { data: urlData, error: urlErr } = await supabase.storage
         .from("company-assets")
-        .createSignedUrl(path, 60 * 60 * 24 * 365);
+        .createSignedUrl(path, 315360000);
       if (urlErr) throw urlErr;
       setLogoUrl(urlData.signedUrl);
+      setLogoPath(path);
       toast.success("Logo uploaded");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Upload failed");
@@ -112,6 +114,7 @@ const Onboarding = () => {
       license_number: licenseNumber.trim(),
       phone: phone.trim(),
       logo_url: logoUrl,
+      logo_path: logoPath,
       brand_color: brandColor,
       ...(opts.complete ? { onboarding_complete: true } : {}),
     };
