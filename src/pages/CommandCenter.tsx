@@ -543,7 +543,9 @@ const CommandCenter = () => {
       const safeName = (companyName || "Company").replace(/[^a-z0-9]+/gi, "-");
       const filename = `${safeName}-WeeklyReport-${format(weekStart, "yyyy-MM-dd")}.pdf`;
       saveAs(blob, filename);
-      toast.success("Weekly report downloaded");
+      toast.success("Weekly Report saved", {
+        description: `${filename} was saved to your downloads folder.`,
+      });
     } catch (err) {
       console.error(err);
       toast.error("Failed to generate report");
