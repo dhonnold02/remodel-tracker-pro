@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
 import { useProjects } from "@/hooks/useProjects";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -22,20 +22,8 @@ import {
 import { toast } from "sonner";
 import { format, addDays, parseISO, startOfWeek, differenceInCalendarDays } from "date-fns";
 import {
-  Document, Page, Text, View, StyleSheet, pdf, Image as PDFImage,
+  Document, Page, Text, View, StyleSheet, PDFDownloadLink, Image as PDFImage,
 } from "@react-pdf/renderer";
-const saveAs = (blob: Blob, filename: string) => {
-  const pdfBlob = blob.type === "application/pdf" ? blob : new Blob([blob], { type: "application/pdf" });
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    const result = reader.result;
-    if (typeof result !== "string") return;
-    // result is "data:application/pdf;base64,...."
-    const base64 = result.split(",")[1] || "";
-    window.open(`data:application/pdf;base64,${base64}`, "_blank");
-  };
-  reader.readAsDataURL(pdfBlob);
-};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
