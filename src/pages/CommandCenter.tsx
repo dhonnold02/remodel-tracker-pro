@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import AppLayout from "@/components/AppLayout";
+import PageLoader from "@/components/PageLoader";
+import EmptyState from "@/components/EmptyState";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
 import { useProjects } from "@/hooks/useProjects";
@@ -686,9 +688,7 @@ ${logsHtml}
   if (roleLoading) {
     return (
       <AppLayout title="Command Center">
-        <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">
-          <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Loading…
-        </div>
+        <PageLoader />
       </AppLayout>
     );
   }
@@ -760,7 +760,7 @@ ${logsHtml}
         {/* Today's Events */}
         <Section title="Today's Events" icon={CalendarClock}>
           {todayEvents.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No events scheduled today.</p>
+            <EmptyState icon={CalendarClock} title="No events scheduled today" />
           ) : (
             <ul className="space-y-2">
               {todayEvents.map((e, i) => (
@@ -815,7 +815,7 @@ ${logsHtml}
         {/* Tasks Due Today */}
         <Section title="Tasks Due Today" icon={ListTodo}>
           {tasksDueToday.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No tasks due today.</p>
+            <EmptyState icon={ListTodo} title="No tasks due today" />
           ) : (
             <div className="space-y-4">
               {tasksDueToday.map((g, i) => (
@@ -841,7 +841,7 @@ ${logsHtml}
         {/* Upcoming Deadlines */}
         <Section title="Upcoming Deadlines" icon={Thermometer}>
           {deadlines.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No deadlines in the next 14 days.</p>
+            <EmptyState icon={Thermometer} title="No deadlines in the next 14 days" />
           ) : (
             <ul className="space-y-2">
               {deadlines.map((d, i) => (
@@ -1011,7 +1011,7 @@ ${logsHtml}
               Past Entries
             </h3>
             {logs.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No logs yet.</p>
+              <EmptyState icon={ClipboardList} title="No logs yet" description="Save your first daily log above." />
             ) : (
               <ul className="space-y-2">
                 {logs.map((l) => (
