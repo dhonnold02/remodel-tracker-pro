@@ -691,8 +691,18 @@ ${logsHtml}
     return (
       <AppLayout title="Command Center" subtitle="Daily operations dashboard">
         <div className="max-w-6xl space-y-5 md:space-y-6 pb-8">
-          <SkeletonCard lines={5} />
-          <SkeletonCard lines={4} />
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Today's Events
+            </p>
+            <SkeletonCard lines={5} />
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Tasks Due Today
+            </p>
+            <SkeletonCard lines={4} />
+          </div>
         </div>
       </AppLayout>
     );
