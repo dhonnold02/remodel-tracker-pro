@@ -28,7 +28,10 @@ const ResetPasswordPage = () => {
     // session ever fired. Supabase emits PASSWORD_RECOVERY on initial load
     // when the URL contains a valid recovery token.
     const timer = setTimeout(() => setCheckingToken(false), 1500);
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(timer);
+      subscription.unsubscribe();
+    };
     // eslint-disable-next-line
   }, []);
 
