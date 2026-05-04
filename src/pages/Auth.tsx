@@ -52,8 +52,13 @@ const AuthPage = () => {
     setConfirmMessage("");
     setLoading(true);
     if (isSignUp) {
-      const VALID_INVITE_CODES = ["MAVSIGHTLINE", "AMAZED123"];
-      if (!VALID_INVITE_CODES.includes(inviteCode.trim().toUpperCase())) {
+      const code = inviteCode.trim().toUpperCase();
+      const { data: codeRow, error: codeErr } = await supabase
+        .from("invite_codes")
+        .select("code")
+        .eq("code", code)
+        .maybeSingle();
+      if (codeErr || !codeRow) {
         setError("Invalid invite code");
         setLoading(false);
         return;
