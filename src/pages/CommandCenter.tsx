@@ -20,11 +20,11 @@ import {
   Cloud, CloudRain, CloudSnow, Sun, CloudLightning, CloudFog,
   ChevronDown, Loader2, FileDown, CalendarClock, ListTodo, Users,
   ClipboardList, Wind, Thermometer, Plus, X,
-  CalendarX, CheckSquare, Flag, BookOpen,
+  CalendarX, CheckSquare, Flag, BookOpen, Activity, NotebookPen,
 } from "lucide-react";
 import { toast } from "sonner";
 import { showSuccess, showError } from "@/lib/toast";
-import { format, addDays, parseISO, startOfWeek, differenceInCalendarDays } from "date-fns";
+import { format, addDays, parseISO, startOfWeek, differenceInCalendarDays, formatDistanceToNow } from "date-fns";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -177,6 +177,15 @@ interface EventRow {
   time: string | null;
 }
 
+interface ActivityRow {
+  id: string;
+  project_id: string;
+  user_name: string;
+  action_type: string;
+  description: string;
+  created_at: string;
+}
+
 const CommandCenter = () => {
   const { user } = useAuth();
   const { companyId, loading: roleLoading } = useRole();
@@ -196,6 +205,12 @@ const CommandCenter = () => {
   const [dispatch, setDispatch] = useState<DispatchRow[]>([]);
   const [logs, setLogs] = useState<DailyLogRow[]>([]);
   const [weekEventRows, setWeekEventRows] = useState<EventRow[]>([]);
+  const [activities, setActivities] = useState<ActivityRow[]>([]);
+
+  // Weekly notes
+  const [weeklyNotes, setWeeklyNotes] = useState<string>("");
+  const [weeklyNotesSaving, setWeeklyNotesSaving] = useState(false);
+  const [weeklyNotesSavedAt, setWeeklyNotesSavedAt] = useState<number | null>(null);
 
   // Add crew member UI
   const [addingCrew, setAddingCrew] = useState(false);
@@ -218,23 +233,36 @@ const CommandCenter = () => {
   );
   const todayKey = format(today, "yyyy-MM-dd");
 
-  // ── Load company settings ────────────────────────────────────────────────
+  // ── Load company settings (owner row by user_id, fallback to companyId) ──
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
+      // Try owner row first (user_id match)
+      let { data } = await supabase
         .from("company_settings")
         .select("company_name, address, logo_url")
         .eq("user_id", user.id)
         .maybeSingle();
+
+      // Fallback for non-owner members: load by company id
+      if (!data && companyId) {
+        const fallback = await supabase
+          .from("company_settings")
+          .select("company_name, address, logo_url")
+          .eq("id", companyId)
+          .maybeSingle();
+        data = fallback.data;
+      }
       if (cancelled || !data) return;
       setCompanyName(data.company_name || "");
       setCompanyAddress(data.address || "");
       setCompanyLogo(data.logo_url || null);
+      // eslint-disable-next-line no-console
+      console.log("[CommandCenter] company address for weather:", data.address);
     })();
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user, companyId]);
 
   // ── Load weather (geocode → forecast) ────────────────────────────────────
   useEffect(() => {
@@ -285,6 +313,20 @@ const CommandCenter = () => {
       .limit(50);
     setLogs((logRows || []) as DailyLogRow[]);
 
+    // recent activity across all accessible projects
+    const projectIdsAll = projects.map((p) => p.id);
+    if (projectIdsAll.length) {
+      const { data: actRows } = await supabase
+        .from("activity_logs")
+        .select("id, project_id, user_name, action_type, description, created_at")
+        .in("project_id", projectIdsAll)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      setActivities((actRows || []) as ActivityRow[]);
+    } else {
+      setActivities([]);
+    }
+
     // calendar events for the week — query project_events directly
     // across every project the user can access (same source as Phase Calendar)
     const projectIds = projects.map((p) => p.id);
@@ -304,6 +346,47 @@ const CommandCenter = () => {
   }, [companyId, weekStart, projects]);
 
   useEffect(() => { loadCompanyData(); }, [loadCompanyData]);
+
+  // ── Load weekly notes for this week ──────────────────────────────────────
+  const weekStartKey = useMemo(() => format(weekStart, "yyyy-MM-dd"), [weekStart]);
+  useEffect(() => {
+    if (!companyId) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("command_center_notes" as any)
+        .select("notes")
+        .eq("company_id", companyId)
+        .eq("week_start_date", weekStartKey)
+        .maybeSingle();
+      if (cancelled) return;
+      setWeeklyNotes(((data as any)?.notes as string) || "");
+    })();
+    return () => { cancelled = true; };
+  }, [companyId, weekStartKey]);
+
+  const handleSaveWeeklyNotes = useCallback(async () => {
+    if (!companyId) return;
+    setWeeklyNotesSaving(true);
+    const { error } = await supabase
+      .from("command_center_notes" as any)
+      .upsert(
+        {
+          company_id: companyId,
+          week_start_date: weekStartKey,
+          notes: weeklyNotes,
+          updated_at: new Date().toISOString(),
+        } as any,
+        { onConflict: "company_id,week_start_date" } as any,
+      );
+    setWeeklyNotesSaving(false);
+    if (error) {
+      showError("Failed to save weekly notes");
+      return;
+    }
+    setWeeklyNotesSavedAt(Date.now());
+    setTimeout(() => setWeeklyNotesSavedAt((t) => (t && Date.now() - t >= 1900 ? null : t)), 2000);
+  }, [companyId, weekStartKey, weeklyNotes]);
 
   const projectName = (id: string) =>
     projects.find((p) => p.id === id)?.name || "Unknown";
