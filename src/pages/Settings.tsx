@@ -32,6 +32,7 @@ interface CompanySettings {
   notify_notes: boolean;
   notify_invoices: boolean;
   notify_calendar_events: boolean;
+  dark_mode: boolean;
 }
 
 const EMPTY: CompanySettings = {
@@ -48,6 +49,7 @@ const EMPTY: CompanySettings = {
   notify_notes: false,
   notify_invoices: false,
   notify_calendar_events: false,
+  dark_mode: false,
 };
 
 const Settings = () => {
@@ -103,10 +105,13 @@ const Settings = () => {
           notify_notes: row.notify_notes ?? false,
           notify_invoices: row.notify_invoices ?? false,
           notify_calendar_events: (row as any).notify_calendar_events ?? false,
+          dark_mode: (row as any).dark_mode ?? false,
         };
         setData(next);
         setSavedSnapshot(next);
         if (next.brand_color) applyBrandPrimary(next.brand_color);
+        if (next.dark_mode) document.documentElement.classList.add("dark");
+        else document.documentElement.classList.remove("dark");
       }
       setLoading(false);
     })();
@@ -217,6 +222,7 @@ const Settings = () => {
       notify_notes: data.notify_notes,
       notify_invoices: data.notify_invoices,
       notify_calendar_events: data.notify_calendar_events,
+      dark_mode: data.dark_mode,
     };
     const { error } = await supabase
       .from("company_settings")
