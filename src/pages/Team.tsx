@@ -36,6 +36,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast";
 import { Copy, Info, Loader2, Mail, Trash2, UserPlus, X, Check, MoreHorizontal } from "lucide-react";
 import {
   Dialog,
@@ -214,7 +215,7 @@ const Team = () => {
     if (!companyId || !user) return;
     const email = inviteEmail.trim().toLowerCase();
     if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-      toast.error("Enter a valid email");
+      showError("Enter a valid email");
       return;
     }
     setInviting(true);
@@ -231,17 +232,17 @@ const Team = () => {
     setInviting(false);
 
     if (error || !data) {
-      toast.error(error?.message || "Could not create invitation");
+      showError(error?.message || "Could not create invitation");
       return;
     }
 
     const link = `${window.location.origin}/auth?token=${data.token}`;
     try {
       await navigator.clipboard.writeText(link);
-      toast.success("Invite link copied to clipboard");
+      showSuccess("Invite link copied to clipboard");
       setFallbackInviteLink(null);
     } catch {
-      toast.success("Invite created — copy the link below manually");
+      showSuccess("Invite created — copy the link below manually");
       setFallbackInviteLink(link);
     }
     setInviteEmail("");
@@ -252,9 +253,9 @@ const Team = () => {
     const link = `${window.location.origin}/auth?token=${token}`;
     try {
       await navigator.clipboard.writeText(link);
-      toast.success("Invite link copied");
+      showSuccess("Invite link copied");
     } catch {
-      toast.error("Couldn't copy — copy the link manually below");
+      showError("Couldn't copy — copy the link manually below");
       setFallbackInviteLink(link);
     }
   };
@@ -262,10 +263,10 @@ const Team = () => {
   const revokeInvite = async (id: string) => {
     const { error } = await supabase.from("company_invitations").delete().eq("id", id);
     if (error) {
-      toast.error("Could not revoke invitation");
+      showError("Could not revoke invitation");
       return;
     }
-    toast.success("Invitation revoked");
+    showSuccess("Invitation revoked");
     void loadAll();
   };
 
@@ -275,20 +276,20 @@ const Team = () => {
       .update({ role })
       .eq("id", memberId);
     if (error) {
-      toast.error("Could not change role");
+      showError("Could not change role");
       return;
     }
-    toast.success("Role updated");
+    showSuccess("Role updated");
     void loadAll();
   };
 
   const removeMember = async (memberId: string) => {
     const { error } = await supabase.from("company_members").delete().eq("id", memberId);
     if (error) {
-      toast.error("Could not remove member");
+      showError("Could not remove member");
       return;
     }
-    toast.success("Member removed");
+    showSuccess("Member removed");
     void loadAll();
   };
 

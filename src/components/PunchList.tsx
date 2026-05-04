@@ -37,6 +37,7 @@ import {
   LockOpen,
 } from "lucide-react";
 import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import type { ProjectMember } from "@/hooks/useProjects";
 import { useBrandingContext } from "@/context/BrandingContext";
@@ -254,7 +255,7 @@ const PunchList = ({
       signedOffBy: name,
     });
     setSignOffOpen(false);
-    toast.success("Punch list signed off", { description: `Locked by ${name}` });
+    showSuccess("Punch list signed off", { description: `Locked by ${name}` });
   };
 
   const handleReopen = () => {
@@ -265,7 +266,7 @@ const PunchList = ({
       signedOffBy: undefined,
     });
     setReopenOpen(false);
-    toast.success("Punch list reopened", {
+    showSuccess("Punch list reopened", {
       description: "Items and statuses preserved",
     });
   };
@@ -320,12 +321,12 @@ const PunchList = ({
       document.body.removeChild(link);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-      toast.success("PDF downloaded", {
+      showSuccess("PDF downloaded", {
         description: "Ready to share with your homeowner",
       });
     } catch (err) {
       console.error("PDF export failed", err);
-      toast.error("Export failed", {
+      showError("Export failed", {
         description: "Could not generate the PDF. Please try again.",
       });
     }

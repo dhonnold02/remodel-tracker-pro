@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CheckSquare, DollarSign, Camera, FileText, FolderPlus, ClipboardList, Activity } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast";
 
 interface ActivityEntry {
   id: string;
@@ -59,7 +60,7 @@ const ActivityLog = ({ projectId }: ActivityLogProps) => {
       .order("created_at", { ascending: false })
       .limit(100);
     if (error) {
-      toast.error("Failed to load activity log — please refresh");
+      showError("Failed to load activity log — please refresh");
       setLoading(false);
       return;
     }

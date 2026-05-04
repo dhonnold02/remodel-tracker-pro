@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Task } from "@/hooks/useProjects";
 import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast";
 
 export interface ProjectTemplate {
   id: string;
@@ -29,7 +30,7 @@ export function useTemplates() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      toast.error("Failed to load templates — please refresh");
+      showError("Failed to load templates — please refresh");
       setLoading(false);
       return;
     }

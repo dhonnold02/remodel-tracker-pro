@@ -12,6 +12,7 @@ import PageLoader from "@/components/PageLoader";
 import { applyBrandPrimary, BRAND_PRESETS, readableForegroundColor } from "@/lib/brandColor";
 import { Loader2, Upload, X, ArrowRight, ArrowLeft, Check } from "lucide-react";
 import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast";
 
 type Step = 1 | 2 | 3;
 
@@ -69,8 +70,8 @@ const Onboarding = () => {
 
   const uploadLogo = async (file: File) => {
     if (!user) return;
-    if (!file.type.startsWith("image/")) { toast.error("Please select an image file"); return; }
-    if (file.size > 2 * 1024 * 1024) { toast.error("Logo must be under 2MB"); return; }
+    if (!file.type.startsWith("image/")) { showError("Please select an image file"); return; }
+    if (file.size > 2 * 1024 * 1024) { showError("Logo must be under 2MB"); return; }
     setUploading(true);
     try {
       const ext = file.name.split(".").pop()?.toLowerCase() || "png";
@@ -85,9 +86,9 @@ const Onboarding = () => {
       if (urlErr) throw urlErr;
       setLogoUrl(urlData.signedUrl);
       setLogoPath(path);
-      toast.success("Logo uploaded");
+      showSuccess("Logo uploaded");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Upload failed");
+      showError(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -125,7 +126,7 @@ const Onboarding = () => {
       .select("id")
       .maybeSingle();
     if (error) {
-      toast.error("Couldn't save — please try again");
+      showError("Couldn't save — please try again");
       return false;
     }
 
@@ -151,7 +152,7 @@ const Onboarding = () => {
 
   const handleStep1 = async () => {
     if (!companyName.trim()) {
-      toast.error("Company name is required");
+      showError("Company name is required");
       return;
     }
     setSubmitting(true);
@@ -170,7 +171,7 @@ const Onboarding = () => {
 
   const finishWithProject = async () => {
     if (!projectName.trim()) {
-      toast.error("Project name is required");
+      showError("Project name is required");
       return;
     }
     setSubmitting(true);
@@ -182,7 +183,7 @@ const Onboarding = () => {
       }
       navigate(`/project/${id}`, { replace: true });
     } catch (err) {
-      toast.error("Couldn't create project — please try again");
+      showError("Couldn't create project — please try again");
       setSubmitting(false);
     }
   };

@@ -1,6 +1,7 @@
 import { uuidv4 } from "@/lib/uuid";
 import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast";
 import { ProjectData } from "@/hooks/useProjects";
 import { getProjectStats, getAggregatedStats } from "@/types/project";
 import { useNavigate } from "react-router-dom";
@@ -127,7 +128,7 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
       setCreateOpen(false);
       navigate(`/project/${id}`);
     } catch (err: any) {
-      toast.error(err?.message || "Failed to create project");
+      showError(err?.message || "Failed to create project");
     } finally {
       setCreating(false);
     }
@@ -149,10 +150,10 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
           })) as any,
         });
       }
-      toast.success(`Created project from "${template.name}" template`);
+      showSuccess(`Created project from "${template.name}" template`);
       navigate(`/project/${id}`);
     } catch (err: any) {
-      toast.error(err?.message || "Failed to create from template");
+      showError(err?.message || "Failed to create from template");
     } finally {
       setCreating(false);
     }
