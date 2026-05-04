@@ -20,6 +20,7 @@ import {
   Cloud, CloudRain, CloudSnow, Sun, CloudLightning, CloudFog,
   ChevronDown, Loader2, FileDown, CalendarClock, ListTodo, Users,
   ClipboardList, Wind, Thermometer, Plus, X,
+  CalendarX, CheckSquare, Flag, BookOpen,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays, parseISO, startOfWeek, differenceInCalendarDays } from "date-fns";
