@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { Loader2, Upload, X, Check, LogOut } from "lucide-react";
 import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast";
 import { applyBrandPrimary, BRAND_PRESETS } from "@/lib/brandColor";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import SectionHeader from "@/components/SectionHeader";
@@ -82,7 +83,7 @@ const Settings = () => {
       if (cancelled) return;
 
       if (error) {
-        toast.error("Failed to load company settings — please refresh");
+        showError("Failed to load company settings — please refresh");
         setLoading(false);
         return;
       }
@@ -155,11 +156,11 @@ const Settings = () => {
   const uploadLogo = async (file: File) => {
     if (!user) return;
     if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
+      showError("Please select an image file");
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("Logo must be under 2MB");
+      showError("Logo must be under 2MB");
       return;
     }
     setUploading(true);
@@ -176,10 +177,10 @@ const Settings = () => {
       if (urlErr) throw urlErr;
       update("logo_url", urlData.signedUrl);
       update("logo_path", path);
-      toast.success("Logo uploaded");
+      showSuccess("Logo uploaded");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Upload failed";
-      toast.error(message);
+      showError(message);
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -222,12 +223,12 @@ const Settings = () => {
       .upsert(payload, { onConflict: "user_id" });
     setSaving(false);
     if (error) {
-      toast.error("Failed to save settings — please try again");
+      showError("Failed to save settings — please try again");
       return;
     }
     applyBrandPrimary(data.brand_color);
     setSavedSnapshot(data);
-    toast.success("Settings saved");
+    showSuccess("Settings saved");
   };
 
   if (loading) {
@@ -350,7 +351,7 @@ const Settings = () => {
                     type="button"
                     onClick={() => pickColor(p.hex)}
                     title={`${p.name} — ${p.hex}`}
-                    className={`h-11 w-11 md:h-8 md:w-8 rounded-full border-2 transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${selected ? "border-foreground scale-110 ring-2 ring-foreground/20" : "border-transparent hover:scale-105"}`}
+                    className={`h-11 w-11 md:h-8 md:w-8 rounded-full border-2 transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${selected ? "border-foreground scale-110 ring-2 ring-primary ring-offset-2 ring-offset-background" : "border-transparent hover:scale-105"}`}
                     style={{ backgroundColor: p.hex }}
                     aria-label={p.name}
                   />

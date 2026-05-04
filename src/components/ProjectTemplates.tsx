@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { BookTemplate, Trash2, FileDown, FileUp } from "lucide-react";
 import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast";
 
 interface Props {
   onCreateFromTemplate: (template: ProjectTemplate) => void;
@@ -31,7 +32,7 @@ const ProjectTemplates = ({ onCreateFromTemplate, currentProject }: Props) => {
     setTemplateName("");
     setTemplateDesc("");
     setSaveOpen(false);
-    toast.success("Template saved!");
+    showSuccess("Template saved!");
   };
 
   // Hide entirely when there are no templates and no current project to save from

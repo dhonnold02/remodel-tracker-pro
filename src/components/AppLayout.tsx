@@ -57,6 +57,12 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
 
   return (
     <div className="min-h-screen bg-background flex">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-xl focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
       {/* Sidebar */}
       <aside className={cn(
         "hidden md:flex sticky top-0 left-0 z-50 h-screen w-64 bg-card border-r flex-col"
@@ -155,7 +161,7 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-4 lg:p-8 pb-20 md:pb-8">
+        <main id="main-content" className="flex-1 p-4 lg:p-8 pb-20 md:pb-8">
           {children}
         </main>
       </div>
@@ -181,7 +187,16 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
             )}
           >
             <tab.icon className={cn("h-5 w-5", tab.active && "text-primary")} />
-            <span>{tab.label}</span>
+            <span className="truncate max-w-full leading-tight">
+              {tab.label === "Command Center" ? (
+                <>
+                  <span className="hidden sm:inline">Command Center</span>
+                  <span className="sm:hidden">Command</span>
+                </>
+              ) : (
+                tab.label
+              )}
+            </span>
           </button>
         ))}
       </nav>

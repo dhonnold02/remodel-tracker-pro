@@ -23,6 +23,7 @@ import {
   CalendarX, CheckSquare, Flag, BookOpen,
 } from "lucide-react";
 import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast";
 import { format, addDays, parseISO, startOfWeek, differenceInCalendarDays } from "date-fns";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -311,7 +312,7 @@ const CommandCenter = () => {
   const handleAddCrew = async () => {
     if (!user || !companyId) return;
     const name = newCrewName.trim();
-    if (!name) { toast.error("Enter a name"); return; }
+    if (!name) { showError("Enter a name"); return; }
     setSavingCrew(true);
     const { error } = await supabase.from("crew_members" as any).insert({
       company_id: companyId,
@@ -319,8 +320,8 @@ const CommandCenter = () => {
       name,
     } as any);
     setSavingCrew(false);
-    if (error) { toast.error("Failed to add crew member"); return; }
-    toast.success("Crew member added");
+    if (error) { showError("Failed to add crew member"); return; }
+    showSuccess("Crew member added");
     setNewCrewName("");
     setAddingCrew(false);
     loadCompanyData();
@@ -328,10 +329,10 @@ const CommandCenter = () => {
 
   const handleRemoveCrew = async (memberId: string) => {
     const { error } = await supabase.from("crew_members" as any).delete().eq("id", memberId);
-    if (error) { toast.error("Failed to remove crew member"); return; }
+    if (error) { showError("Failed to remove crew member"); return; }
     // also clear any dispatch rows for this member
     await supabase.from("crew_dispatch").delete().eq("member_id", memberId);
-    toast.success("Crew member removed");
+    showSuccess("Crew member removed");
     loadCompanyData();
   };
 
@@ -413,11 +414,11 @@ const CommandCenter = () => {
     if (existing) {
       if (realProjectId === null) {
         const { error } = await supabase.from("crew_dispatch").delete().eq("id", existing.id);
-        if (error) { toast.error("Failed to update assignment"); return; }
+        if (error) { showError("Failed to update assignment"); return; }
       } else {
         const { error } = await supabase.from("crew_dispatch")
           .update({ project_id: realProjectId }).eq("id", existing.id);
-        if (error) { toast.error("Failed to update assignment"); return; }
+        if (error) { showError("Failed to update assignment"); return; }
       }
     } else if (realProjectId !== null) {
       const { error } = await supabase.from("crew_dispatch").insert({
@@ -427,7 +428,7 @@ const CommandCenter = () => {
         project_id: realProjectId,
         dispatch_date: dateStr,
       });
-      if (error) { toast.error("Failed to save assignment"); return; }
+      if (error) { showError("Failed to save assignment"); return; }
     }
     loadCompanyData();
   };
@@ -435,8 +436,8 @@ const CommandCenter = () => {
   // ── Save daily log ───────────────────────────────────────────────────────
   const handleSaveLog = async () => {
     if (!user || !companyId) return;
-    if (!logProjectId) { toast.error("Pick a project"); return; }
-    if (!logNotes.trim()) { toast.error("Add some notes"); return; }
+    if (!logProjectId) { showError("Pick a project"); return; }
+    if (!logNotes.trim()) { showError("Add some notes"); return; }
     setSavingLog(true);
     const { error } = await supabase.from("daily_logs").insert({
       company_id: companyId,
@@ -446,8 +447,8 @@ const CommandCenter = () => {
       created_by: user.id,
     });
     setSavingLog(false);
-    if (error) { toast.error("Failed to save log"); return; }
-    toast.success("Daily log saved");
+    if (error) { showError("Failed to save log"); return; }
+    showSuccess("Daily log saved");
     setLogNotes("");
     loadCompanyData();
   };
@@ -648,7 +649,7 @@ ${logsHtml}
 
     const w = window.open("", "_blank");
     if (!w) {
-      toast.error(
+      showError(
         "Pop-ups are blocked. Please allow pop-ups for this site in your browser settings, then try exporting again.",
         { duration: 8000 }
       );
@@ -675,7 +676,7 @@ ${logsHtml}
       });
     }
 
-    toast.success("Weekly Report ready", {
+    showSuccess("Weekly Report ready", {
       description: `Choose "Save as PDF" in the print dialog to download.`,
     });
   }, [companyLogo, companyName, crew, dispatchMap, logs, projects, weather, weekDays, weekEvents, weekStart]);

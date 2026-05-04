@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Wallet, ClipboardCheck, Users, FolderOpen } from "lucide-react";
 import SightlineLogo from "@/components/SightlineLogo";
 import { stashInviteToken } from "@/lib/inviteFlow";
-import { cn } from "@/lib/utils";
 import { friendlyAuthError } from "@/lib/authErrors";
+import { motion, AnimatePresence } from "framer-motion";
 
 const AuthPage = () => {
   const { signIn, signUp } = useAuth();
@@ -225,29 +225,33 @@ const AuthPage = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div
-                  className={cn(
-                    "transition-all duration-200 ease-in-out overflow-hidden",
-                    isSignUp ? "max-h-32 opacity-100" : "max-h-0 opacity-0"
+                <AnimatePresence initial={false}>
+                  {isSignUp && (
+                    <motion.div
+                      key="display-name"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <div className="space-y-1.5 pb-1">
+                        <Label htmlFor="displayName" className="text-xs font-medium">
+                          Display Name
+                        </Label>
+                        <Input
+                          id="displayName"
+                          type="text"
+                          placeholder="Your name"
+                          value={displayName}
+                          onChange={(e) => setDisplayName(e.target.value)}
+                          disabled={loading}
+                          className="h-11 rounded-xl"
+                        />
+                      </div>
+                    </motion.div>
                   )}
-                  aria-hidden={!isSignUp}
-                >
-                  <div className="space-y-1.5 pb-1">
-                    <Label htmlFor="displayName" className="text-xs font-medium">
-                      Display Name
-                    </Label>
-                    <Input
-                      id="displayName"
-                      type="text"
-                      placeholder="Your name"
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      disabled={loading}
-                      tabIndex={isSignUp ? 0 : -1}
-                      className="h-11 rounded-xl"
-                    />
-                  </div>
-                </div>
+                </AnimatePresence>
 
                 <div className="space-y-1.5">
                   <Label htmlFor="email" className="text-xs font-medium">
@@ -297,28 +301,34 @@ const AuthPage = () => {
                   />
                 </div>
 
-                <div
-                  className={cn(
-                    "transition-all duration-200 ease-in-out overflow-hidden",
-                    isSignUp ? "max-h-32 opacity-100" : "max-h-0 opacity-0"
+                <AnimatePresence initial={false}>
+                  {isSignUp && (
+                    <motion.div
+                      key="invite-code"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <div className="space-y-1.5 pb-1">
+                        <Label htmlFor="inviteCode" className="text-xs font-medium">
+                          Invite Code
+                        </Label>
+                        <Input
+                          id="inviteCode"
+                          type="text"
+                          placeholder="Enter your invite code"
+                          value={inviteCode}
+                          onChange={(e) => setInviteCode(e.target.value)}
+                          required={isSignUp}
+                          disabled={loading}
+                          className="h-11 rounded-xl"
+                        />
+                      </div>
+                    </motion.div>
                   )}
-                >
-                  <div className="space-y-1.5 pb-1">
-                    <Label htmlFor="inviteCode" className="text-xs font-medium">
-                      Invite Code
-                    </Label>
-                    <Input
-                      id="inviteCode"
-                      type="text"
-                      placeholder="Enter your invite code"
-                      value={inviteCode}
-                      onChange={(e) => setInviteCode(e.target.value)}
-                      required={isSignUp}
-                      disabled={loading}
-                      className="h-11 rounded-xl"
-                    />
-                  </div>
-                </div>
+                </AnimatePresence>
 
                 {error && (
                   <p className="text-xs text-destructive">{error}</p>

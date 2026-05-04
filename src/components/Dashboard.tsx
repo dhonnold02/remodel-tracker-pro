@@ -1,15 +1,14 @@
 import { uuidv4 } from "@/lib/uuid";
 import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast";
 import { ProjectData } from "@/hooks/useProjects";
 import { getProjectStats, getAggregatedStats } from "@/types/project";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, X, CheckCircle2, Clock, BarChart3, FolderPlus, MapPin } from "lucide-react";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
-} from "@/components/ui/dialog";
+import AppDialog from "@/components/AppDialog";
 import ProjectCard from "@/components/ProjectCard";
 import ProjectTemplates from "@/components/ProjectTemplates";
 import { ProjectTemplate } from "@/hooks/useTemplates";
@@ -127,7 +126,7 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
       setCreateOpen(false);
       navigate(`/project/${id}`);
     } catch (err: any) {
-      toast.error(err?.message || "Failed to create project");
+      showError(err?.message || "Failed to create project");
     } finally {
       setCreating(false);
     }
@@ -149,10 +148,10 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
           })) as any,
         });
       }
-      toast.success(`Created project from "${template.name}" template`);
+      showSuccess(`Created project from "${template.name}" template`);
       navigate(`/project/${id}`);
     } catch (err: any) {
-      toast.error(err?.message || "Failed to create from template");
+      showError(err?.message || "Failed to create from template");
     } finally {
       setCreating(false);
     }
@@ -165,17 +164,29 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
   ];
 
   const newProjectButton = canEditProjects ? (
-    <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-      <DialogTrigger asChild>
-        <Button className="h-11 px-4 rounded-xl shadow-sm gap-1.5">
-          <Plus className="h-4 w-4" />
-          New Project
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Create new project</DialogTitle>
-        </DialogHeader>
+    <>
+      <Button
+        onClick={() => setCreateOpen(true)}
+        className="h-11 px-4 rounded-xl shadow-sm gap-1.5"
+      >
+        <Plus className="h-4 w-4" />
+        New Project
+      </Button>
+      <AppDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        title="Create new project"
+        footer={
+          <>
+            <Button variant="outline" className="rounded-xl" onClick={() => setCreateOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAdd} className="rounded-xl" disabled={creating || !newName.trim()}>
+              {creating ? "Creating…" : "Create project"}
+            </Button>
+          </>
+        }
+      >
         <div className="space-y-3 pt-1">
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Project name</label>
@@ -197,14 +208,8 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
             />
           </div>
         </div>
-        <DialogFooter className="gap-2 sm:gap-2">
-          <Button variant="outline" className="rounded-xl" onClick={() => setCreateOpen(false)}>Cancel</Button>
-          <Button onClick={handleAdd} className="rounded-xl" disabled={creating || !newName.trim()}>
-            {creating ? "Creating…" : "Create project"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </AppDialog>
+    </>
   ) : null;
 
   return (

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, Trash2, FileText, Download } from "lucide-react";
 import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast";
 
 interface StoredFile {
   id: string;
@@ -51,7 +52,7 @@ const LocalFileUploads = ({ projectId, isEditor }: Props) => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(next));
     } catch (e) {
-      toast.error("Storage full — remove some files");
+      showError("Storage full — remove some files");
     }
   };
 
@@ -61,7 +62,7 @@ const LocalFileUploads = ({ projectId, isEditor }: Props) => {
     const added: StoredFile[] = [];
     for (const f of Array.from(list)) {
       if (f.size > MAX_BYTES) {
-        toast.error(`${f.name} is too large (max 10MB)`);
+        showError(`${f.name} is too large (max 10MB)`);
         continue;
       }
       try {
@@ -75,12 +76,12 @@ const LocalFileUploads = ({ projectId, isEditor }: Props) => {
           addedAt: Date.now(),
         });
       } catch {
-        toast.error(`Failed to read ${f.name}`);
+        showError(`Failed to read ${f.name}`);
       }
     }
     if (added.length) {
       persist([...added, ...files]);
-      toast.success(`Added ${added.length} file${added.length > 1 ? "s" : ""}`);
+      showSuccess(`Added ${added.length} file${added.length > 1 ? "s" : ""}`);
     }
     if (inputRef.current) inputRef.current.value = "";
   };

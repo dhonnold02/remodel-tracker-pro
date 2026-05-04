@@ -12,6 +12,7 @@ import PageLoader from "@/components/PageLoader";
 import { applyBrandPrimary, BRAND_PRESETS, readableForegroundColor } from "@/lib/brandColor";
 import { Loader2, Upload, X, ArrowRight, ArrowLeft, Check } from "lucide-react";
 import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast";
 
 type Step = 1 | 2 | 3;
 
@@ -69,8 +70,8 @@ const Onboarding = () => {
 
   const uploadLogo = async (file: File) => {
     if (!user) return;
-    if (!file.type.startsWith("image/")) { toast.error("Please select an image file"); return; }
-    if (file.size > 2 * 1024 * 1024) { toast.error("Logo must be under 2MB"); return; }
+    if (!file.type.startsWith("image/")) { showError("Please select an image file"); return; }
+    if (file.size > 2 * 1024 * 1024) { showError("Logo must be under 2MB"); return; }
     setUploading(true);
     try {
       const ext = file.name.split(".").pop()?.toLowerCase() || "png";
@@ -85,9 +86,9 @@ const Onboarding = () => {
       if (urlErr) throw urlErr;
       setLogoUrl(urlData.signedUrl);
       setLogoPath(path);
-      toast.success("Logo uploaded");
+      showSuccess("Logo uploaded");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Upload failed");
+      showError(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -125,7 +126,7 @@ const Onboarding = () => {
       .select("id")
       .maybeSingle();
     if (error) {
-      toast.error("Couldn't save — please try again");
+      showError("Couldn't save — please try again");
       return false;
     }
 
@@ -151,7 +152,7 @@ const Onboarding = () => {
 
   const handleStep1 = async () => {
     if (!companyName.trim()) {
-      toast.error("Company name is required");
+      showError("Company name is required");
       return;
     }
     setSubmitting(true);
@@ -170,7 +171,7 @@ const Onboarding = () => {
 
   const finishWithProject = async () => {
     if (!projectName.trim()) {
-      toast.error("Project name is required");
+      showError("Project name is required");
       return;
     }
     setSubmitting(true);
@@ -182,7 +183,7 @@ const Onboarding = () => {
       }
       navigate(`/project/${id}`, { replace: true });
     } catch (err) {
-      toast.error("Couldn't create project — please try again");
+      showError("Couldn't create project — please try again");
       setSubmitting(false);
     }
   };
@@ -220,16 +221,6 @@ const Onboarding = () => {
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                {step > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => setStep((s) => (Math.max(1, (s as number) - 1) as Step))}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-secondary text-foreground hover:bg-secondary/80 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                    aria-label="Back"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                  </button>
-                )}
                 <SightlineLogo size={32} />
                 <span className="font-heading text-sm font-semibold text-foreground">Sightline</span>
               </div>
@@ -295,15 +286,18 @@ const Onboarding = () => {
                   </div>
                 </div>
 
-                <Button
-                  onClick={handleStep1}
-                  disabled={submitting || !companyName.trim()}
-                  className="w-full h-11 rounded-xl"
-                >
-                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                    <>Continue <ArrowRight className="h-4 w-4 ml-1" /></>
-                  )}
-                </Button>
+                <div className="flex items-center justify-between gap-3">
+                  <span aria-hidden />
+                  <Button
+                    onClick={handleStep1}
+                    disabled={submitting || !companyName.trim()}
+                    className="h-11 rounded-xl flex-1 sm:flex-none sm:min-w-[12rem]"
+                  >
+                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                      <>Continue <ArrowRight className="h-4 w-4 ml-1" /></>
+                    )}
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -416,16 +410,28 @@ const Onboarding = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Button
-                    onClick={() => handleStep2(false)}
-                    disabled={submitting}
-                    className="w-full h-11 rounded-xl"
-                  >
-                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                      <>Continue <ArrowRight className="h-4 w-4 ml-1" /></>
-                    )}
-                  </Button>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setStep(1)}
+                      disabled={submitting}
+                      className="h-11 rounded-xl"
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-1" />
+                      Back
+                    </Button>
+                    <Button
+                      onClick={() => handleStep2(false)}
+                      disabled={submitting}
+                      className="h-11 rounded-xl flex-1 sm:flex-none sm:min-w-[12rem]"
+                    >
+                      {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                        <>Continue <ArrowRight className="h-4 w-4 ml-1" /></>
+                      )}
+                    </Button>
+                  </div>
                   <button
                     type="button"
                     onClick={() => handleStep2(true)}
@@ -473,19 +479,31 @@ const Onboarding = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Button
-                    onClick={finishWithProject}
-                    disabled={submitting || !projectName.trim()}
-                    className="w-full h-11 rounded-xl"
-                  >
-                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                      <>
-                        <Check className="h-4 w-4 mr-1" />
-                        Create Project & Go to Dashboard
-                      </>
-                    )}
-                  </Button>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setStep(2)}
+                      disabled={submitting}
+                      className="h-11 rounded-xl"
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-1" />
+                      Back
+                    </Button>
+                    <Button
+                      onClick={finishWithProject}
+                      disabled={submitting || !projectName.trim()}
+                      className="h-11 rounded-xl flex-1 sm:flex-none sm:min-w-[16rem]"
+                    >
+                      {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                        <>
+                          <Check className="h-4 w-4 mr-1" />
+                          Create & Go to Dashboard
+                        </>
+                      )}
+                    </Button>
+                  </div>
                   <button
                     type="button"
                     onClick={skipToDashboard}

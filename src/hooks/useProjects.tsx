@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { cacheProjects, getCachedProjects } from "@/hooks/useOfflineSync";
 import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast";
 
 const logActivity = async (
   userId: string,
@@ -183,7 +184,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       .eq("user_id", user.id);
 
     if (membershipsError) {
-      toast.error("Failed to load projects — please refresh");
+      showError("Failed to load projects — please refresh");
       setLoading(false);
       return;
     }
@@ -203,7 +204,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       .in("id", projectIds);
 
     if (projectsError) {
-      toast.error("Failed to load projects — please refresh");
+      showError("Failed to load projects — please refresh");
       setLoading(false);
       return;
     }
@@ -233,7 +234,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     ];
     for (const { res, label } of relatedErrors) {
       if (res.error) {
-        toast.error(`Failed to load ${label} — please refresh`);
+        showError(`Failed to load ${label} — please refresh`);
       }
     }
 

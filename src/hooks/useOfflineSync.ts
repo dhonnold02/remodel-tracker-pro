@@ -2,6 +2,7 @@ import { uuidv4 } from "@/lib/uuid";
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast";
 
 const OFFLINE_QUEUE_KEY = "remodel_offline_queue";
 const OFFLINE_CACHE_KEY = "remodel_offline_cache";
@@ -112,10 +113,10 @@ export function useOfflineSync() {
 
       setOfflineQueue(failed);
       if (synced > 0) {
-        toast.success(`Synced ${synced} offline change${synced !== 1 ? "s" : ""}`);
+        showSuccess(`Synced ${synced} offline change${synced !== 1 ? "s" : ""}`);
       }
       if (failed.length > 0) {
-        toast.error("Some changes couldn't be saved — please check your connection");
+        showError("Some changes couldn't be saved — please check your connection");
       }
     } finally {
       syncingRef.current = false;
