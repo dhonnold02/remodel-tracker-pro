@@ -41,6 +41,13 @@
     --success-foreground: 0 0% 100%;
     --info: 213 90% 60%;
     --info-foreground: 220 20% 6%;
+    --role-owner: 213 90% 60%;
+    --role-pm: 270 70% 65%;
+    --role-supervisor: 38 92% 55%;
+    --role-crew: 152 60% 42%;
+    --role-subcontractor: 215 15% 55%;
+    --overlay: 0 0% 0%;
+    --overlay-foreground: 0 0% 100%;
   }
 
   .light {
@@ -77,6 +84,13 @@
     --success-foreground: 0 0% 100%;
     --info: 213 90% 60%;
     --info-foreground: 220 20% 6%;
+    --role-owner: 213 90% 60%;
+    --role-pm: 270 70% 55%;
+    --role-supervisor: 38 92% 50%;
+    --role-crew: 152 60% 42%;
+    --role-subcontractor: 215 15% 45%;
+    --overlay: 0 0% 0%;
+    --overlay-foreground: 0 0% 100%;
   }
 }
 

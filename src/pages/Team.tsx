@@ -74,11 +74,11 @@ const ROLE_LABEL: Record<Role, string> = {
 };
 
 const ROLE_BADGE: Record<Role, string> = {
-  owner: "bg-primary/15 text-primary",
-  project_manager: "bg-purple-500/15 text-purple-400",
-  field_supervisor: "bg-amber-500/15 text-amber-400",
-  crew: "bg-success/15 text-success",
-  subcontractor: "bg-muted text-muted-foreground",
+  owner: "bg-role-owner/15 text-role-owner",
+  project_manager: "bg-role-pm/15 text-role-pm",
+  field_supervisor: "bg-role-supervisor/15 text-role-supervisor",
+  crew: "bg-role-crew/15 text-role-crew",
+  subcontractor: "bg-role-subcontractor/15 text-role-subcontractor",
 };
 
 const INVITABLE_ROLES: InvitableRole[] = [
