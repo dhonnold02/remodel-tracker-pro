@@ -1,3 +1,4 @@
+import { uuidv4 } from "@/lib/uuid";
 import { useState } from "react";
 import { ChangeOrder, ChangeOrderComment } from "@/types/project";
 import { useAuth } from "@/hooks/useAuth";
@@ -65,7 +66,7 @@ const ChangeOrdersSection = ({ orders, onChange }: ChangeOrdersProps) => {
   const add = () => {
     if (!draft.trim()) return;
     const newOrder: ChangeOrder = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       text: draft.trim(),
       createdAt: new Date().toISOString(),
       authorName: currentName,
@@ -83,7 +84,7 @@ const ChangeOrdersSection = ({ orders, onChange }: ChangeOrdersProps) => {
     const text = (replyDrafts[orderId] || "").trim();
     if (!text) return;
     const newComment: ChangeOrderComment = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       changeOrderId: orderId,
       text,
       authorName: currentName,

@@ -1,3 +1,4 @@
+import { uuidv4 } from "@/lib/uuid";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FileAttachment } from "@/types/project";
 import { ImagePlus, X, Camera, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
@@ -25,7 +26,7 @@ const PhotoGallery = ({ photos, onChange }: PhotoGalleryProps) => {
         const reader = new FileReader();
         reader.onload = () => {
           const attachment: FileAttachment = {
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             name: file.name,
             dataUrl: reader.result as string,
             createdAt: new Date().toISOString(),

@@ -1,3 +1,4 @@
+import { uuidv4 } from "@/lib/uuid";
 import { useCallback, useRef } from "react";
 import { FileAttachment } from "@/types/project";
 import { FileUp, X, FileText, FolderOpen } from "lucide-react";
@@ -19,7 +20,7 @@ const BlueprintSection = ({ blueprints, onChange }: BlueprintSectionProps) => {
         const reader = new FileReader();
         reader.onload = () => {
           const attachment: FileAttachment = {
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             name: file.name,
             dataUrl: reader.result as string,
             createdAt: new Date().toISOString(),

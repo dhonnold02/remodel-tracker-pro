@@ -1,3 +1,4 @@
+import { uuidv4 } from "@/lib/uuid";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,7 +34,7 @@ const InvoicesSection = ({ invoices, onChange, totalBudget, totalSpent, readOnly
   const handleAdd = () => {
     const amt = Number(amount);
     if (!desc.trim() || !amt) return;
-    onChange([...invoices, { id: crypto.randomUUID(), type, description: desc.trim(), amount: amt, paid: false }]);
+    onChange([...invoices, { id: uuidv4(), type, description: desc.trim(), amount: amt, paid: false }]);
     setDesc("");
     setAmount("");
   };

@@ -1,3 +1,4 @@
+import { uuidv4 } from "@/lib/uuid";
 import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import { ProjectData } from "@/hooks/useProjects";
@@ -138,7 +139,7 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
           materialCosts: template.materialCosts,
           tasks: template.tasks.map((t) => ({
             ...t,
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             completed: false,
           })) as any,
         });

@@ -1,7 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ProjectsProvider } from "@/hooks/useProjects";
@@ -117,7 +116,6 @@ const App = () => (
       <AuthProvider>
         <ProjectsProvider>
           <ErrorBoundary>
-            <Toaster />
             <Sonner />
             <BrandColorLoader />
             <BrowserRouter>

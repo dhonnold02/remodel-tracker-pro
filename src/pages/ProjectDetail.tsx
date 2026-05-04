@@ -1,3 +1,4 @@
+import { uuidv4 } from "@/lib/uuid";
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useProjects } from "@/hooks/useProjects";
@@ -448,7 +449,7 @@ const ProjectDetailPage = () => {
                         totalBudget: template.totalBudget,
                         laborCosts: template.laborCosts,
                         materialCosts: template.materialCosts,
-                        tasks: template.tasks.map((t) => ({ ...t, id: crypto.randomUUID(), completed: false })) as any,
+                        tasks: template.tasks.map((t) => ({ ...t, id: uuidv4(), completed: false })) as any,
                       });
                       navigate(`/project/${subId}`);
                     }}
@@ -747,7 +748,7 @@ const ProjectDetailPage = () => {
                         totalBudget: template.totalBudget,
                         laborCosts: template.laborCosts,
                         materialCosts: template.materialCosts,
-                        tasks: template.tasks.map((t) => ({ ...t, id: crypto.randomUUID(), completed: false })) as any,
+                        tasks: template.tasks.map((t) => ({ ...t, id: uuidv4(), completed: false })) as any,
                       });
                       navigate(`/project/${subId}`);
                     }}

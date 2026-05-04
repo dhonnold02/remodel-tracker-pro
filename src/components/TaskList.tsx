@@ -1,3 +1,4 @@
+import { uuidv4 } from "@/lib/uuid";
 import { useState, useMemo } from "react";
 import { Task, TaskPriority } from "@/hooks/useProjects";
 import { Button } from "@/components/ui/button";
@@ -255,7 +256,7 @@ const TaskList = ({ tasks, onChange }: TaskListProps) => {
   );
 
   const makeTask = (title: string, parentTaskId: string | null = null): Task => ({
-    id: crypto.randomUUID(), title, notes: "", completed: false, parentTaskId, dueDate: null, priority: "medium", tags: [],
+    id: uuidv4(), title, notes: "", completed: false, parentTaskId, dueDate: null, priority: "medium", tags: [],
   });
 
   const addTask = () => {

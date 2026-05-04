@@ -1,3 +1,4 @@
+import { uuidv4 } from "@/lib/uuid";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -35,7 +36,7 @@ import {
   ClipboardCheck,
   LockOpen,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { ProjectMember } from "@/hooks/useProjects";
 import { useBranding } from "@/hooks/useBranding";
@@ -109,7 +110,6 @@ const PunchList = ({
   projectAddress,
 }: PunchListProps) => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const { brand } = useBranding();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [photoTargetId, setPhotoTargetId] = useState<string | null>(null);
@@ -177,7 +177,7 @@ const PunchList = ({
     const title = newTitle.trim();
     if (!title) return;
     const item: PunchListItem = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       title,
       status: "pending",
       assignee: newAssignee && newAssignee !== "__none__" ? newAssignee : undefined,
@@ -254,7 +254,7 @@ const PunchList = ({
       signedOffBy: name,
     });
     setSignOffOpen(false);
-    toast({ title: "Punch list signed off", description: `Locked by ${name}` });
+    toast.success("Punch list signed off", { description: `Locked by ${name}` });
   };
 
   const handleReopen = () => {
@@ -265,8 +265,7 @@ const PunchList = ({
       signedOffBy: undefined,
     });
     setReopenOpen(false);
-    toast({
-      title: "Punch list reopened",
+    toast.success("Punch list reopened", {
       description: "Items and statuses preserved",
     });
   };
@@ -321,16 +320,13 @@ const PunchList = ({
       document.body.removeChild(link);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-      toast({
-        title: "PDF downloaded",
+      toast.success("PDF downloaded", {
         description: "Ready to share with your homeowner",
       });
     } catch (err) {
       console.error("PDF export failed", err);
-      toast({
-        title: "Export failed",
+      toast.error("Export failed", {
         description: "Could not generate the PDF. Please try again.",
-        variant: "destructive",
       });
     }
   };
