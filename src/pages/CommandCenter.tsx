@@ -385,7 +385,7 @@ const CommandCenter = () => {
       return;
     }
     setWeeklyNotesSavedAt(Date.now());
-    setTimeout(() => setWeeklyNotesSavedAt((t) => (t && Date.now() - t >= 1900 ? null : t)), 2000);
+    setTimeout(() => setWeeklyNotesSavedAt(null), 2000);
   }, [companyId, weekStartKey, weeklyNotes]);
 
   const projectName = (id: string) =>
