@@ -157,7 +157,11 @@ const AddressAutocomplete = ({
         onKeyDown={onKeyDown}
         disabled={!GOOGLE_MAPS_API_KEY}
         autoComplete="off"
-        className={cn("rounded-xl h-11 pl-9", className)}
+        className={cn(
+          "rounded-xl h-11 pl-9",
+          !GOOGLE_MAPS_API_KEY && "opacity-50 cursor-not-allowed bg-muted",
+          className,
+        )}
       />
     </div>
   );

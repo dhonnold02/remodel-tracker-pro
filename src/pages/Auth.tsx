@@ -241,6 +241,7 @@ const AuthPage = () => {
                     "transition-all duration-200 ease-in-out overflow-hidden",
                     isSignUp ? "max-h-32 opacity-100" : "max-h-0 opacity-0"
                   )}
+                  aria-hidden={!isSignUp}
                 >
                   <div className="space-y-1.5 pb-1">
                     <Label htmlFor="displayName" className="text-xs font-medium">
@@ -253,6 +254,7 @@ const AuthPage = () => {
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       disabled={loading}
+                      tabIndex={isSignUp ? 0 : -1}
                       className="h-11 rounded-xl"
                     />
                   </div>

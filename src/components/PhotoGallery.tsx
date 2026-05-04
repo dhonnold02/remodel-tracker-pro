@@ -158,7 +158,8 @@ const PhotoGallery = ({ photos, onChange }: PhotoGalleryProps) => {
                   e.stopPropagation();
                   remove(photo.id);
                 }}
-                className="absolute top-1.5 right-1.5 bg-foreground/70 text-background rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-label="Remove photo"
+                className="absolute top-1.5 right-1.5 bg-foreground/70 text-background rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none focus-visible:opacity-100"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -185,21 +186,21 @@ const PhotoGallery = ({ photos, onChange }: PhotoGalleryProps) => {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setZoom((z) => Math.max(z - 0.25, 1))}
-                className="rounded-full bg-white/10 hover:bg-white/20 p-2 transition-colors"
+                className="rounded-full bg-white/10 hover:bg-white/20 p-2 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 aria-label="Zoom out"
               >
                 <ZoomOut className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setZoom((z) => Math.min(z + 0.25, 4))}
-                className="rounded-full bg-white/10 hover:bg-white/20 p-2 transition-colors"
+                className="rounded-full bg-white/10 hover:bg-white/20 p-2 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 aria-label="Zoom in"
               >
                 <ZoomIn className="h-4 w-4" />
               </button>
               <button
                 onClick={closeLightbox}
-                className="rounded-full bg-white/10 hover:bg-white/20 p-2 transition-colors"
+                className="rounded-full bg-white/10 hover:bg-white/20 p-2 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 aria-label="Close"
               >
                 <X className="h-5 w-5" />
@@ -215,7 +216,7 @@ const PhotoGallery = ({ photos, onChange }: PhotoGalleryProps) => {
                   e.stopPropagation();
                   goPrev();
                 }}
-                className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 p-3 text-white transition-colors z-10"
+                className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 p-3 text-white transition-colors z-10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 aria-label="Previous"
               >
                 <ChevronLeft className="h-6 w-6" />
@@ -225,7 +226,7 @@ const PhotoGallery = ({ photos, onChange }: PhotoGalleryProps) => {
                   e.stopPropagation();
                   goNext();
                 }}
-                className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 p-3 text-white transition-colors z-10"
+                className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 p-3 text-white transition-colors z-10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 aria-label="Next"
               >
                 <ChevronRight className="h-6 w-6" />

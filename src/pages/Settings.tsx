@@ -351,7 +351,7 @@ const Settings = () => {
                     type="button"
                     onClick={() => pickColor(p.hex)}
                     title={`${p.name} — ${p.hex}`}
-                    className={`h-11 w-11 md:h-8 md:w-8 rounded-full border-2 transition-all ${selected ? "border-foreground scale-110 ring-2 ring-foreground/20" : "border-transparent hover:scale-105"}`}
+                    className={`h-11 w-11 md:h-8 md:w-8 rounded-full border-2 transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${selected ? "border-foreground scale-110 ring-2 ring-foreground/20" : "border-transparent hover:scale-105"}`}
                     style={{ backgroundColor: p.hex }}
                     aria-label={p.name}
                   />

@@ -183,14 +183,14 @@ const SortableTask = ({
         <PrioritySelector priority={task.priority} onChange={(priority) => onUpdate({ priority })} />
         <DueDatePicker dueDate={task.dueDate} completed={task.completed} onChange={(dueDate) => onUpdate({ dueDate })} />
         {!indent && (
-          <button onClick={onAddSubtask} className="text-muted-foreground hover:text-primary transition-colors p-1 shrink-0" title="Add subtask">
+          <button onClick={onAddSubtask} className="text-muted-foreground hover:text-primary transition-colors inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none" title="Add subtask" aria-label="Add subtask">
             <ListTree className="h-4 w-4" />
           </button>
         )}
-        <button onClick={onToggleExpand} className="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0">
+        <button onClick={onToggleExpand} className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none" aria-label={isExpanded ? "Collapse task" : "Expand task"}>
           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </button>
-        <button onClick={onRemove} className="text-muted-foreground hover:text-destructive transition-colors p-1 shrink-0">
+        <button onClick={onRemove} className="text-muted-foreground hover:text-destructive transition-colors inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none" aria-label="Delete task">
           <Trash2 className="h-4 w-4" />
         </button>
       </div>

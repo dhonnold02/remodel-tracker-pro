@@ -128,7 +128,7 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false, 
               <button
                 onClick={(e) => e.stopPropagation()}
                 aria-label="Project actions"
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-150"
+                className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
               >
                 <MoreHorizontal className="h-4 w-4" />
               </button>

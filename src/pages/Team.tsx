@@ -426,7 +426,14 @@ const Team = () => {
                     const isExpanded = expandedMemberId === m.id;
                     return (
                       <Fragment key={m.id}>
-                      <TableRow>
+                      <TableRow
+                        className={cn(canRemove && "md:cursor-default cursor-pointer")}
+                        onClick={() => {
+                          if (!canRemove) return;
+                          if (typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches) return;
+                          setExpandedMemberId(isExpanded ? null : m.id);
+                        }}
+                      >
                         <TableCell className="max-w-[160px] md:max-w-none">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
@@ -443,8 +450,8 @@ const Team = () => {
                             {canRemove && (
                               <button
                                 type="button"
-                                onClick={() => setExpandedMemberId(isExpanded ? null : m.id)}
-                                className="md:hidden p-1.5 -mr-1 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+                                onClick={(e) => { e.stopPropagation(); setExpandedMemberId(isExpanded ? null : m.id); }}
+                                className="md:hidden inline-flex items-center justify-center min-w-[44px] min-h-[44px] -mr-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                                 aria-label={isExpanded ? "Hide actions" : "Show actions"}
                                 aria-expanded={isExpanded}
                               >
@@ -487,8 +494,9 @@ const Team = () => {
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <button
-                                  className="p-1.5 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                                  className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                                   title="Remove member"
+                                  aria-label="Remove member"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </button>
@@ -607,15 +615,17 @@ const Team = () => {
                         <div className="inline-flex items-center gap-1">
                           <button
                             onClick={() => copyInviteLink(inv.token)}
-                            className="p-1.5 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                            className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                             title="Copy invite link"
+                            aria-label="Copy invite link"
                           >
                             <Copy className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => revokeInvite(inv.id)}
-                            className="p-1.5 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                            className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                             title="Revoke invitation"
+                            aria-label="Revoke invitation"
                           >
                             <X className="h-4 w-4" />
                           </button>
