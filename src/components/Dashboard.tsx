@@ -284,10 +284,10 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
                     key={tab.key}
                     onClick={() => setView(tab.key)}
                     className={cn(
-                      "px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-150",
+                      "px-3 py-1.5 text-xs font-medium rounded-xl transition-all duration-150",
                       view === tab.key
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                        ? "bg-accent text-accent-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
                     )}
                   >
                     {tab.label}
