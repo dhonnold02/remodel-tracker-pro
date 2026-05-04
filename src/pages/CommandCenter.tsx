@@ -479,20 +479,57 @@ const CommandCenter = () => {
     return out;
   }, [projects, today]);
 
-  // ── Recent activity grouped by project ───────────────────────────────────
-  const activityByProject = useMemo(() => {
-    const groups = new Map<string, ActivityRow[]>();
-    for (const a of activities) {
-      const arr = groups.get(a.project_id) || [];
-      arr.push(a);
-      groups.set(a.project_id, arr);
-    }
-    const out: { project: string; entries: ActivityRow[] }[] = [];
-    for (const [pid, entries] of groups) {
-      out.push({ project: projectName(pid), entries });
-    }
-    return out;
-  }, [activities, projects]);
+  // ── Recent activity grouped by project (with dedupe + windows) ───────────
+  type DedupedActivity = ActivityRow & { count: number };
+
+  const dedupeAndGroup = useCallback(
+    (rows: ActivityRow[], perProjectCap: number) => {
+      const byProject = new Map<string, ActivityRow[]>();
+      for (const a of rows) {
+        const arr = byProject.get(a.project_id) || [];
+        arr.push(a);
+        byProject.set(a.project_id, arr);
+      }
+      const out: { project: string; entries: DedupedActivity[] }[] = [];
+      for (const [pid, entries] of byProject) {
+        // entries are newest-first; collapse same user + same description within 1h
+        const collapsed: DedupedActivity[] = [];
+        for (const e of entries) {
+          const last = collapsed[collapsed.length - 1];
+          if (
+            last &&
+            last.user_name === e.user_name &&
+            last.description === e.description &&
+            Math.abs(new Date(last.created_at).getTime() - new Date(e.created_at).getTime()) <= 60 * 60 * 1000
+          ) {
+            last.count += 1;
+          } else {
+            collapsed.push({ ...e, count: 1 });
+          }
+        }
+        out.push({ project: projectName(pid), entries: collapsed.slice(0, perProjectCap) });
+      }
+      return out;
+    },
+    [projects],
+  );
+
+  const nowMs = today.getTime();
+  const recentActivity24h = useMemo(() => {
+    const cutoff = nowMs - 24 * 60 * 60 * 1000;
+    const filtered = activities.filter((a) => new Date(a.created_at).getTime() >= cutoff);
+    return dedupeAndGroup(filtered, 10);
+  }, [activities, nowMs, dedupeAndGroup]);
+
+  const recentActivity7d = useMemo(() => {
+    const start = nowMs - 7 * 24 * 60 * 60 * 1000;
+    const end = nowMs - 24 * 60 * 60 * 1000;
+    const filtered = activities.filter((a) => {
+      const t = new Date(a.created_at).getTime();
+      return t >= start && t < end;
+    });
+    return dedupeAndGroup(filtered, 20);
+  }, [activities, nowMs, dedupeAndGroup]);
 
   // ── Crew dispatch grid helpers ───────────────────────────────────────────
   const dispatchKey = (memberId: string, date: Date) =>
