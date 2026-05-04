@@ -327,12 +327,12 @@ const ProjectDetailPage = () => {
           <Tabs defaultValue="overview" className="space-y-4">
             <div className="overflow-x-auto scrollbar-hide -mx-4 px-4" style={{ touchAction: "pan-x" }}>
               <TabsList className="bg-muted/60 h-10 p-1 rounded-xl flex flex-nowrap w-max">
-                <TabsTrigger value="overview" className="text-xs rounded-lg gap-1.5"><ListChecks className="h-3.5 w-3.5" />Overview</TabsTrigger>
-                <TabsTrigger value="timeline" className="text-xs rounded-lg gap-1.5"><CalendarDays className="h-3.5 w-3.5" />Timeline</TabsTrigger>
-                <TabsTrigger value="photos" className="text-xs rounded-lg gap-1.5"><Camera className="h-3.5 w-3.5" />Photos</TabsTrigger>
-                <TabsTrigger value="plansfiles" className="text-xs rounded-lg gap-1.5 whitespace-nowrap"><FileImage className="h-3.5 w-3.5" />Plans & Files</TabsTrigger>
-                <TabsTrigger value="notes" className="text-xs rounded-lg gap-1.5"><ClipboardList className="h-3.5 w-3.5" />Notes</TabsTrigger>
-                <TabsTrigger value="closeout" className="text-xs rounded-lg gap-1.5 whitespace-nowrap"><ClipboardCheck className="h-3.5 w-3.5" />Punch Out</TabsTrigger>
+                <TabsTrigger value="overview" className="text-xs rounded-xl gap-1.5"><ListChecks className="h-3.5 w-3.5" />Overview</TabsTrigger>
+                <TabsTrigger value="timeline" className="text-xs rounded-xl gap-1.5"><CalendarDays className="h-3.5 w-3.5" />Timeline</TabsTrigger>
+                <TabsTrigger value="photos" className="text-xs rounded-xl gap-1.5"><Camera className="h-3.5 w-3.5" />Photos</TabsTrigger>
+                <TabsTrigger value="plansfiles" className="text-xs rounded-xl gap-1.5 whitespace-nowrap"><FileImage className="h-3.5 w-3.5" />Plans & Files</TabsTrigger>
+                <TabsTrigger value="notes" className="text-xs rounded-xl gap-1.5"><ClipboardList className="h-3.5 w-3.5" />Notes</TabsTrigger>
+                <TabsTrigger value="closeout" className="text-xs rounded-xl gap-1.5 whitespace-nowrap"><ClipboardCheck className="h-3.5 w-3.5" />Punch Out</TabsTrigger>
               </TabsList>
             </div>
 
@@ -385,12 +385,12 @@ const ProjectDetailPage = () => {
               <Tabs defaultValue="tasks" className="space-y-4">
                 <div className="overflow-x-auto scrollbar-hide -mx-4 px-4" style={{ touchAction: "pan-x" }}>
                   <TabsList className="bg-muted/40 h-9 p-1 rounded-xl flex flex-nowrap w-max">
-                    <TabsTrigger value="tasks" className="text-xs rounded-lg">Tasks</TabsTrigger>
-                    {canViewFinancials && <TabsTrigger value="financials" className="text-xs rounded-lg">Financials</TabsTrigger>}
-                    {canViewFinancials && <TabsTrigger value="invoices" className="text-xs rounded-lg">Invoices</TabsTrigger>}
-                    <TabsTrigger value="details" className="text-xs rounded-lg whitespace-nowrap">Project Details</TabsTrigger>
-                    <TabsTrigger value="team" className="text-xs rounded-lg">Team</TabsTrigger>
-                    {!project.parentId && <TabsTrigger value="subs" className="text-xs rounded-lg whitespace-nowrap">Sub-Projects</TabsTrigger>}
+                    <TabsTrigger value="tasks" className="text-xs rounded-xl">Tasks</TabsTrigger>
+                    {canViewFinancials && <TabsTrigger value="financials" className="text-xs rounded-xl">Financials</TabsTrigger>}
+                    {canViewFinancials && <TabsTrigger value="invoices" className="text-xs rounded-xl">Invoices</TabsTrigger>}
+                    <TabsTrigger value="details" className="text-xs rounded-xl whitespace-nowrap">Project Details</TabsTrigger>
+                    <TabsTrigger value="team" className="text-xs rounded-xl">Team</TabsTrigger>
+                    {!project.parentId && <TabsTrigger value="subs" className="text-xs rounded-xl whitespace-nowrap">Sub-Projects</TabsTrigger>}
                   </TabsList>
                 </div>
 
@@ -440,7 +440,7 @@ const ProjectDetailPage = () => {
                     <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5 space-y-3">
                       <div className="flex items-center justify-between gap-2">
                         <h3 className="section-title flex items-center gap-2"><FolderOpen className="h-4 w-4 text-primary" />Sub-Projects{hasSubs && <span className="text-xs text-muted-foreground font-normal">({subProjects.length})</span>}</h3>
-                        {isEditor && (<Button size="sm" variant="ghost" onClick={() => setShowSubForm(!showSubForm)} className="h-8 text-xs rounded-xl"><Plus className="h-3.5 w-3.5 mr-1" />Add</Button>)}
+                        {isEditor && (<Button size="sm" variant="ghost" onClick={() => setShowSubForm(!showSubForm)} className="h-9 text-xs rounded-xl"><Plus className="h-3.5 w-3.5 mr-1" />Add</Button>)}
                       </div>
                       {showSubForm && (
                         <div className="flex gap-2">
@@ -646,7 +646,7 @@ const ProjectDetailPage = () => {
                       {hasSubs && <span className="text-xs text-muted-foreground font-normal">({subProjects.length})</span>}
                     </CollapsibleTrigger>
                     {isEditor && (
-                      <Button size="sm" variant="ghost" onClick={() => setShowSubForm(!showSubForm)} className="h-8 text-xs rounded-xl">
+                      <Button size="sm" variant="ghost" onClick={() => setShowSubForm(!showSubForm)} className="h-9 text-xs rounded-xl">
                         <Plus className="h-3.5 w-3.5 mr-1" /> Add
                       </Button>
                     )}
@@ -740,22 +740,22 @@ const ProjectDetailPage = () => {
             <Tabs defaultValue="timeline" className="space-y-5">
               <div className="overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0">
                 <TabsList className="bg-muted/60 h-10 p-1 rounded-xl flex flex-nowrap w-max sm:w-auto">
-                <TabsTrigger value="timeline" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                <TabsTrigger value="timeline" className="text-xs sm:text-sm rounded-xl gap-1.5">
                   <CalendarDays className="h-3.5 w-3.5" /> Timeline
                 </TabsTrigger>
-                <TabsTrigger value="photos" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                <TabsTrigger value="photos" className="text-xs sm:text-sm rounded-xl gap-1.5">
                   <Camera className="h-3.5 w-3.5" /> Photos
                 </TabsTrigger>
-                <TabsTrigger value="plans" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                <TabsTrigger value="plans" className="text-xs sm:text-sm rounded-xl gap-1.5">
                   <FileImage className="h-3.5 w-3.5" /> Plans
                 </TabsTrigger>
-                <TabsTrigger value="notes" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                <TabsTrigger value="notes" className="text-xs sm:text-sm rounded-xl gap-1.5">
                   <ClipboardList className="h-3.5 w-3.5" /> Notes
                 </TabsTrigger>
-                <TabsTrigger value="files" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                <TabsTrigger value="files" className="text-xs sm:text-sm rounded-xl gap-1.5">
                   <BookTemplate className="h-3.5 w-3.5" /> Files
                 </TabsTrigger>
-                <TabsTrigger value="closeout" className="text-xs sm:text-sm rounded-lg gap-1.5">
+                <TabsTrigger value="closeout" className="text-xs sm:text-sm rounded-xl gap-1.5">
                   <ClipboardCheck className="h-3.5 w-3.5" /> Punch Out
                   {punchData.isLocked && (
                     <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-success" />
