@@ -36,7 +36,7 @@ import {
   ClipboardCheck,
   LockOpen,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { ProjectMember } from "@/hooks/useProjects";
 import { useBranding } from "@/hooks/useBranding";
@@ -110,7 +110,6 @@ const PunchList = ({
   projectAddress,
 }: PunchListProps) => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const { brand } = useBranding();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [photoTargetId, setPhotoTargetId] = useState<string | null>(null);
