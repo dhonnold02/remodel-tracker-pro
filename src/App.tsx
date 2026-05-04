@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { applyBrandPrimary } from "@/lib/brandColor";
 import { acceptInvitation, consumeInviteToken } from "@/lib/inviteFlow";
+import { BrandingProvider } from "@/context/BrandingContext";
 
 const queryClient = new QueryClient();
 
@@ -95,30 +96,66 @@ const BrandColorLoader = () => {
     }
     let cancelled = false;
     let channel: ReturnType<typeof supabase.channel> | null = null;
+    let companyId: string | null = null;
 
     const fetchColor = async () => {
-      const { data, error } = await supabase
+      // Resolve the company this user belongs to (owner row OR membership).
+      if (!companyId) {
+        const { data: ownerRow } = await supabase
+          .from("company_settings")
+          .select("id, brand_color")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (ownerRow) {
+          companyId = (ownerRow as any).id;
+          if (!cancelled && (ownerRow as any).brand_color) {
+            applyBrandPrimary((ownerRow as any).brand_color);
+          }
+        } else {
+          const { data: membership } = await supabase
+            .from("company_members")
+            .select("company_id")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          companyId = (membership as any)?.company_id || null;
+          if (companyId) {
+            const { data: companyRow } = await supabase
+              .from("company_settings")
+              .select("brand_color")
+              .eq("id", companyId)
+              .maybeSingle();
+            if (!cancelled && (companyRow as any)?.brand_color) {
+              applyBrandPrimary((companyRow as any).brand_color);
+            }
+          }
+        }
+        return;
+      }
+      const { data } = await supabase
         .from("company_settings")
         .select("brand_color")
-        .eq("user_id", user.id)
+        .eq("id", companyId)
         .maybeSingle();
       if (cancelled) return;
-      if (!error && data?.brand_color) {
-        applyBrandPrimary(data.brand_color);
+      if ((data as any)?.brand_color) {
+        applyBrandPrimary((data as any).brand_color);
       }
     };
 
     const subscribe = () => {
+      if (!companyId) return;
+      // Reuse existing channel if it's already connected.
+      if (channel && (channel as any).state === "joined") return;
       if (channel) supabase.removeChannel(channel);
       channel = supabase
-        .channel(`brand_color_${user.id}_${Date.now()}`)
+        .channel(`brand_color_${companyId}`)
         .on(
           "postgres_changes",
           {
             event: "*",
             schema: "public",
             table: "company_settings",
-            filter: `user_id=eq.${user.id}`,
+            filter: `company_id=eq.${companyId}`,
           },
           (payload: any) => {
             const next = payload?.new?.brand_color ?? null;
@@ -128,10 +165,11 @@ const BrandColorLoader = () => {
         .subscribe();
     };
 
-    fetchColor();
-    subscribe();
+    (async () => {
+      await fetchColor();
+      subscribe();
+    })();
 
-    // Reconnect after the tab becomes visible again (device sleep, backgrounding).
     const onVisibility = () => {
       if (document.visibilityState === "visible") {
         fetchColor();
@@ -140,8 +178,6 @@ const BrandColorLoader = () => {
     };
     document.addEventListener("visibilitychange", onVisibility);
 
-    // Re-initialize after token refresh / session rotation so the channel
-    // doesn't go stale with an expired auth token.
     const { data: authSub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN") {
         subscribe();
@@ -162,11 +198,12 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
-        <ProjectsProvider>
-          <ErrorBoundary>
-            <Sonner />
-            <BrandColorLoader />
-            <BrowserRouter>
+        <BrandingProvider>
+          <ProjectsProvider>
+            <ErrorBoundary>
+              <Sonner />
+              <BrandColorLoader />
+              <BrowserRouter>
               <Routes>
                 <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
                 <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
@@ -178,9 +215,10 @@ const App = () => (
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </BrowserRouter>
-          </ErrorBoundary>
-        </ProjectsProvider>
+              </BrowserRouter>
+            </ErrorBoundary>
+          </ProjectsProvider>
+        </BrandingProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
