@@ -4,24 +4,27 @@ interface ProgressBarProps {
   label: string;
   value: number;
   variant?: "budget" | "completion";
+  showLabel?: boolean;
 }
 
-const ProgressBar = ({ label, value, variant = "budget" }: ProgressBarProps) => {
+const ProgressBar = ({ label, value, variant = "budget", showLabel = true }: ProgressBarProps) => {
   const clamped = Math.min(100, Math.max(0, value));
   const isOverBudget = variant === "budget" && value > 90;
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-muted-foreground">{label}</span>
-        <span className={cn(
-          "text-xs font-heading font-semibold",
-          isOverBudget ? "text-destructive" : "text-foreground"
-        )}>
-          {Math.round(clamped)}%
-        </span>
-      </div>
-      <div className="h-[3px] w-full rounded-full bg-secondary overflow-hidden">
+    <div className="space-y-1.5">
+      {showLabel && (
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-muted-foreground">{label}</span>
+          <span className={cn(
+            "text-xs font-heading font-semibold",
+            isOverBudget ? "text-destructive" : "text-foreground"
+          )}>
+            {Math.round(clamped)}%
+          </span>
+        </div>
+      )}
+      <div className="h-1 w-full rounded-full bg-secondary overflow-hidden">
         <div
           className={cn(
             "h-full rounded-full progress-bar-fill",
@@ -29,7 +32,7 @@ const ProgressBar = ({ label, value, variant = "budget" }: ProgressBarProps) => 
               ? isOverBudget
                 ? "bg-destructive"
                 : "bg-primary"
-              : "bg-success"
+              : "bg-primary"
           )}
           style={{ width: `${clamped}%` }}
         />

@@ -7,7 +7,7 @@ import { getProjectStats, getAggregatedStats } from "@/types/project";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, X, CheckCircle2, Clock, BarChart3, FolderPlus, MapPin } from "lucide-react";
+import { Plus, Search, X, CheckCircle2, Clock, FolderPlus } from "lucide-react";
 import AppDialog from "@/components/AppDialog";
 import ProjectCard from "@/components/ProjectCard";
 import ProjectTemplates from "@/components/ProjectTemplates";
@@ -158,16 +158,35 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
   };
 
   const statsCards = [
-    { label: "All Projects", value: projects.length, icon: BarChart3, view: "all" as const, active: view === "all" },
-    { label: "In Progress", value: openProjects.length, icon: Clock, view: "open" as const, active: view === "open" },
-    { label: "Completed", value: completedProjects.length, icon: CheckCircle2, view: "completed" as const, active: view === "completed" },
+    { label: "All Projects", value: projects.length, view: "all" as const, active: view === "all" },
+    { label: "In Progress", value: openProjects.length, view: "open" as const, active: view === "open" },
+    { label: "Completed", value: completedProjects.length, view: "completed" as const, active: view === "completed" },
   ];
 
   const newProjectButton = canEditProjects ? (
     <>
+      {/* Search input in topbar */}
+      <div className="relative w-full max-w-sm hidden sm:block">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search projects…"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9 h-9 rounded-lg bg-card border text-sm"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery("")}
+            aria-label="Clear search"
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
       <Button
         onClick={() => setCreateOpen(true)}
-        className="h-11 px-4 rounded-xl shadow-sm gap-1.5"
+        className="h-9 px-3 rounded-lg shadow-sm gap-1.5"
       >
         <Plus className="h-4 w-4" />
         New Project
@@ -215,18 +234,15 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
   return (
     <AppLayout
       title={`${brand.brandName || "Sightline"} Dashboard`}
-      subtitle="Every job, start to finish."
       actions={newProjectButton}
     >
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto space-y-6 px-2 py-1">
         {loading && (
           <>
-            {/* Search skeleton */}
-            <Skeleton className="h-11 max-w-2xl mx-auto w-full rounded-xl" />
             {/* Stat cards skeleton */}
             <div className="grid grid-cols-3 gap-3">
               {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-20 rounded-xl" />
+                <Skeleton key={i} className="h-24 rounded-xl" />
               ))}
             </div>
             {/* Project cards skeleton */}
@@ -239,27 +255,7 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
         )}
         {!loading && (
         <>
-        {/* Search */}
-        <div className="relative max-w-2xl mx-auto w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search projects, tasks, addresses…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-11 h-11 rounded-xl bg-card border shadow-sm text-sm"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-              aria-label="Clear search"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-
-        {/* Stats row — secondary, lighter visual weight */}
+        {/* Stats row */}
         {projects.length > 0 && (
           <div className="grid grid-cols-3 gap-3">
             {statsCards.map((stat) => (
@@ -267,39 +263,30 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
                 key={stat.view}
                 onClick={() => setView(stat.view)}
                 className={cn(
-                  "group rounded-xl border px-4 py-3 text-left transition-all duration-200",
-                  stat.active
-                    ? "border-primary/40 bg-primary/10 shadow-sm"
-                    : "border-border/60 bg-card/60 hover:bg-card hover:border-border hover:shadow-sm"
+                  "rounded-xl bg-card border border-[hsl(214_13%_90%)] p-5 text-left transition-all duration-150 hover:shadow-sm",
+                  stat.active && "border-l-4 border-l-primary"
                 )}
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <stat.icon className={cn(
-                    "h-3.5 w-3.5",
-                    stat.active ? "text-primary" : "text-muted-foreground"
-                  )} />
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">{stat.label}</p>
-                </div>
-                <p className="text-4xl font-heading font-bold text-foreground leading-none mt-2">{stat.value}</p>
+                <p className="text-xs text-muted-foreground tracking-wider uppercase">{stat.label}</p>
+                <p className="text-4xl font-heading font-semibold text-foreground leading-none mt-3">{stat.value}</p>
               </button>
             ))}
           </div>
         )}
 
-        {/* Templates — tertiary, muted */}
+        {/* Templates */}
         <div id="templates" className="scroll-mt-20">
           <ProjectTemplates onCreateFromTemplate={handleCreateFromTemplate} />
         </div>
 
-        {/* Projects — primary focus */}
+        {/* Projects */}
         <section className="space-y-4">
           <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div>
-              <h2 className="font-heading text-xl font-bold text-foreground">Projects</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {displayProjects.length} {displayProjects.length === 1 ? "project" : "projects"}
-                {view !== "all" && ` · ${view === "open" ? "in progress" : "completed"}`}
-              </p>
+            <div className="flex items-baseline gap-2">
+              <h2 className="text-lg font-semibold text-foreground">Projects</h2>
+              <span className="text-sm text-muted-foreground">
+                {displayProjects.length}
+              </span>
             </div>
             {projects.length > 0 && (
               <div className="inline-flex items-center gap-1 rounded-xl border bg-card p-1 shadow-sm">
