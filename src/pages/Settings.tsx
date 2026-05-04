@@ -23,6 +23,7 @@ interface CompanySettings {
   website: string;
   address: string;
   logo_url: string | null;
+  logo_path: string | null;
   brand_color: string | null;
   notify_tasks: boolean;
   notify_notes: boolean;
@@ -38,6 +39,7 @@ const EMPTY: CompanySettings = {
   website: "",
   address: "",
   logo_url: null,
+  logo_path: null,
   brand_color: null,
   notify_tasks: false,
   notify_notes: false,
@@ -90,6 +92,7 @@ const Settings = () => {
           website: row.website ?? "",
           address: row.address ?? "",
           logo_url: row.logo_url ?? null,
+          logo_path: (row as any).logo_path ?? null,
           brand_color: row.brand_color ?? null,
           notify_tasks: row.notify_tasks ?? false,
           notify_notes: row.notify_notes ?? false,
@@ -133,9 +136,10 @@ const Settings = () => {
       if (upErr) throw upErr;
       const { data: urlData, error: urlErr } = await supabase.storage
         .from("company-assets")
-        .createSignedUrl(path, 60 * 60 * 24 * 365);
+        .createSignedUrl(path, 315360000);
       if (urlErr) throw urlErr;
       update("logo_url", urlData.signedUrl);
+      update("logo_path", path);
       toast.success("Logo uploaded");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Upload failed";
@@ -170,6 +174,7 @@ const Settings = () => {
       website: data.website.trim(),
       address: data.address.trim(),
       logo_url: data.logo_url || null,
+      logo_path: data.logo_path || null,
       brand_color: data.brand_color || null,
       notify_tasks: data.notify_tasks,
       notify_notes: data.notify_notes,

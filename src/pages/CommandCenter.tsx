@@ -644,7 +644,10 @@ ${logsHtml}
 
     const w = window.open("", "_blank");
     if (!w) {
-      toast.error("Please allow pop-ups to export the Weekly Report.");
+      toast.error(
+        "Pop-ups are blocked. Please allow pop-ups for this site in your browser settings, then try exporting again.",
+        { duration: 8000 }
+      );
       return;
     }
     w.document.open();
@@ -994,7 +997,7 @@ ${logsHtml}
             />
             <Button
               onClick={handleSaveLog}
-              disabled={savingLog}
+              disabled={savingLog || !logProjectId || !logNotes.trim()}
               className="w-full md:w-auto rounded-xl"
             >
               {savingLog ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}

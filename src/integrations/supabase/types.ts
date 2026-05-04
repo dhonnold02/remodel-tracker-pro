@@ -251,6 +251,7 @@ export type Database = {
           email: string
           id: string
           license_number: string
+          logo_path: string | null
           logo_url: string | null
           notify_calendar_events: boolean
           notify_invoices: boolean
@@ -270,6 +271,7 @@ export type Database = {
           email?: string
           id?: string
           license_number?: string
+          logo_path?: string | null
           logo_url?: string | null
           notify_calendar_events?: boolean
           notify_invoices?: boolean
@@ -289,6 +291,7 @@ export type Database = {
           email?: string
           id?: string
           license_number?: string
+          logo_path?: string | null
           logo_url?: string | null
           notify_calendar_events?: boolean
           notify_invoices?: boolean

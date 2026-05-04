@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,7 +34,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Copy, Info, Loader2, Mail, Trash2, UserPlus, X, Check } from "lucide-react";
+import { Copy, Info, Loader2, Mail, Trash2, UserPlus, X, Check, MoreHorizontal } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -147,6 +147,8 @@ const Team = () => {
   const [inviteRole, setInviteRole] = useState<InvitableRole>("crew");
   const [inviting, setInviting] = useState(false);
   const [permissionsOpen, setPermissionsOpen] = useState(false);
+  const [fallbackInviteLink, setFallbackInviteLink] = useState<string | null>(null);
+  const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null);
 
   // Owner-only — kick others out.
   useEffect(() => {
@@ -231,8 +233,10 @@ const Team = () => {
     try {
       await navigator.clipboard.writeText(link);
       toast.success("Invite link copied to clipboard");
+      setFallbackInviteLink(null);
     } catch {
-      toast.success("Invite created — copy the link from the list below");
+      toast.success("Invite created — copy the link below manually");
+      setFallbackInviteLink(link);
     }
     setInviteEmail("");
     void loadAll();
@@ -244,7 +248,8 @@ const Team = () => {
       await navigator.clipboard.writeText(link);
       toast.success("Invite link copied");
     } catch {
-      toast.error("Couldn't copy — long-press to copy manually");
+      toast.error("Couldn't copy — copy the link manually below");
+      setFallbackInviteLink(link);
     }
   };
 
@@ -361,6 +366,32 @@ const Team = () => {
               </Button>
             </div>
           </div>
+          {fallbackInviteLink && (
+            <div className="space-y-1.5 border-t pt-3">
+              <Label className="text-xs">Copy invite link manually</Label>
+              <div className="flex gap-2">
+                <Input
+                  readOnly
+                  value={fallbackInviteLink}
+                  onFocus={(e) => e.currentTarget.select()}
+                  className="h-10 rounded-xl text-xs font-mono"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setFallbackInviteLink(null)}
+                  className="h-10 w-10 rounded-xl"
+                  aria-label="Dismiss"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Your browser blocked clipboard access. Tap the link to select it, then copy.
+              </p>
+            </div>
+          )}
         </section>
 
         {/* Members table */}
@@ -387,18 +418,36 @@ const Team = () => {
                 <TableBody>
                   {sortedMembers.map((m) => {
                     const isSelf = m.user_id === user?.id;
+                    const canRemove = !isSelf && m.role !== "owner";
+                    const isExpanded = expandedMemberId === m.id;
                     return (
-                      <TableRow key={m.id}>
+                      <Fragment key={m.id}>
+                      <TableRow>
                         <TableCell className="max-w-[160px] md:max-w-none">
-                          <div className="text-sm font-medium text-foreground truncate">
-                            {m.display_name || m.email || "Unknown"}
-                            {isSelf && (
-                              <span className="text-[10px] text-muted-foreground ml-2">(you)</span>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="text-sm font-medium text-foreground truncate">
+                                {m.display_name || m.email || "Unknown"}
+                                {isSelf && (
+                                  <span className="text-[10px] text-muted-foreground ml-2">(you)</span>
+                                )}
+                              </div>
+                              {m.email && m.display_name && (
+                                <div className="text-xs text-muted-foreground truncate">{m.email}</div>
+                              )}
+                            </div>
+                            {canRemove && (
+                              <button
+                                type="button"
+                                onClick={() => setExpandedMemberId(isExpanded ? null : m.id)}
+                                className="md:hidden p-1.5 -mr-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+                                aria-label={isExpanded ? "Hide actions" : "Show actions"}
+                                aria-expanded={isExpanded}
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                              </button>
                             )}
                           </div>
-                          {m.email && m.display_name && (
-                            <div className="text-xs text-muted-foreground truncate">{m.email}</div>
-                          )}
                         </TableCell>
                         <TableCell>
                           {m.role === "owner" || isSelf ? (
@@ -463,6 +512,44 @@ const Team = () => {
                           )}
                         </TableCell>
                       </TableRow>
+                      {canRemove && isExpanded && (
+                        <TableRow className="md:hidden">
+                          <TableCell colSpan={3} className="bg-muted/30">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  className="rounded-lg"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Remove member
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Remove member?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    {m.display_name || m.email || "This member"} will lose access
+                                    to all company projects immediately. They can rejoin if you
+                                    invite them again.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    onClick={() => removeMember(m.id)}
+                                  >
+                                    Remove
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                      </Fragment>
                     );
                   })}
                 </TableBody>
