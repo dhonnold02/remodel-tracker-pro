@@ -387,31 +387,30 @@ const ProjectDetailPage = () => {
   return (
     <AppLayout title={topbarTitle as any} actions={headerActions}>
       {/* Stat strip */}
-      <div className="-mx-4 lg:-mx-8 -mt-4 lg:-mt-8 mb-4 bg-card border-b border-[hsl(214_13%_90%)]">
-        <div className="grid grid-cols-2 md:grid-cols-4 px-4 lg:px-8 py-2 divide-y md:divide-y-0 md:divide-x divide-[hsl(214_13%_90%)]">
-          <div className="md:px-4 py-1">
+      <div className="-mx-4 lg:-mx-8 -mt-4 lg:-mt-8 mb-4 bg-white border-b border-[hsl(214_13%_90%)]">
+        <div className="grid grid-cols-2 md:grid-cols-4">
+          <div className="px-4 py-3 border-r border-[hsl(214_13%_90%)]">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Budget Used</p>
-            <p className={cn("text-sm font-heading font-semibold tabular-nums", budgetPercent > 100 ? "text-destructive" : "text-foreground")}>
-              {Math.round(budgetPercent)}% <span className="text-xs text-muted-foreground font-normal">· {fmtMoney(totalSpent)}</span>
+            <p className={cn("text-xl font-semibold tabular-nums mt-0.5", budgetPercent > 100 ? "text-destructive" : "text-foreground")}>
+              {Math.round(budgetPercent)}%
             </p>
           </div>
-          <div className="md:px-4 py-1">
+          <div className="px-4 py-3 border-r border-[hsl(214_13%_90%)]">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Tasks Done</p>
-            <p className="text-sm font-heading font-semibold text-foreground tabular-nums">
-              {Math.round(taskPercent)}% <span className="text-xs text-muted-foreground font-normal">· {completedTasks}/{project.tasks.length}</span>
+            <p className="text-xl font-semibold text-foreground tabular-nums mt-0.5">
+              {completedTasks}/{project.tasks.length}
             </p>
           </div>
-          <div className="md:px-4 py-1">
+          <div className="px-4 py-3 border-r border-[hsl(214_13%_90%)]">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Remaining</p>
-            <p className={cn("text-sm font-heading font-semibold tabular-nums", remainingBudget < 0 ? "text-destructive" : "text-foreground")}>
+            <p className={cn("text-xl font-semibold tabular-nums mt-0.5", remainingBudget < 0 ? "text-destructive" : "text-foreground")}>
               {fmtMoney(Math.abs(remainingBudget))}
-              {remainingBudget < 0 && <span className="text-xs text-muted-foreground font-normal"> · over</span>}
             </p>
           </div>
-          <div className="md:px-4 py-1">
+          <div className="px-4 py-3">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Outstanding</p>
-            <p className="text-sm font-heading font-semibold text-foreground tabular-nums">
-              {fmtMoney(invoicesOutstanding)} <span className="text-xs text-muted-foreground font-normal">· {project.invoices.length} inv</span>
+            <p className="text-xl font-semibold text-foreground tabular-nums mt-0.5">
+              {fmtMoney(invoicesOutstanding)}
             </p>
           </div>
         </div>
@@ -425,7 +424,7 @@ const ProjectDetailPage = () => {
 
       <div className="flex gap-0 -mx-4 lg:-mx-8 -mb-4 lg:-mb-8 min-h-[calc(100vh-9rem)]">
         {/* Project sidebar (desktop) */}
-        <aside className="hidden md:flex w-48 shrink-0 bg-card border-r border-[hsl(214_13%_90%)] flex-col">
+        <aside className="hidden md:flex w-48 shrink-0 bg-white border-r border-[hsl(214_13%_90%)] flex-col">
           <div className="px-4 py-4 border-b border-[hsl(214_13%_90%)] space-y-1.5">
             <h2 className="text-sm font-semibold text-foreground truncate">{project.name || "Untitled"}</h2>
             {project.address && (
@@ -453,7 +452,7 @@ const ProjectDetailPage = () => {
                           "w-full flex items-center gap-2.5 px-4 py-2 text-sm transition-colors",
                           active
                             ? "bg-[#eff6ff] text-primary font-medium border-r-2 border-primary"
-                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                            : "text-slate-700 hover:bg-accent hover:text-accent-foreground"
                         )}
                       >
                         <Icon className="h-4 w-4 shrink-0" />
