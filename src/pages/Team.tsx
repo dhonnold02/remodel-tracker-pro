@@ -512,11 +512,10 @@ const Team = () => {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    onClick={() => removeMember(m.id)}
-                                  >
-                                    Remove
+                                  <AlertDialogAction asChild>
+                                    <Button variant="destructive" onClick={() => removeMember(m.id)}>
+                                      Remove
+                                    </Button>
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -549,11 +548,10 @@ const Team = () => {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    onClick={() => removeMember(m.id)}
-                                  >
-                                    Remove
+                                  <AlertDialogAction asChild>
+                                    <Button variant="destructive" onClick={() => removeMember(m.id)}>
+                                      Remove
+                                    </Button>
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
