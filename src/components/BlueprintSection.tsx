@@ -63,9 +63,9 @@ const BlueprintSection = ({ blueprints, onChange }: BlueprintSectionProps) => {
           {blueprints.map((bp) => (
             <div key={bp.id} className="flex items-center gap-3 rounded-xl border bg-background p-3 hover:shadow-sm transition-shadow duration-150">
               {isImage(bp.name) ? (
-                <img src={bp.dataUrl} alt={bp.name} className="h-12 w-12 rounded-lg object-cover shrink-0 shadow-sm" />
+                <img src={bp.dataUrl} alt={bp.name} className="h-12 w-12 rounded-xl object-cover shrink-0 shadow-sm" />
               ) : (
-                <div className="h-12 w-12 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+                <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center shrink-0">
                   <FileText className="h-5 w-5 text-muted-foreground" />
                 </div>
               )}
