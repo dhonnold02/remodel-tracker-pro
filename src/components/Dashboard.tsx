@@ -158,9 +158,9 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
   };
 
   const statsCards = [
-    { label: "All Projects", value: projects.length, icon: BarChart3, view: "all" as const, active: view === "all" },
-    { label: "In Progress", value: openProjects.length, icon: Clock, view: "open" as const, active: view === "open" },
-    { label: "Completed", value: completedProjects.length, icon: CheckCircle2, view: "completed" as const, active: view === "completed" },
+    { label: "All Projects", value: projects.length, view: "all" as const, active: view === "all" },
+    { label: "In Progress", value: openProjects.length, view: "open" as const, active: view === "open" },
+    { label: "Completed", value: completedProjects.length, view: "completed" as const, active: view === "completed" },
   ];
 
   const newProjectButton = canEditProjects ? (
