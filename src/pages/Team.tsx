@@ -679,7 +679,7 @@ const Team = () => {
                           {ok ? (
                             <Check className="h-4 w-4 text-success inline-block" />
                           ) : (
-                            <X className="h-4 w-4 text-muted-foreground inline-block" />
+                            <X className="h-4 w-4 text-destructive inline-block" />
                           )}
                         </TableCell>
                       );
