@@ -191,12 +191,9 @@ const ProjectDetailPage = () => {
               </button>
             )}
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="font-heading text-3xl sm:text-4xl font-bold text-foreground tracking-tight leading-[1.1]">
-                {project.name || "Untitled Project"}
-              </h1>
               <span
                 className={cn(
-                  "inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full font-medium ring-1",
+                  "inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ring-1",
                   statusToneCls,
                 )}
               >
