@@ -761,7 +761,7 @@ ${logsHtml}
         {/* Today's Events */}
         <Section title="Today's Events" icon={CalendarClock}>
           {todayEvents.length === 0 ? (
-            <EmptyState icon={CalendarClock} title="No events scheduled today" />
+            <EmptyState icon={CalendarX} title="No events scheduled today" />
           ) : (
             <ul className="space-y-2">
               {todayEvents.map((e, i) => (
@@ -816,7 +816,7 @@ ${logsHtml}
         {/* Tasks Due Today */}
         <Section title="Tasks Due Today" icon={ListTodo}>
           {tasksDueToday.length === 0 ? (
-            <EmptyState icon={ListTodo} title="No tasks due today" />
+            <EmptyState icon={CheckSquare} title="No tasks due today" />
           ) : (
             <div className="space-y-4">
               {tasksDueToday.map((g, i) => (
@@ -842,7 +842,7 @@ ${logsHtml}
         {/* Upcoming Deadlines */}
         <Section title="Upcoming Deadlines" icon={Thermometer}>
           {deadlines.length === 0 ? (
-            <EmptyState icon={Thermometer} title="No deadlines in the next 14 days" />
+            <EmptyState icon={Flag} title="No upcoming deadlines" description="No deadlines in the next 14 days." />
           ) : (
             <ul className="space-y-2">
               {deadlines.map((d, i) => (
@@ -1012,7 +1012,7 @@ ${logsHtml}
               Past Entries
             </h3>
             {logs.length === 0 ? (
-              <EmptyState icon={ClipboardList} title="No logs yet" description="Save your first daily log above." />
+              <EmptyState icon={BookOpen} title="No log entries yet" description="Save your first daily log above." />
             ) : (
               <ul className="space-y-2">
                 {logs.map((l) => (
