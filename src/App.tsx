@@ -144,9 +144,8 @@ const BrandColorLoader = () => {
 
     const subscribe = () => {
       if (!companyId) return;
-      // Reuse existing channel if it's already connected.
-      if (channel && (channel as any).state === "joined") return;
-      if (channel) supabase.removeChannel(channel);
+      // Reuse the existing channel — never re-add `.on` callbacks after subscribe().
+      if (channel) return;
       channel = supabase
         .channel(`brand_color_${companyId}`)
         .on(
