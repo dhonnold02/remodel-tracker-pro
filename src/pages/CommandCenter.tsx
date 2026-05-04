@@ -564,26 +564,12 @@ const CommandCenter = () => {
       title="Command Center"
       subtitle="Daily operations dashboard"
       actions={
-        <Button
-          onClick={handleExportPDF}
-          disabled={exporting}
-          className="rounded-xl hidden md:inline-flex"
-        >
-          {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileDown className="h-4 w-4 mr-2" />}
-          Export Weekly Report
-        </Button>
+        renderExportLink("hidden md:inline-flex")
       }
     >
       <div className="max-w-6xl space-y-5 md:space-y-6 pb-8">
         {/* Mobile export button */}
-        <Button
-          onClick={handleExportPDF}
-          disabled={exporting}
-          className="md:hidden w-full rounded-xl"
-        >
-          {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileDown className="h-4 w-4 mr-2" />}
-          Export Weekly Report
-        </Button>
+        {renderExportLink("md:hidden w-full")}
 
         {/* Weather */}
         <Section title="Weather" icon={Cloud}>
