@@ -3,7 +3,8 @@ import { useState } from "react";
 import { ChangeOrder, ChangeOrderComment } from "@/types/project";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, ClipboardList, MessageSquare } from "lucide-react";
+import { Plus, Trash2, ClipboardList, MessageSquare, FileEdit } from "lucide-react";
+import EmptyState from "@/components/EmptyState";
 
 interface ChangeOrdersProps {
   orders: ChangeOrder[];
@@ -139,7 +140,7 @@ const ChangeOrdersSection = ({ orders, onChange }: ChangeOrdersProps) => {
       </div>
 
       {orders.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-4">No notes yet.</p>
+        <EmptyState icon={FileEdit} title="No change orders yet" />
       ) : (
         <div className="space-y-3">
           {orders.map((order) => {

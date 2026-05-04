@@ -101,6 +101,13 @@ const ResetPasswordPage = () => {
             <CheckCircle className="h-12 w-12 text-success mx-auto" />
             <p className="text-sm text-foreground font-medium">Password updated successfully!</p>
             <p className="text-xs text-muted-foreground">Redirecting to dashboard…</p>
+            <Button
+              type="button"
+              onClick={() => navigate("/auth")}
+              className="w-full h-11 rounded-xl shadow-sm mt-2"
+            >
+              Continue to login
+            </Button>
           </div>
         ) : checkingToken ? (
           <div className="text-center text-sm text-muted-foreground py-6">

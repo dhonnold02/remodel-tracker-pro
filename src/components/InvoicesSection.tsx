@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2, DollarSign, Receipt } from "lucide-react";
+import EmptyState from "@/components/EmptyState";
 
 export interface Invoice {
   id: string;
@@ -133,7 +134,7 @@ const InvoicesSection = ({ invoices, onChange, totalBudget, totalSpent, readOnly
 
       {/* Invoice list */}
       {invoices.length === 0 ? (
-        <p className="text-xs text-muted-foreground text-center py-4">No invoices yet.</p>
+        <EmptyState icon={Receipt} title="No invoices yet" />
       ) : (
         <div className="space-y-2 max-h-64 overflow-y-auto">
           {invoices.map(inv => (
