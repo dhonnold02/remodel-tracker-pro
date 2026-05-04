@@ -49,6 +49,7 @@ interface DashboardProps {
 const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdateProject }: DashboardProps) => {
   const navigate = useNavigate();
   const { canEditProjects } = useRole();
+  const { brand } = useBranding();
   const [newName, setNewName] = useState("");
   const [newAddress, setNewAddress] = useState("");
   const [creating, setCreating] = useState(false);
@@ -207,8 +208,8 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
 
   return (
     <AppLayout
-      title="Dashboard"
-      subtitle="Manage your renovation projects"
+      title={brand.brandName ? `${brand.brandName} Dashboard` : "Dashboard"}
+      subtitle={brand.brandName ? "Every job, start to finish." : "Manage your renovation projects"}
       actions={newProjectButton}
     >
       <div className="max-w-6xl mx-auto space-y-8">
