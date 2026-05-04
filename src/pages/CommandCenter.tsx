@@ -535,7 +535,7 @@ const CommandCenter = () => {
   }
   header {
     display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 2px solid #3b82f6;
+    border-bottom: 2px solid ${brand};
     padding-bottom: 18px; margin-bottom: 32px;
   }
   .eyebrow {
