@@ -169,11 +169,13 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
             key={tab.label}
             onClick={tab.onClick}
             className={cn(
-              "flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium transition-colors",
-              tab.active ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              "flex flex-col items-center justify-center gap-0.5 flex-1 mx-1 my-1.5 rounded-xl text-xs font-medium transition-colors",
+              tab.active
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <tab.icon className="h-5 w-5" />
+            <tab.icon className={cn("h-5 w-5", tab.active && "text-primary")} />
             <span>{tab.label}</span>
           </button>
         ))}
