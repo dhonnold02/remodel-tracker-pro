@@ -14,7 +14,8 @@ import ProjectCard from "@/components/ProjectCard";
 import ProjectTemplates from "@/components/ProjectTemplates";
 import { ProjectTemplate } from "@/hooks/useTemplates";
 import AppLayout from "@/components/AppLayout";
-import PageLoader from "@/components/PageLoader";
+import SkeletonCard from "@/components/SkeletonCard";
+import { Skeleton } from "@/components/ui/skeleton";
 import EmptyState from "@/components/EmptyState";
 import { cn } from "@/lib/utils";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
@@ -300,7 +301,18 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
           </div>
 
           {loading ? (
-            <PageLoader message="Loading projects…" />
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-20 rounded-xl" />
+                ))}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <SkeletonCard key={i} lines={4} />
+                ))}
+              </div>
+            </div>
           ) : displayProjects.length === 0 ? (
             searchQuery ? (
               <EmptyState

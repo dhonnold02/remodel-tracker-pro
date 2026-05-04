@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import AppLayout from "@/components/AppLayout";
-import PageLoader from "@/components/PageLoader";
+import SkeletonCard from "@/components/SkeletonCard";
 import EmptyState from "@/components/EmptyState";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
@@ -689,8 +689,11 @@ ${logsHtml}
 
   if (roleLoading) {
     return (
-      <AppLayout title="Command Center">
-        <PageLoader />
+      <AppLayout title="Command Center" subtitle="Daily operations dashboard">
+        <div className="max-w-6xl space-y-5 md:space-y-6 pb-8">
+          <SkeletonCard lines={5} />
+          <SkeletonCard lines={4} />
+        </div>
       </AppLayout>
     );
   }
@@ -1062,6 +1065,9 @@ ${logsHtml}
               rows={4}
               className="rounded-xl"
             />
+            {logNotes.length > 0 && !logNotes.trim() && (
+              <p className="text-xs text-muted-foreground">Notes cannot be empty</p>
+            )}
             <Button
               onClick={handleSaveLog}
               disabled={savingLog || !logProjectId || !logNotes.trim()}

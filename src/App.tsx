@@ -94,7 +94,9 @@ const BrandColorLoader = () => {
       return;
     }
     let cancelled = false;
-    (async () => {
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    const fetchColor = async () => {
       const { data, error } = await supabase
         .from("company_settings")
         .select("brand_color")
@@ -104,29 +106,53 @@ const BrandColorLoader = () => {
       if (!error && data?.brand_color) {
         applyBrandPrimary(data.brand_color);
       }
-    })();
+    };
 
-    // Live-update brand color when company_settings changes.
-    const channel = supabase
-      .channel(`brand_color_${user.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "company_settings",
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload: any) => {
-          const next = payload?.new?.brand_color ?? null;
-          applyBrandPrimary(next);
-        },
-      )
-      .subscribe();
+    const subscribe = () => {
+      if (channel) supabase.removeChannel(channel);
+      channel = supabase
+        .channel(`brand_color_${user.id}_${Date.now()}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "company_settings",
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload: any) => {
+            const next = payload?.new?.brand_color ?? null;
+            applyBrandPrimary(next);
+          },
+        )
+        .subscribe();
+    };
+
+    fetchColor();
+    subscribe();
+
+    // Reconnect after the tab becomes visible again (device sleep, backgrounding).
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") {
+        fetchColor();
+        subscribe();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    // Re-initialize after token refresh / session rotation so the channel
+    // doesn't go stale with an expired auth token.
+    const { data: authSub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN") {
+        subscribe();
+      }
+    });
 
     return () => {
       cancelled = true;
-      supabase.removeChannel(channel);
+      document.removeEventListener("visibilitychange", onVisibility);
+      authSub.subscription.unsubscribe();
+      if (channel) supabase.removeChannel(channel);
     };
   }, [user]);
   return null;
