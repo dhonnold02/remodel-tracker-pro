@@ -436,7 +436,7 @@ const Team = () => {
                                   <span className="text-[10px] text-muted-foreground ml-2">(you)</span>
                                 )}
                               </div>
-                              {m.email && m.display_name && (
+                              {m.email && m.email !== m.display_name && (
                                 <div className="text-xs text-muted-foreground truncate">{m.email}</div>
                               )}
                             </div>
