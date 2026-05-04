@@ -25,9 +25,7 @@ import { format, addDays, parseISO, startOfWeek, differenceInCalendarDays } from
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
-const GOOGLE_KEY =
-  (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined) ||
-  "AIzaSyA_sOPvjxhs8rsD8-6DLsvXdHjpen4Mj7Q";
+const GOOGLE_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
 
 const EVENT_COLORS: Record<string, string> = {
   inspection: "hsl(0 72% 55%)",
