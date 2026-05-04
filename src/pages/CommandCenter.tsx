@@ -1268,6 +1268,30 @@ ${weeklyNotesHtml}
             )}
           </div>
         </Section>
+
+        {/* Weekly Notes */}
+        <Section title="Weekly Notes" icon={NotebookPen}>
+          <div className="space-y-2">
+            <Textarea
+              value={weeklyNotes}
+              onChange={(e) => setWeeklyNotes(e.target.value)}
+              onBlur={handleSaveWeeklyNotes}
+              placeholder="Free-form notes for this week…"
+              rows={5}
+              className="rounded-xl"
+            />
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Week of {format(weekStart, "MMM d, yyyy")}</span>
+              {weeklyNotesSaving ? (
+                <span className="flex items-center gap-1">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Saving…
+                </span>
+              ) : weeklyNotesSavedAt ? (
+                <span className="text-primary">Saved</span>
+              ) : null}
+            </div>
+          </div>
+        </Section>
       </div>
     </AppLayout>
   );
