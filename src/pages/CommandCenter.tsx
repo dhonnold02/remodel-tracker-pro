@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import AppLayout from "@/components/AppLayout";
-import PageLoader from "@/components/PageLoader";
 import SkeletonCard from "@/components/SkeletonCard";
 import EmptyState from "@/components/EmptyState";
 import { useAuth } from "@/hooks/useAuth";

@@ -14,7 +14,6 @@ import ProjectCard from "@/components/ProjectCard";
 import ProjectTemplates from "@/components/ProjectTemplates";
 import { ProjectTemplate } from "@/hooks/useTemplates";
 import AppLayout from "@/components/AppLayout";
-import PageLoader from "@/components/PageLoader";
 import SkeletonCard from "@/components/SkeletonCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import EmptyState from "@/components/EmptyState";

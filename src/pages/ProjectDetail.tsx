@@ -5,7 +5,6 @@ import { useProjects } from "@/hooks/useProjects";
 import { useRole } from "@/hooks/useRole";
 import { getAggregatedStats } from "@/types/project";
 import AppLayout from "@/components/AppLayout";
-import PageLoader from "@/components/PageLoader";
 import SkeletonCard from "@/components/SkeletonCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProjectDetails from "@/components/ProjectDetails";
