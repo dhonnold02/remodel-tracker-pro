@@ -207,12 +207,14 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false, 
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              disabled={!canDelete}
-              className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50 disabled:pointer-events-none"
-            >
-              Delete Project
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                onClick={handleConfirmDelete}
+                disabled={!canDelete}
+              >
+                Delete Project
+              </Button>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
