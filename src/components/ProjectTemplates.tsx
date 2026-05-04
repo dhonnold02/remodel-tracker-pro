@@ -91,8 +91,8 @@ const ProjectTemplates = ({ onCreateFromTemplate, currentProject }: Props) => {
             <div key={t.id} className="flex items-center justify-between rounded-xl border bg-background p-4 hover:shadow-sm transition-shadow duration-150">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground truncate">{t.name}</p>
-                {t.description && <p className="text-[10px] text-muted-foreground truncate">{t.description}</p>}
-                <p className="text-[10px] text-muted-foreground mt-0.5">
+                {t.description && <p className="text-xs text-muted-foreground truncate">{t.description}</p>}
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {t.tasks.length} tasks · ${t.totalBudget.toLocaleString()} budget
                 </p>
               </div>

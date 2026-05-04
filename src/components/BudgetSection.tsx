@@ -76,17 +76,17 @@ const BudgetSection = ({ data, onChange }: BudgetSectionProps) => {
       {/* Summary */}
       <div className="grid grid-cols-3 gap-2">
         <div className="min-w-0 rounded-xl border bg-card p-3">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Spent</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Spent</p>
           <p className="font-heading text-sm font-bold text-foreground mt-1.5">{formatCompact(totalSpent)}</p>
         </div>
         <div className="min-w-0 rounded-xl border bg-card p-3">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Remaining</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Remaining</p>
           <p className={`font-heading text-sm font-bold mt-1.5 ${remaining < 0 ? 'text-destructive' : 'text-foreground'}`}>
             {formatCompact(remaining)}
           </p>
         </div>
         <div className="min-w-0 rounded-xl border bg-card p-3">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Used</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Used</p>
           <p className="font-heading text-sm font-bold text-foreground mt-1.5">{Math.round(budgetPercent)}%</p>
         </div>
       </div>

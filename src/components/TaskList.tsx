@@ -54,7 +54,7 @@ const PrioritySelector = ({ priority, onChange }: { priority: TaskPriority; onCh
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button className={cn("flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md font-medium shrink-0", cfg.color)}>
+        <button className={cn("flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md font-medium shrink-0", cfg.color)}>
           <span className={cn("h-2 w-2 rounded-full", cfg.dot)} />
           {cfg.label}
         </button>
@@ -86,7 +86,7 @@ const TagInput = ({ tags, onChange }: { tags: string[]; onChange: (tags: string[
   return (
     <div className="flex flex-wrap items-center gap-1">
       {tags.map((t) => (
-        <Badge key={t} variant="secondary" className="text-[10px] px-1.5 py-0 gap-1 h-5">
+        <Badge key={t} variant="secondary" className="text-xs px-1.5 py-0 gap-1 h-5">
           {t}
           <button onClick={() => onChange(tags.filter((x) => x !== t))} className="hover:text-destructive"><X className="h-2.5 w-2.5" /></button>
         </Badge>
@@ -97,7 +97,7 @@ const TagInput = ({ tags, onChange }: { tags: string[]; onChange: (tags: string[
         onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
         onBlur={addTag}
         placeholder="+ tag"
-        className="text-[10px] bg-transparent outline-none w-12 text-muted-foreground placeholder:text-muted-foreground/50"
+        className="text-xs bg-transparent outline-none w-12 text-muted-foreground placeholder:text-muted-foreground/50"
       />
     </div>
   );
@@ -111,7 +111,7 @@ const DueDatePicker = ({ dueDate, completed, onChange }: { dueDate?: string | nu
     <Popover>
       <PopoverTrigger asChild>
         <button className={cn(
-          "flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md transition-colors shrink-0",
+          "flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md transition-colors shrink-0",
           status === "overdue" ? "text-destructive bg-destructive/10 font-medium"
             : status === "today" ? "text-warning bg-warning/10 font-medium"
             : dueDate ? "text-muted-foreground hover:text-foreground"
@@ -329,7 +329,7 @@ const TaskList = ({ tasks, onChange }: TaskListProps) => {
         <h2 className="section-title">Tasks</h2>
         <div className="flex items-center gap-2">
           {overdueCount > 0 && (
-            <span className="flex items-center gap-1 text-[10px] text-destructive font-medium bg-destructive/10 px-1.5 py-0.5 rounded-md">
+            <span className="flex items-center gap-1 text-xs text-destructive font-medium bg-destructive/10 px-1.5 py-0.5 rounded-md">
               <AlertTriangle className="h-3 w-3" />{overdueCount} overdue
             </span>
           )}
@@ -431,7 +431,7 @@ const TaskList = ({ tasks, onChange }: TaskListProps) => {
                   {allSubtasks.length > 0 && !isParentOpen && (
                     <button
                       onClick={() => toggleParentOpen(task.id)}
-                      className="ml-6 text-[10px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 py-0.5"
+                      className="ml-6 text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 py-0.5"
                     >
                       <ListTree className="h-3 w-3" />
                       {subtaskProgress} subtasks

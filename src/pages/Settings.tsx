@@ -15,6 +15,7 @@ import { Loader2, Upload, X, Check, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { applyBrandPrimary, BRAND_PRESETS } from "@/lib/brandColor";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import SectionHeader from "@/components/SectionHeader";
 
 interface CompanySettings {
   company_name: string;
@@ -251,10 +252,10 @@ const Settings = () => {
       <div className="max-w-3xl space-y-6 md:space-y-8 pb-44 md:pb-0">
         {/* Company profile */}
         <section className="rounded-2xl border bg-card p-4 md:p-6 space-y-5">
-          <header>
-            <h2 className="font-heading text-base font-semibold text-foreground">Company Profile</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Used everywhere in the app, including PDF exports.</p>
-          </header>
+          <SectionHeader
+            title="Company Profile"
+            subtitle="Used everywhere in the app, including PDF exports."
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -323,7 +324,7 @@ const Settings = () => {
                   {uploading ? "Uploading…" : "Drop your logo here or click to upload"}
                 </span>
                 {!uploading && (
-                  <span className="text-[11px] text-muted-foreground/80">
+                  <span className="text-xs text-muted-foreground/80">
                     PNG, JPG, SVG up to 2MB
                   </span>
                 )}
@@ -334,12 +335,10 @@ const Settings = () => {
 
         {/* Brand colors */}
         <section className="rounded-2xl border bg-card p-4 md:p-6 space-y-5">
-          <header>
-            <h2 className="font-heading text-base font-semibold text-foreground">Brand Color</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Applied to buttons, highlights, and your exported PDFs.
-            </p>
-          </header>
+          <SectionHeader
+            title="Brand Color"
+            subtitle="Applied to buttons, highlights, and your exported PDFs."
+          />
 
           <div>
             <div className="flex flex-wrap items-center gap-3 md:gap-2">
@@ -396,12 +395,10 @@ const Settings = () => {
 
         {/* Notifications */}
         <section className="rounded-2xl border bg-card p-4 md:p-6 space-y-5">
-          <header>
-            <h2 className="font-heading text-base font-semibold text-foreground">Notifications</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Choose when Sightline emails you about activity and upcoming events.
-            </p>
-          </header>
+          <SectionHeader
+            title="Notifications"
+            subtitle="Choose when Sightline emails you about activity and upcoming events."
+          />
 
           <div className="space-y-3">
             {[

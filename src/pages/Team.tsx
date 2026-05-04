@@ -74,11 +74,11 @@ const ROLE_LABEL: Record<Role, string> = {
 };
 
 const ROLE_BADGE: Record<Role, string> = {
-  owner: "bg-primary/15 text-primary ring-1 ring-primary/30",
-  project_manager: "bg-accent/60 text-accent-foreground ring-1 ring-border",
-  field_supervisor: "bg-accent/40 text-accent-foreground ring-1 ring-border",
-  crew: "bg-secondary text-foreground ring-1 ring-border",
-  subcontractor: "bg-muted text-muted-foreground ring-1 ring-border",
+  owner: "bg-primary/15 text-primary",
+  project_manager: "bg-purple-500/15 text-purple-400",
+  field_supervisor: "bg-amber-500/15 text-amber-400",
+  crew: "bg-success/15 text-success",
+  subcontractor: "bg-muted text-muted-foreground",
 };
 
 const INVITABLE_ROLES: InvitableRole[] = [
@@ -393,7 +393,7 @@ const Team = () => {
                   <X className="h-4 w-4" />
                 </Button>
               </div>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Your browser blocked clipboard access. Tap the link to select it, then copy.
               </p>
             </div>
@@ -440,7 +440,7 @@ const Team = () => {
                               <div className="text-sm font-medium text-foreground truncate">
                                 {m.display_name || m.email || "Unknown"}
                                 {isSelf && (
-                                  <span className="text-[10px] text-muted-foreground ml-2">(you)</span>
+                                  <span className="text-xs text-muted-foreground ml-2">(you)</span>
                                 )}
                               </div>
                               {m.email && m.email !== m.display_name && (
@@ -464,7 +464,7 @@ const Team = () => {
                           {m.role === "owner" || isSelf ? (
                             <span
                               className={cn(
-                                "inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium",
+                                "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium",
                                 ROLE_BADGE[m.role]
                               )}
                             >
@@ -512,11 +512,10 @@ const Team = () => {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    onClick={() => removeMember(m.id)}
-                                  >
-                                    Remove
+                                  <AlertDialogAction asChild>
+                                    <Button variant="destructive" onClick={() => removeMember(m.id)}>
+                                      Remove
+                                    </Button>
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -549,11 +548,10 @@ const Team = () => {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    onClick={() => removeMember(m.id)}
-                                  >
-                                    Remove
+                                  <AlertDialogAction asChild>
+                                    <Button variant="destructive" onClick={() => removeMember(m.id)}>
+                                      Remove
+                                    </Button>
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -601,7 +599,7 @@ const Team = () => {
                       <TableCell>
                         <span
                           className={cn(
-                            "inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium",
+                            "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium",
                             ROLE_BADGE[inv.role as Role]
                           )}
                         >
@@ -657,7 +655,7 @@ const Team = () => {
                     <TableHead key={r} className="text-center">
                       <span
                         className={cn(
-                          "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap",
+                          "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap",
                           ROLE_BADGE[r]
                         )}
                       >
@@ -681,7 +679,7 @@ const Team = () => {
                           {ok ? (
                             <Check className="h-4 w-4 text-success inline-block" />
                           ) : (
-                            <X className="h-4 w-4 text-muted-foreground inline-block" />
+                            <X className="h-4 w-4 text-destructive inline-block" />
                           )}
                         </TableCell>
                       );

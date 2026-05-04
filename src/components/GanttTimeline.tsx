@@ -139,13 +139,13 @@ const GanttTimeline = ({ tasks, startDate, phases }: Props) => {
           <CalendarRange className="h-4 w-4 text-primary" />
           <h2 className="section-title">Phase Timeline</h2>
         </div>
-        <span className="text-[10px] text-muted-foreground">Click a bar to view tasks</span>
+        <span className="text-xs text-muted-foreground">Click a bar to view tasks</span>
       </div>
 
       <div className="flex overflow-hidden rounded-xl border bg-background">
         <div className="shrink-0 border-r bg-secondary/30" style={{ width: LABEL_WIDTH }}>
           <div className="h-7 border-b flex items-center px-3">
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Phase</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Phase</span>
           </div>
           {bars.map((bar) => {
             const color = phaseColor(bar.index);
@@ -208,14 +208,14 @@ const GanttTimeline = ({ tasks, startDate, phases }: Props) => {
                       fill="none" stroke={color.bar} strokeWidth={isActive ? 2 : 1} opacity={isActive ? 1 : 0.6} />
                     {w > 60 && (
                       <text x={x + 10} y={y + BAR_HEIGHT / 2} dominantBaseline="central"
-                        className="text-[11px] font-semibold pointer-events-none"
+                        className="text-xs font-semibold pointer-events-none"
                         fill="hsl(var(--foreground))">
                         {bar.phase}
                       </text>
                     )}
                     {w > 110 && (
                       <text x={x + w - 10} y={y + BAR_HEIGHT / 2} textAnchor="end" dominantBaseline="central"
-                        className="text-[10px] pointer-events-none"
+                        className="text-xs pointer-events-none"
                         fill="hsl(var(--foreground))" opacity={0.7}>
                         {bar.completed}/{bar.tasks.length} · {bar.days}d
                       </text>
@@ -229,7 +229,7 @@ const GanttTimeline = ({ tasks, startDate, phases }: Props) => {
       </div>
 
       {/* Phase legend */}
-      <div className="flex flex-wrap gap-x-4 gap-y-2 text-[11px]">
+      <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs">
         {bars.map((bar) => {
           const color = phaseColor(bar.index);
           return (
@@ -260,7 +260,7 @@ const GanttTimeline = ({ tasks, startDate, phases }: Props) => {
               />
               <div>
                 <h3 className="text-sm font-semibold text-foreground">{activeBar.phase} Phase</h3>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {activeBar.tasks.length} task{activeBar.tasks.length === 1 ? "" : "s"} ·{" "}
                   {activeBar.completed} done · {activeBar.days} day{activeBar.days === 1 ? "" : "s"}
                   {!activeBar.hasExplicitDates && " (estimated)"}
@@ -290,7 +290,7 @@ const GanttTimeline = ({ tasks, startDate, phases }: Props) => {
                     {t.title || "Untitled"}
                   </span>
                   {due && (
-                    <span className="ml-auto text-[10px] text-muted-foreground shrink-0">
+                    <span className="ml-auto text-xs text-muted-foreground shrink-0">
                       {format(due, "MMM d")}
                     </span>
                   )}
@@ -301,7 +301,7 @@ const GanttTimeline = ({ tasks, startDate, phases }: Props) => {
         </div>
       )}
 
-      <p className="text-[11px] text-muted-foreground opacity-50">
+      <p className="text-xs text-muted-foreground opacity-50">
         Phases sized by task dates · Falls back to estimates when dates are missing · Weekends excluded
       </p>
     </div>

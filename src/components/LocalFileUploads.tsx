@@ -108,7 +108,7 @@ const LocalFileUploads = ({ projectId, isEditor }: Props) => {
             <Upload className="h-4 w-4" />
             Upload files
           </Button>
-          <p className="text-[10px] text-muted-foreground text-center">
+          <p className="text-xs text-muted-foreground text-center">
             Stored locally on this device · Max 10MB per file
           </p>
         </>
@@ -130,7 +130,7 @@ const LocalFileUploads = ({ projectId, isEditor }: Props) => {
                 <div className="text-xs font-medium text-foreground truncate">
                   {f.name}
                 </div>
-                <div className="text-[10px] text-muted-foreground">
+                <div className="text-xs text-muted-foreground">
                   {formatSize(f.size)}
                 </div>
               </div>

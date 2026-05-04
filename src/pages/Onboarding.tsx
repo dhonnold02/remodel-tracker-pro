@@ -233,7 +233,7 @@ const Onboarding = () => {
                 <SightlineLogo size={32} />
                 <span className="font-heading text-sm font-semibold text-foreground">Sightline</span>
               </div>
-              <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              <span className="text-xs uppercase tracking-wider text-muted-foreground">
                 Step {step} of 3
               </span>
             </div>
@@ -373,7 +373,7 @@ const Onboarding = () => {
                         {uploading ? "Uploading…" : "Drop your logo or click to upload"}
                       </span>
                       {!uploading && (
-                        <span className="text-[11px] text-muted-foreground/80">PNG, JPG, SVG up to 2MB</span>
+                        <span className="text-xs text-muted-foreground/80">PNG, JPG, SVG up to 2MB</span>
                       )}
                     </button>
                   )}
@@ -404,7 +404,7 @@ const Onboarding = () => {
                         <div className="text-xs text-muted-foreground">Sample project</div>
                       </div>
                       <span
-                        className="px-2 py-0.5 rounded-full text-[10px] font-medium"
+                        className="px-2 py-0.5 rounded-full text-xs font-medium"
                         style={{
                           backgroundColor: brandColor || "hsl(var(--primary))",
                           color: readableForegroundColor(brandColor),

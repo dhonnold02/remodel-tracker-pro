@@ -264,12 +264,12 @@ const CalendarView = ({ tasks, phases, events = [], onEventsChange, canEdit = fa
           <CalendarDays className="h-4 w-4 text-primary" />
           <h2 className="section-title">Phase Calendar</h2>
         </div>
-        <span className="text-[10px] text-muted-foreground">Click a date to view or add events</span>
+        <span className="text-xs text-muted-foreground">Click a date to view or add events</span>
       </div>
 
       {/* Phase legend */}
       {activePhases.length > 0 && (
-        <div className="flex flex-wrap gap-x-4 gap-y-2 text-[11px]">
+        <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs">
           {activePhases.map(({ p, i }) => {
             const c = phaseColor(i);
             return (
@@ -310,7 +310,7 @@ const CalendarView = ({ tasks, phases, events = [], onEventsChange, canEdit = fa
                 style={{ borderColor: color + "55" }}
               >
                 <span
-                  className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                  className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-wide"
                   style={{ background: color + "22", color }}
                 >
                   <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
@@ -319,7 +319,7 @@ const CalendarView = ({ tasks, phases, events = [], onEventsChange, canEdit = fa
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-foreground truncate">{evt.title}</p>
                   {evt.time && (
-                    <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <Clock className="h-3 w-3" />
                       {evt.time}
                     </p>

@@ -148,7 +148,7 @@ const ProjectDetailPage = () => {
   const headerActions = (
     <div className="flex items-center gap-1">
       {!isEditor && (
-        <span className="text-[10px] text-muted-foreground bg-secondary px-2.5 py-1 rounded-full font-medium">
+        <span className="text-xs text-muted-foreground bg-secondary px-2.5 py-1 rounded-full font-medium">
           View only
         </span>
       )}
@@ -214,14 +214,14 @@ const ProjectDetailPage = () => {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 lg:divide-x lg:divide-border/60">
               {/* Budget Used */}
               <div className="lg:pl-0 lg:pr-6 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                <div className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground font-medium">
                   <TrendingUp className="h-3 w-3" /> Budget Used
                 </div>
                 <div className="flex items-baseline gap-2">
                   <span className={`text-2xl sm:text-3xl font-heading font-bold tabular-nums ${budgetPercent > 100 ? "text-destructive" : "text-foreground"}`}>
                     {Math.round(budgetPercent)}%
                   </span>
-                  <span className="text-[11px] text-muted-foreground tabular-nums">${totalSpent.toLocaleString()}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">${totalSpent.toLocaleString()}</span>
                 </div>
                 <div className="h-1 w-full rounded-full bg-secondary overflow-hidden">
                   <div
@@ -233,12 +233,12 @@ const ProjectDetailPage = () => {
 
               {/* Tasks Done */}
               <div className="lg:px-6 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                <div className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground font-medium">
                   <CheckCircle2 className="h-3 w-3" /> Tasks Done
                 </div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl sm:text-3xl font-heading font-bold text-foreground tabular-nums">{Math.round(taskPercent)}%</span>
-                  <span className="text-[11px] text-muted-foreground tabular-nums">{completedTasks}/{project.tasks.length}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">{completedTasks}/{project.tasks.length}</span>
                 </div>
                 <div className="h-1 w-full rounded-full bg-secondary overflow-hidden">
                   <div
@@ -250,7 +250,7 @@ const ProjectDetailPage = () => {
 
               {/* Remaining */}
               <div className="lg:px-6 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                <div className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground font-medium">
                   <Wallet className="h-3 w-3" /> Remaining
                 </div>
                 <div className="flex items-baseline gap-2">
@@ -258,14 +258,14 @@ const ProjectDetailPage = () => {
                     ${Math.abs(remainingBudget).toLocaleString()}
                   </span>
                 </div>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {remainingBudget < 0 ? "Over budget" : "of $" + project.totalBudget.toLocaleString()}
                 </p>
               </div>
 
               {/* Outstanding */}
               <div className="lg:pl-6 lg:pr-0 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                <div className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground font-medium">
                   <Receipt className="h-3 w-3" /> Outstanding
                 </div>
                 <div className="flex items-baseline gap-2">
@@ -273,7 +273,7 @@ const ProjectDetailPage = () => {
                     ${invoicesOutstanding.toLocaleString()}
                   </span>
                 </div>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {project.invoices.length} invoice{project.invoices.length !== 1 ? "s" : ""}
                 </p>
               </div>
@@ -328,7 +328,7 @@ const ProjectDetailPage = () => {
               {/* Mobile 2x2 stat grid */}
               <div className="grid grid-cols-2 gap-2 mb-4">
                 <div className="rounded-xl border bg-card/50 p-3 space-y-1">
-                  <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                  <div className="flex items-center gap-1 text-xs uppercase tracking-wider text-muted-foreground font-medium">
                     <TrendingUp className="h-3 w-3" /> Budget Used
                   </div>
                   <div className={`text-lg font-heading font-bold tabular-nums ${budgetPercent > 100 ? "text-destructive" : "text-foreground"}`}>
@@ -342,7 +342,7 @@ const ProjectDetailPage = () => {
                   </div>
                 </div>
                 <div className="rounded-xl border bg-card/50 p-3 space-y-1">
-                  <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                  <div className="flex items-center gap-1 text-xs uppercase tracking-wider text-muted-foreground font-medium">
                     <CheckCircle2 className="h-3 w-3" /> Tasks Done
                   </div>
                   <div className="text-lg font-heading font-bold text-foreground tabular-nums">
@@ -353,7 +353,7 @@ const ProjectDetailPage = () => {
                   </div>
                 </div>
                 <div className="rounded-xl border bg-card/50 p-3 space-y-1">
-                  <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                  <div className="flex items-center gap-1 text-xs uppercase tracking-wider text-muted-foreground font-medium">
                     <Wallet className="h-3 w-3" /> Remaining
                   </div>
                   <div className={`text-lg font-heading font-bold tabular-nums ${remainingBudget < 0 ? "text-destructive" : "text-foreground"}`}>
@@ -361,7 +361,7 @@ const ProjectDetailPage = () => {
                   </div>
                 </div>
                 <div className="rounded-xl border bg-card/50 p-3 space-y-1">
-                  <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                  <div className="flex items-center gap-1 text-xs uppercase tracking-wider text-muted-foreground font-medium">
                     <Receipt className="h-3 w-3" /> Outstanding
                   </div>
                   <div className="text-lg font-heading font-bold text-foreground tabular-nums">
@@ -442,7 +442,7 @@ const ProjectDetailPage = () => {
                         ) : subProjects.map((sub) => (
                           <button key={sub.id} onClick={() => navigate(`/project/${sub.id}`)} className="w-full text-left rounded-xl border bg-background p-3 space-y-1.5">
                             <div className="flex items-center justify-between gap-2"><span className="text-sm font-heading font-semibold text-foreground truncate">{sub.name || "Untitled"}</span><ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" /></div>
-                            <div className="flex items-center gap-3 text-[11px] text-muted-foreground"><span>{sub.tasks.filter((t) => t.completed).length}/{sub.tasks.length} tasks</span><span>${(sub.laborCosts + sub.materialCosts).toLocaleString()} spent</span></div>
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground"><span>{sub.tasks.filter((t) => t.completed).length}/{sub.tasks.length} tasks</span><span>${(sub.laborCosts + sub.materialCosts).toLocaleString()} spent</span></div>
                           </button>
                         ))}
                       </div>
@@ -549,7 +549,7 @@ const ProjectDetailPage = () => {
               <section className="space-y-3">
                 <header className="flex items-center gap-2 px-1">
                   <Wallet className="h-3.5 w-3.5 text-primary" />
-                  <h3 className="font-heading text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Financials</h3>
+                  <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-muted-foreground">Financials</h3>
                 </header>
                 <div className="space-y-4">
                   <BudgetSection data={project as any} onChange={isEditor ? update : () => {}} />
@@ -667,7 +667,7 @@ const ProjectDetailPage = () => {
                                 </span>
                                 <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                               </div>
-                              <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                              <div className="flex items-center gap-3 text-xs text-muted-foreground">
                                 <span>{sub.tasks.filter((t) => t.completed).length}/{sub.tasks.length} tasks</span>
                                 <span>${(sub.laborCosts + sub.materialCosts).toLocaleString()} spent</span>
                               </div>
@@ -812,7 +812,7 @@ const ProjectDetailPage = () => {
                         </span>
                       )}
                       {punchData.isLocked && (
-                        <span className="ml-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">
+                        <span className="ml-1 text-xs uppercase tracking-wider px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">
                           Signed Off
                         </span>
                       )}

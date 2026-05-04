@@ -22,6 +22,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -119,7 +120,7 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false, 
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {hasSubs && (
-            <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+            <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
               {subs.length} sub
             </span>
           )}
@@ -206,12 +207,14 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false, 
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              disabled={!canDelete}
-              className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50 disabled:pointer-events-none"
-            >
-              Delete Project
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                onClick={handleConfirmDelete}
+                disabled={!canDelete}
+              >
+                Delete Project
+              </Button>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
