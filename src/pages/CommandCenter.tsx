@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
 import { useProjects } from "@/hooks/useProjects";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -22,20 +22,8 @@ import {
 import { toast } from "sonner";
 import { format, addDays, parseISO, startOfWeek, differenceInCalendarDays } from "date-fns";
 import {
-  Document, Page, Text, View, StyleSheet, pdf, Image as PDFImage,
+  Document, Page, Text, View, StyleSheet, PDFDownloadLink, Image as PDFImage,
 } from "@react-pdf/renderer";
-const saveAs = (blob: Blob, filename: string) => {
-  const pdfBlob = blob.type === "application/pdf" ? blob : new Blob([blob], { type: "application/pdf" });
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    const result = reader.result;
-    if (typeof result !== "string") return;
-    // result is "data:application/pdf;base64,...."
-    const base64 = result.split(",")[1] || "";
-    window.open(`data:application/pdf;base64,${base64}`, "_blank");
-  };
-  reader.readAsDataURL(pdfBlob);
-};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -220,8 +208,6 @@ const CommandCenter = () => {
   const [logDate, setLogDate] = useState<string>(todayISO());
   const [logNotes, setLogNotes] = useState<string>("");
   const [savingLog, setSavingLog] = useState(false);
-
-  const [exporting, setExporting] = useState(false);
 
   // Today / week boundaries
   const today = useMemo(() => new Date(), []);
@@ -470,58 +456,57 @@ const CommandCenter = () => {
   // (projectName moved earlier in the component)
 
   // ── PDF Export ───────────────────────────────────────────────────────────
-  const handleExportPDF = async () => {
-    setExporting(true);
-    try {
-      const range = `${format(weekStart, "MMM d")}–${format(addDays(weekStart, 6), "MMM d, yyyy")}`;
-      const start = format(weekStart, "yyyy-MM-dd");
-      const end = format(addDays(weekStart, 6), "yyyy-MM-dd");
+  const weeklyReport = useMemo(() => {
+    const range = `${format(weekStart, "MMM d")}–${format(addDays(weekStart, 6), "MMM d, yyyy")}`;
+    const start = format(weekStart, "yyyy-MM-dd");
+    const end = format(addDays(weekStart, 6), "yyyy-MM-dd");
+    const safeName = (companyName || "Company").replace(/[^a-z0-9]+/gi, "-");
 
-      // Tasks due this week, grouped by project
-      const tasksByProject: { project: string; tasks: { title: string; date: string; done: boolean }[] }[] = [];
-      for (const p of projects) {
-        const due = p.tasks.filter(
-          (t) => t.dueDate && t.dueDate >= start && t.dueDate <= end,
-        );
-        if (due.length) {
-          tasksByProject.push({
-            project: p.name,
-            tasks: due
-              .map((t) => ({ title: t.title, date: t.dueDate as string, done: !!t.completed }))
-              .sort((a, b) => a.date.localeCompare(b.date)),
-          });
-        }
+    const tasksByProject: { project: string; tasks: { title: string; date: string; done: boolean }[] }[] = [];
+    for (const p of projects) {
+      const due = p.tasks.filter(
+        (t) => t.dueDate && t.dueDate >= start && t.dueDate <= end,
+      );
+      if (due.length) {
+        tasksByProject.push({
+          project: p.name,
+          tasks: due
+            .map((t) => ({ title: t.title, date: t.dueDate as string, done: !!t.completed }))
+            .sort((a, b) => a.date.localeCompare(b.date)),
+        });
       }
+    }
 
-      // Events grouped by day
-      const eventsByDay = weekDays.map((d) => {
-        const ds = format(d, "yyyy-MM-dd");
+    const eventsByDay = weekDays.map((d) => {
+      const ds = format(d, "yyyy-MM-dd");
+      return {
+        dateLabel: format(d, "EEEE, MMM d"),
+        rows: weekEvents
+          .filter((e) => e.date === ds)
+          .map((e) => ({
+            title: e.title,
+            project: e.project,
+            type: EVENT_LABELS[e.type] || "Other",
+            time: e.time,
+          })),
+      };
+    });
+
+    const dispatchByDay = weekDays.map((d) => ({
+      date: format(d, "EEEE, MMM d"),
+      rows: crew.map((c) => {
+        const row = dispatchMap.get(`${c.id}::${format(d, "yyyy-MM-dd")}`);
         return {
-          dateLabel: format(d, "EEEE, MMM d"),
-          rows: weekEvents
-            .filter((e) => e.date === ds)
-            .map((e) => ({
-              title: e.title,
-              project: e.project,
-              type: EVENT_LABELS[e.type] || "Other",
-              time: e.time,
-            })),
+          member: c.name,
+          project: row?.project_id ? projectName(row.project_id) : "—",
         };
-      });
+      }),
+    }));
+    const weekLogs = logs.filter((l) => l.log_date >= start && l.log_date <= end);
 
-      const dispatchByDay = weekDays.map((d) => ({
-        date: format(d, "EEEE, MMM d"),
-          rows: crew.map((c) => {
-          const row = dispatchMap.get(`${c.id}::${format(d, "yyyy-MM-dd")}`);
-          return {
-            member: c.name,
-            project: row?.project_id ? projectName(row.project_id) : "—",
-          };
-        }),
-      }));
-      const weekLogs = logs.filter((l) => l.log_date >= start && l.log_date <= end);
-
-      const blob = await pdf(
+    return {
+      filename: `${safeName}-WeeklyReport-${format(weekStart, "yyyy-MM-dd")}.pdf`,
+      document: (
         <WeeklyReportDocument
           companyName={companyName}
           companyLogo={companyLogo}
@@ -537,21 +522,32 @@ const CommandCenter = () => {
             notes: l.notes,
           }))}
         />
-      ).toBlob();
+      ),
+    };
+  }, [companyLogo, companyName, crew, dispatchMap, logs, projects, weather, weekDays, weekEvents, weekStart]);
 
-      const safeName = (companyName || "Company").replace(/[^a-z0-9]+/gi, "-");
-      const filename = `${safeName}-WeeklyReport-${format(weekStart, "yyyy-MM-dd")}.pdf`;
-      saveAs(blob, filename);
-      toast.success("Weekly Report saved", {
-        description: `${filename} was saved to your downloads folder.`,
-      });
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to generate report");
-    } finally {
-      setExporting(false);
-    }
-  };
+  const exportLinkClass = (className: string) =>
+    buttonVariants({ className: `rounded-xl ${className}` });
+
+  const renderExportLink = (className: string) => (
+    <PDFDownloadLink
+      document={weeklyReport.document}
+      fileName={weeklyReport.filename}
+      className={exportLinkClass(className)}
+      onClick={() => {
+        toast.success("Weekly Report saved", {
+          description: `${weeklyReport.filename} was saved to your downloads folder.`,
+        });
+      }}
+    >
+      {({ loading }) => (
+        <>
+          {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileDown className="h-4 w-4 mr-2" />}
+          Export Weekly Report
+        </>
+      )}
+    </PDFDownloadLink>
+  );
 
   if (roleLoading) {
     return (
@@ -568,26 +564,12 @@ const CommandCenter = () => {
       title="Command Center"
       subtitle="Daily operations dashboard"
       actions={
-        <Button
-          onClick={handleExportPDF}
-          disabled={exporting}
-          className="rounded-xl hidden md:inline-flex"
-        >
-          {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileDown className="h-4 w-4 mr-2" />}
-          Export Weekly Report
-        </Button>
+        renderExportLink("hidden md:inline-flex")
       }
     >
       <div className="max-w-6xl space-y-5 md:space-y-6 pb-8">
         {/* Mobile export button */}
-        <Button
-          onClick={handleExportPDF}
-          disabled={exporting}
-          className="md:hidden w-full rounded-xl"
-        >
-          {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileDown className="h-4 w-4 mr-2" />}
-          Export Weekly Report
-        </Button>
+        {renderExportLink("md:hidden w-full")}
 
         {/* Weather */}
         <Section title="Weather" icon={Cloud}>
