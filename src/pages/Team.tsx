@@ -464,7 +464,7 @@ const Team = () => {
                               value={m.role}
                               onValueChange={(v) => changeRole(m.id, v as Role)}
                             >
-                              <SelectTrigger className="h-8 w-[180px] rounded-lg text-xs">
+                              <SelectTrigger className="h-9 w-[180px] rounded-xl text-xs">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>

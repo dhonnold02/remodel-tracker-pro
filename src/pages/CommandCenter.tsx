@@ -893,14 +893,14 @@ ${logsHtml}
                 placeholder="Crew member name"
                 className="rounded-lg flex-1"
               />
-              <Button size="sm" onClick={handleAddCrew} disabled={savingCrew} className="rounded-lg">
+              <Button size="sm" onClick={handleAddCrew} disabled={savingCrew} className="rounded-xl">
                 {savingCrew ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Save"}
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => { setAddingCrew(false); setNewCrewName(""); }}
-                className="rounded-lg"
+                className="rounded-xl"
               >
                 Cancel
               </Button>
@@ -946,7 +946,7 @@ ${logsHtml}
                               value={row?.project_id || "__none__"}
                               onValueChange={(v) => setAssignment(m, d, v)}
                             >
-                              <SelectTrigger className="h-8 text-xs rounded-lg bg-secondary/40 border-border">
+                              <SelectTrigger className="h-9 text-xs rounded-xl bg-secondary/40 border-border">
                                 <SelectValue placeholder="—" />
                               </SelectTrigger>
                               <SelectContent>

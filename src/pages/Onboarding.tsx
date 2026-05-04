@@ -339,10 +339,10 @@ const Onboarding = () => {
                     <div className="flex items-center gap-3 rounded-xl border bg-secondary/40 p-3">
                       <img src={logoUrl} alt="Logo" className="h-12 w-12 rounded-lg bg-background object-contain border" />
                       <div className="flex-1 text-xs text-muted-foreground truncate">Logo uploaded</div>
-                      <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="rounded-lg">
+                      <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="rounded-xl">
                         {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Replace"}
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => setLogoUrl(null)} className="rounded-lg">
+                      <Button variant="ghost" size="sm" onClick={() => setLogoUrl(null)} className="rounded-xl">
                         <X className="h-3.5 w-3.5" />
                       </Button>
                     </div>
