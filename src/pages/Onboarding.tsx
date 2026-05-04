@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import SightlineLogo from "@/components/SightlineLogo";
+import PageLoader from "@/components/PageLoader";
 import { applyBrandPrimary, BRAND_PRESETS } from "@/lib/brandColor";
 import { Loader2, Upload, X, ArrowRight, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -195,7 +196,7 @@ const Onboarding = () => {
   if (authLoading || checking) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        <PageLoader />
       </div>
     );
   }
