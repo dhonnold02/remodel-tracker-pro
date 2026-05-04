@@ -879,6 +879,36 @@ ${weeklyNotesHtml}
           )}
         </Section>
 
+        {/* Recent Activity */}
+        <Section title="Recent Activity" icon={Activity}>
+          {activityByProject.length === 0 ? (
+            <EmptyState icon={Activity} title="No recent activity" description="Activity from your projects will appear here." />
+          ) : (
+            <div className="space-y-4">
+              {activityByProject.map((g) => (
+                <div key={g.project}>
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                    {g.project}
+                  </div>
+                  <ul className="space-y-1.5">
+                    {g.entries.map((a) => (
+                      <li key={a.id} className="flex items-start gap-3 rounded-xl bg-secondary/30 px-3 py-2">
+                        <span className="h-2 w-2 mt-1.5 rounded-full bg-primary shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm text-foreground">{a.description}</div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            {a.user_name || "Someone"} · {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+
         {/* Today's Events */}
         <Section title="Today's Events" icon={CalendarClock}>
           {todayEvents.length === 0 ? (
