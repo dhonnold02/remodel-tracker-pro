@@ -26,9 +26,15 @@ import {
 } from "@react-pdf/renderer";
 const saveAs = (blob: Blob, filename: string) => {
   const pdfBlob = blob.type === "application/pdf" ? blob : new Blob([blob], { type: "application/pdf" });
-  const url = URL.createObjectURL(pdfBlob);
-  window.open(url, "_blank");
-  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const result = reader.result;
+    if (typeof result !== "string") return;
+    // result is "data:application/pdf;base64,...."
+    const base64 = result.split(",")[1] || "";
+    window.open(`data:application/pdf;base64,${base64}`, "_blank");
+  };
+  reader.readAsDataURL(pdfBlob);
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
