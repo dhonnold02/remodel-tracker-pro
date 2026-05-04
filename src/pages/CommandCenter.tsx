@@ -206,6 +206,7 @@ const CommandCenter = () => {
   const [logDate, setLogDate] = useState<string>(todayISO());
   const [logNotes, setLogNotes] = useState<string>("");
   const [savingLog, setSavingLog] = useState(false);
+  const [visibleLogCount, setVisibleLogCount] = useState(10);
 
   // Today / week boundaries
   const today = useMemo(() => new Date(), []);
@@ -1014,8 +1015,9 @@ ${logsHtml}
             {logs.length === 0 ? (
               <EmptyState icon={BookOpen} title="No log entries yet" description="Save your first daily log above." />
             ) : (
+              <>
               <ul className="space-y-2">
-                {logs.map((l) => (
+                {logs.slice(0, visibleLogCount).map((l) => (
                   <li key={l.id} className="rounded-xl bg-secondary/30 px-3 py-2.5">
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <span className="text-xs font-medium text-foreground">
@@ -1029,6 +1031,19 @@ ${logsHtml}
                   </li>
                 ))}
               </ul>
+              {logs.length > visibleLogCount && (
+                <div className="mt-3 flex justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl"
+                    onClick={() => setVisibleLogCount((c) => c + 10)}
+                  >
+                    Load more
+                  </Button>
+                </div>
+              )}
+              </>
             )}
           </div>
         </Section>
