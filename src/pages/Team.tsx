@@ -147,6 +147,8 @@ const Team = () => {
   const [inviteRole, setInviteRole] = useState<InvitableRole>("crew");
   const [inviting, setInviting] = useState(false);
   const [permissionsOpen, setPermissionsOpen] = useState(false);
+  const [fallbackInviteLink, setFallbackInviteLink] = useState<string | null>(null);
+  const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null);
 
   // Owner-only — kick others out.
   useEffect(() => {
@@ -231,8 +233,10 @@ const Team = () => {
     try {
       await navigator.clipboard.writeText(link);
       toast.success("Invite link copied to clipboard");
+      setFallbackInviteLink(null);
     } catch {
-      toast.success("Invite created — copy the link from the list below");
+      toast.success("Invite created — copy the link below manually");
+      setFallbackInviteLink(link);
     }
     setInviteEmail("");
     void loadAll();
@@ -244,7 +248,8 @@ const Team = () => {
       await navigator.clipboard.writeText(link);
       toast.success("Invite link copied");
     } catch {
-      toast.error("Couldn't copy — long-press to copy manually");
+      toast.error("Couldn't copy — copy the link manually below");
+      setFallbackInviteLink(link);
     }
   };
 
