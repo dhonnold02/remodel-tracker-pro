@@ -124,7 +124,7 @@ const PhotoGallery = ({ photos, onChange }: PhotoGalleryProps) => {
           <Camera className="h-4 w-4 text-primary" />
           Photos
         </h2>
-        <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()} className="rounded-xl h-8 text-xs">
+        <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()} className="rounded-xl h-9 text-xs">
           <ImagePlus className="h-3.5 w-3.5 mr-1.5" />
           Add
         </Button>
@@ -249,7 +249,7 @@ const PhotoGallery = ({ photos, onChange }: PhotoGalleryProps) => {
               src={activePhoto.dataUrl}
               alt={activePhoto.name}
               draggable={false}
-              className="max-w-[92vw] max-h-[85vh] object-contain rounded-lg shadow-2xl transition-transform duration-150"
+              className="max-w-[92vw] max-h-[85vh] object-contain rounded-xl shadow-2xl transition-transform duration-150"
               style={{
                 transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
               }}

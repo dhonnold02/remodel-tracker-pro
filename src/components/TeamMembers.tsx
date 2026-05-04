@@ -41,7 +41,7 @@ const TeamMembers = ({ projectId, members, isEditor, ownerUserId }: TeamMembersP
     <div className="space-y-4">
       {isEditor && (
         <div className="flex justify-end">
-          <Button size="sm" variant="ghost" onClick={() => setShowInvite(!showInvite)} className="h-8 text-xs rounded-xl">
+          <Button size="sm" variant="ghost" onClick={() => setShowInvite(!showInvite)} className="h-9 text-xs rounded-xl">
             <Plus className="h-3.5 w-3.5 mr-1" /> Invite
           </Button>
         </div>
@@ -84,7 +84,7 @@ const TeamMembers = ({ projectId, members, isEditor, ownerUserId }: TeamMembersP
               {isEditor && member.userId !== user?.id && (
                 <div className="flex items-center gap-1">
                   <button onClick={() => updateMemberRole(projectId, member.id, member.role === "editor" ? "viewer" : "editor")} className="text-xs text-muted-foreground hover:text-foreground transition-colors px-1" title="Toggle role">↕</button>
-                  <button onClick={() => removeMember(projectId, member.id)} className="text-muted-foreground hover:text-destructive transition-colors p-0.5"><X className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => removeMember(projectId, member.id)} aria-label="Remove member" className="text-muted-foreground hover:text-destructive transition-colors p-2.5 rounded-xl min-h-[44px] min-w-[44px] inline-flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"><X className="h-3.5 w-3.5" /></button>
                 </div>
               )}
             </div>

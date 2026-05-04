@@ -49,7 +49,7 @@ const ProjectTemplates = ({ onCreateFromTemplate, currentProject }: Props) => {
         {currentProject && (
           <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 text-xs rounded-xl">
+              <Button variant="outline" size="sm" className="h-9 text-xs rounded-xl">
                 <FileDown className="h-3.5 w-3.5 mr-1" />
                 Save as Template
               </Button>
@@ -97,10 +97,10 @@ const ProjectTemplates = ({ onCreateFromTemplate, currentProject }: Props) => {
                 </p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <Button variant="ghost" size="sm" className="h-8 text-xs rounded-xl" onClick={() => onCreateFromTemplate(t)}>
+                <Button variant="ghost" size="sm" className="h-9 text-xs rounded-xl" onClick={() => onCreateFromTemplate(t)}>
                   <FileUp className="h-3.5 w-3.5 mr-1" /> Use
                 </Button>
-                <button onClick={() => deleteTemplate(t.id)} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors">
+                <button onClick={() => deleteTemplate(t.id)} aria-label="Delete template" className="p-2.5 rounded-xl text-muted-foreground hover:text-destructive transition-colors min-h-[44px] min-w-[44px] inline-flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </div>
