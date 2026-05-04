@@ -21,54 +21,67 @@ import TeamMembers from "@/components/TeamMembers";
 import ActivityLog from "@/components/ActivityLog";
 import ProjectTemplates from "@/components/ProjectTemplates";
 import LocalFileUploads from "@/components/LocalFileUploads";
-import ProgressBar from "@/components/ProgressBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/AppTabs";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
-  Plus, FolderOpen, ChevronRight, ChevronDown, Users, Activity,
-  Download, FileText, MapPin, Receipt, ClipboardList, ImageIcon, CalendarRange, Trash2,
+  ChevronLeft, Plus, FolderOpen, ChevronRight, Users, Trash2, Download, FileText,
+  LayoutDashboard, ListChecks, CalendarDays, Camera, FileImage, ClipboardList,
+  Wallet, Receipt, ClipboardCheck,
 } from "lucide-react";
-import { Wallet, ListChecks, CalendarDays, FileImage, DollarSign, Target, TrendingUp, CheckCircle2, Camera, FilePlus2, BookTemplate, Circle } from "lucide-react";
-import { ClipboardCheck } from "lucide-react";
 import { exportProjectCSV, exportProjectPDF } from "@/lib/exportProject";
 import { cn } from "@/lib/utils";
 import PunchList, { usePunchList } from "@/components/PunchList";
+
+type Section =
+  | "overview" | "tasks" | "timeline" | "photos" | "plansfiles" | "notes"
+  | "budget" | "invoices" | "punchout" | "team";
+
+const NAV_GROUPS: { label: string; items: { id: Section; label: string; icon: any; financial?: boolean }[] }[] = [
+  {
+    label: "Project",
+    items: [
+      { id: "overview", label: "Overview", icon: LayoutDashboard },
+      { id: "tasks", label: "Tasks", icon: ListChecks },
+      { id: "timeline", label: "Timeline", icon: CalendarDays },
+      { id: "photos", label: "Photos", icon: Camera },
+      { id: "plansfiles", label: "Plans & Files", icon: FileImage },
+      { id: "notes", label: "Notes", icon: ClipboardList },
+    ],
+  },
+  {
+    label: "Finance",
+    items: [
+      { id: "budget", label: "Budget", icon: Wallet, financial: true },
+      { id: "invoices", label: "Invoices", icon: Receipt, financial: true },
+    ],
+  },
+  {
+    label: "Closeout",
+    items: [
+      { id: "punchout", label: "Punch Out", icon: ClipboardCheck },
+      { id: "team", label: "Team", icon: Users },
+    ],
+  },
+];
 
 const ProjectDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getProject, updateProject, addProject, deleteProject, getSubProjects, userRole, loading } = useProjects();
   const {
-    canViewFinancials,
-    canEditProjects,
-    canEditTasks,
-    canCompleteTasks,
-    canEditTimeline,
-    canEditPunchOut,
-    canSignOffPunchOut,
-    canViewChangeOrders,
+    canViewFinancials, canEditProjects, canEditTasks, canCompleteTasks,
+    canEditTimeline, canEditPunchOut, canSignOffPunchOut,
   } = useRole();
   const project = getProject(id || "");
   const [newSubName, setNewSubName] = useState("");
   const [showSubForm, setShowSubForm] = useState(false);
   const [creatingSubProject, setCreatingSubProject] = useState(false);
-  const [subProjectsOpen, setSubProjectsOpen] = useState(false);
-  const [teamOpen, setTeamOpen] = useState(false);
-  const [activityOpen, setActivityOpen] = useState(false);
-  // Always call hook (id may be empty string before load — hook tolerates undefined)
+  const [activeSection, setActiveSection] = useState<Section>("overview");
   const { data: punchData, save: savePunch } = usePunchList(id);
 
   if (loading) {
@@ -79,11 +92,6 @@ const ProjectDetailPage = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-20 rounded-xl" />
-            ))}
-          </div>
-          <div className="flex gap-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-9 w-24 rounded-xl" />
             ))}
           </div>
           <SkeletonCard lines={6} />
@@ -107,11 +115,9 @@ const ProjectDetailPage = () => {
 
   const role = userRole(project.id);
   const projectEditor = role === "editor";
-  // Project-level editor AND company-level permission both required.
   const isEditor = projectEditor && canEditProjects;
   const isTaskEditor = projectEditor && canEditTasks;
   const canTickTasks = projectEditor && canCompleteTasks;
-  const isTimelineEditor = projectEditor && canEditTimeline;
   const isPunchEditor = projectEditor && canEditPunchOut;
   const isPunchSigner = projectEditor && canSignOffPunchOut;
   const update = (partial: Partial<typeof project>) => updateProject(project.id, partial);
@@ -145,7 +151,6 @@ const ProjectDetailPage = () => {
     .filter((i: any) => i.status !== "paid")
     .reduce((sum: number, i: any) => sum + (Number(i.amount) || 0), 0);
 
-  // Project status — derived from task progress
   const projectStatus: { label: string; tone: "active" | "complete" | "planning" } =
     project.tasks.length === 0
       ? { label: "Planning", tone: "planning" }
@@ -154,10 +159,10 @@ const ProjectDetailPage = () => {
         : { label: "Active", tone: "active" };
   const statusToneCls =
     projectStatus.tone === "complete"
-      ? "text-success bg-success/10 ring-success/20"
+      ? "text-success bg-success/10"
       : projectStatus.tone === "planning"
-        ? "text-muted-foreground bg-secondary ring-border"
-        : "text-primary bg-primary/10 ring-primary/20";
+        ? "text-muted-foreground bg-secondary"
+        : "text-primary bg-primary/10";
 
   const headerActions = (
     <div className="flex items-center gap-1">
@@ -168,14 +173,14 @@ const ProjectDetailPage = () => {
       )}
       <button
         onClick={() => exportProjectCSV(project, subProjects)}
-        className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+        className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
         title="Export CSV"
       >
         <Download className="h-4 w-4" />
       </button>
       <button
         onClick={() => exportProjectPDF(project, subProjects)}
-        className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+        className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
         title="Print Report"
       >
         <FileText className="h-4 w-4" />
@@ -183,673 +188,313 @@ const ProjectDetailPage = () => {
     </div>
   );
 
-  const backTo = parentProject ? `/project/${parentProject.id}` : "/";
+  // Topbar: back to Projects + project name as breadcrumb
+  const topbarTitle = (
+    <div className="flex items-center gap-1.5 min-w-0">
+      <button
+        onClick={() => navigate(parentProject ? `/project/${parentProject.id}` : "/")}
+        className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ChevronLeft className="h-3.5 w-3.5" />
+        {parentProject ? parentProject.name : "Projects"}
+      </button>
+      <ChevronRight className="h-3 w-3 text-muted-foreground/60 shrink-0" />
+      <span className="text-sm font-medium text-foreground truncate">{project.name || "Untitled Project"}</span>
+    </div>
+  );
+
+  // Visible nav items (filter out finance for non-financial roles)
+  const navGroups = NAV_GROUPS.map((g) => ({
+    ...g,
+    items: g.items.filter((i) => !i.financial || canViewFinancials),
+  })).filter((g) => g.items.length > 0);
+
+  // Section renderers
+  const renderSection = () => {
+    switch (activeSection) {
+      case "overview":
+        return (
+          <div className="space-y-6">
+            <ProjectDetails data={project as any} onChange={isEditor ? update : () => {}} />
+            {!project.parentId && (
+              <div className="rounded-xl bg-card border border-[hsl(214_13%_90%)] p-5 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <FolderOpen className="h-4 w-4 text-primary" /> Sub-Projects
+                    {hasSubs && <span className="text-xs text-muted-foreground font-normal">({subProjects.length})</span>}
+                  </h3>
+                  {isEditor && (
+                    <Button size="sm" variant="ghost" onClick={() => setShowSubForm(!showSubForm)} className="h-8 text-xs rounded-lg">
+                      <Plus className="h-3.5 w-3.5 mr-1" /> Add
+                    </Button>
+                  )}
+                </div>
+                {showSubForm && (
+                  <div className="flex gap-2">
+                    <Input placeholder="Sub-project name…" value={newSubName} onChange={(e) => setNewSubName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleAddSub()} className="flex-1 h-9 text-sm rounded-lg" autoFocus />
+                    <Button onClick={handleAddSub} size="sm" className="h-9 text-xs rounded-lg" disabled={creatingSubProject}>Create</Button>
+                  </div>
+                )}
+                <div className="space-y-2">
+                  {subProjects.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-2">No sub-projects yet.</p>
+                  ) : subProjects.map((sub) => (
+                    <div key={sub.id} className="group flex items-start gap-2 rounded-lg border bg-background p-3 hover:border-primary/30 transition-colors">
+                      <button onClick={() => navigate(`/project/${sub.id}`)} className="flex-1 min-w-0 text-left">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-medium text-foreground truncate">{sub.name || "Untitled"}</span>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+                          <span>{sub.tasks.filter((t) => t.completed).length}/{sub.tasks.length} tasks</span>
+                          <span>${(sub.laborCosts + sub.materialCosts).toLocaleString()} spent</span>
+                        </div>
+                      </button>
+                      {isEditor && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 focus:opacity-100" aria-label={`Delete ${sub.name}`}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete sub-project?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently delete <span className="font-semibold text-foreground">{sub.name || "Untitled"}</span> and all of its content.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => deleteProject(sub.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      case "tasks":
+        return (
+          <TaskBoard
+            tasks={project.tasks}
+            phases={(project as any).taskPhases || []}
+            onChangeTasks={(isTaskEditor || canTickTasks) ? (tasks) => update({ tasks }) : () => {}}
+            onChangePhases={isTaskEditor ? (taskPhases) => update({ taskPhases } as any) : () => {}}
+            isEditor={isTaskEditor}
+            canComplete={canTickTasks}
+            projectName={project.name}
+            projectAddress={project.address}
+          />
+        );
+      case "timeline":
+        return (
+          <div className="space-y-6">
+            <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} phases={project.taskPhases} />
+            <GanttTimeline tasks={project.tasks} startDate={project.startDate} phases={project.taskPhases} />
+            <CalendarView
+              tasks={project.tasks}
+              projectName={project.name}
+              projectId={project.id}
+              phases={project.taskPhases}
+              events={project.events || []}
+              onEventsChange={isEditor ? (events) => update({ events } as any) : undefined}
+              canEdit={isEditor}
+            />
+          </div>
+        );
+      case "photos":
+        return <PhotoGallery photos={project.photos} onChange={isEditor ? (photos) => update({ photos }) : () => {}} />;
+      case "plansfiles":
+        return (
+          <div className="space-y-6">
+            <BlueprintSection blueprints={project.blueprints} onChange={isEditor ? (blueprints) => update({ blueprints }) : () => {}} />
+            <LocalFileUploads projectId={project.id} isEditor={isEditor} />
+            {isEditor ? (
+              <ProjectTemplates
+                currentProject={project}
+                onCreateFromTemplate={async (template) => {
+                  const subId = await addProject(template.name, project.id);
+                  await updateProject(subId, {
+                    totalBudget: template.totalBudget,
+                    laborCosts: template.laborCosts,
+                    materialCosts: template.materialCosts,
+                    tasks: template.tasks.map((t) => ({ ...t, id: uuidv4(), completed: false })) as any,
+                  });
+                  navigate(`/project/${subId}`);
+                }}
+              />
+            ) : (
+              <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">Templates and reusable files are available to editors.</div>
+            )}
+          </div>
+        );
+      case "notes":
+        return (
+          <div className="space-y-6">
+            <ChangeOrdersSection orders={project.changeOrders} onChange={isEditor ? (changeOrders) => update({ changeOrders }) : () => {}} />
+            <div className="rounded-xl bg-card border border-[hsl(214_13%_90%)] p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-4">Activity Log</h3>
+              <ActivityLog projectId={project.id} />
+            </div>
+          </div>
+        );
+      case "budget":
+        return canViewFinancials ? <BudgetSection data={project as any} onChange={isEditor ? update : () => {}} /> : null;
+      case "invoices":
+        return canViewFinancials ? (
+          <InvoicesSection
+            invoices={project.invoices}
+            onChange={isEditor ? (invoices) => update({ invoices }) : () => {}}
+            totalBudget={project.totalBudget}
+            totalSpent={project.laborCosts + project.materialCosts}
+            readOnly={!isEditor}
+          />
+        ) : null;
+      case "punchout":
+        return (
+          <PunchList
+            projectId={project.id}
+            data={punchData}
+            onChange={savePunch}
+            isEditor={isPunchEditor}
+            canSignOff={isPunchSigner}
+            members={project.members}
+            projectName={project.name}
+            projectAddress={project.address}
+          />
+        );
+      case "team":
+        return (
+          <div className="rounded-xl bg-card border border-[hsl(214_13%_90%)] p-5">
+            <TeamMembers projectId={project.id} members={project.members} isEditor={isEditor} ownerUserId={project.createdBy} />
+          </div>
+        );
+    }
+  };
+
+  const fmtMoney = (n: number) => {
+    const abs = Math.abs(n);
+    if (abs >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+    if (abs >= 1_000) return `$${Math.round(n / 1_000)}K`;
+    return `$${n.toLocaleString()}`;
+  };
 
   return (
-    <AppLayout
-      title={project.name || "Untitled Project"}
-      subtitle={project.address ? project.address.split("\n")[0] : undefined}
-      backTo={backTo}
-      actions={headerActions}
-    >
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Status Strip — Command Center Header */}
-        <section className="space-y-5">
-          <div className="space-y-2">
-            {parentProject && (
-              <button
-                onClick={() => navigate(`/project/${parentProject.id}`)}
-                className="text-xs text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
-              >
-                {parentProject.name} <ChevronRight className="h-3 w-3" />
-              </button>
-            )}
-            <div className="flex items-center gap-3 flex-wrap">
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ring-1",
-                  statusToneCls,
-                )}
-              >
-                <Circle className="h-2 w-2 fill-current" />
-                {projectStatus.label}
-              </span>
-            </div>
+    <AppLayout title={topbarTitle as any} actions={headerActions}>
+      {/* Stat strip */}
+      <div className="-mx-4 lg:-mx-8 -mt-4 lg:-mt-8 mb-4 bg-card border-b border-[hsl(214_13%_90%)]">
+        <div className="grid grid-cols-2 md:grid-cols-4 px-4 lg:px-8 py-2 divide-y md:divide-y-0 md:divide-x divide-[hsl(214_13%_90%)]">
+          <div className="md:px-4 py-1">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Budget Used</p>
+            <p className={cn("text-sm font-heading font-semibold tabular-nums", budgetPercent > 100 ? "text-destructive" : "text-foreground")}>
+              {Math.round(budgetPercent)}% <span className="text-xs text-muted-foreground font-normal">· {fmtMoney(totalSpent)}</span>
+            </p>
+          </div>
+          <div className="md:px-4 py-1">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Tasks Done</p>
+            <p className="text-sm font-heading font-semibold text-foreground tabular-nums">
+              {Math.round(taskPercent)}% <span className="text-xs text-muted-foreground font-normal">· {completedTasks}/{project.tasks.length}</span>
+            </p>
+          </div>
+          <div className="md:px-4 py-1">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Remaining</p>
+            <p className={cn("text-sm font-heading font-semibold tabular-nums", remainingBudget < 0 ? "text-destructive" : "text-foreground")}>
+              {fmtMoney(Math.abs(remainingBudget))}
+              {remainingBudget < 0 && <span className="text-xs text-muted-foreground font-normal"> · over</span>}
+            </p>
+          </div>
+          <div className="md:px-4 py-1">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Outstanding</p>
+            <p className="text-sm font-heading font-semibold text-foreground tabular-nums">
+              {fmtMoney(invoicesOutstanding)} <span className="text-xs text-muted-foreground font-normal">· {project.invoices.length} inv</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {hasSubs && aggregated && (
+        <div className="mb-4 rounded-xl bg-primary/5 border border-primary/20 p-3 text-xs text-muted-foreground">
+          <span className="font-medium text-foreground">Aggregated:</span> {fmtMoney(aggregated.totalSpent)} / {fmtMoney(aggregated.totalBudget)} · {aggregated.completedTasks}/{aggregated.totalTasks} tasks across {subProjects.length} sub-project{subProjects.length !== 1 ? "s" : ""}
+        </div>
+      )}
+
+      <div className="flex gap-0 -mx-4 lg:-mx-8 -mb-4 lg:-mb-8 min-h-[calc(100vh-9rem)]">
+        {/* Project sidebar (desktop) */}
+        <aside className="hidden md:flex w-48 shrink-0 bg-card border-r border-[hsl(214_13%_90%)] flex-col">
+          <div className="px-4 py-4 border-b border-[hsl(214_13%_90%)] space-y-1.5">
+            <h2 className="text-sm font-semibold text-foreground truncate">{project.name || "Untitled"}</h2>
             {project.address && (
-              <p className="text-sm text-muted-foreground flex items-start gap-1.5 max-w-2xl">
-                <MapPin className="h-3.5 w-3.5 shrink-0 mt-[3px]" />
-                <span className="leading-relaxed">{project.address}</span>
-              </p>
+              <p className="text-xs text-muted-foreground line-clamp-2">{project.address.split("\n")[0]}</p>
             )}
+            <span className={cn("inline-block text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full", statusToneCls)}>
+              {projectStatus.label}
+            </span>
           </div>
-
-          {/* Compact stat pills with inline progress (hidden on mobile) */}
-          <div className="hidden md:block rounded-2xl border bg-card/50 backdrop-blur-sm px-5 py-4">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 lg:divide-x lg:divide-border/60">
-              {/* Budget Used */}
-              <div className="lg:pl-0 lg:pr-6 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                  <TrendingUp className="h-3 w-3" /> Budget Used
+          <nav className="flex-1 overflow-y-auto py-3 space-y-4">
+            {navGroups.map((group) => (
+              <div key={group.label}>
+                <div className="px-4 mb-1.5 text-[10px] tracking-widest text-muted-foreground uppercase font-medium">
+                  {group.label}
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <span className={`text-2xl sm:text-3xl font-heading font-bold tabular-nums ${budgetPercent > 100 ? "text-destructive" : "text-foreground"}`}>
-                    {Math.round(budgetPercent)}%
-                  </span>
-                  <span className="text-xs text-muted-foreground tabular-nums">${totalSpent.toLocaleString()}</span>
-                </div>
-                <div className="h-1 w-full rounded-full bg-secondary overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${budgetPercent > 100 ? "bg-destructive" : "bg-primary"}`}
-                    style={{ width: `${Math.min(100, budgetPercent)}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Tasks Done */}
-              <div className="lg:px-6 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                  <CheckCircle2 className="h-3 w-3" /> Tasks Done
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl sm:text-3xl font-heading font-bold text-foreground tabular-nums">{Math.round(taskPercent)}%</span>
-                  <span className="text-xs text-muted-foreground tabular-nums">{completedTasks}/{project.tasks.length}</span>
-                </div>
-                <div className="h-1 w-full rounded-full bg-secondary overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-success transition-all duration-500"
-                    style={{ width: `${Math.min(100, taskPercent)}%` }}
-                  />
+                <div className="space-y-0.5">
+                  {group.items.map((item) => {
+                    const active = activeSection === item.id;
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveSection(item.id)}
+                        className={cn(
+                          "w-full flex items-center gap-2.5 px-4 py-2 text-sm transition-colors",
+                          active
+                            ? "bg-[#eff6ff] text-primary font-medium border-r-2 border-primary"
+                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        )}
+                      >
+                        <Icon className="h-4 w-4 shrink-0" />
+                        <span className="truncate">{item.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
+            ))}
+          </nav>
+        </aside>
 
-              {/* Remaining */}
-              <div className="lg:px-6 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                  <Wallet className="h-3 w-3" /> Remaining
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className={`text-2xl sm:text-3xl font-heading font-bold tabular-nums ${remainingBudget < 0 ? "text-destructive" : "text-foreground"}`}>
-                    ${Math.abs(remainingBudget).toLocaleString()}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {remainingBudget < 0 ? "Over budget" : "of $" + project.totalBudget.toLocaleString()}
-                </p>
-              </div>
-
-              {/* Outstanding */}
-              <div className="lg:pl-6 lg:pr-0 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                  <Receipt className="h-3 w-3" /> Outstanding
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl sm:text-3xl font-heading font-bold text-foreground tabular-nums">
-                    ${invoicesOutstanding.toLocaleString()}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {project.invoices.length} invoice{project.invoices.length !== 1 ? "s" : ""}
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Aggregated overview for sub-projects */}
-        {hasSubs && aggregated && (
-          <div className="premium-card p-6 space-y-4">
-            <h3 className="section-title flex items-center gap-2">
-              <FolderOpen className="h-4 w-4 text-primary" />
-              Aggregated ({subProjects.length} sub-project{subProjects.length !== 1 ? "s" : ""})
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="stat-card bg-secondary rounded-xl">
-                <p className="text-xs text-muted-foreground">Spent / Budget</p>
-                <p className="text-sm font-heading font-bold text-foreground">
-                  ${aggregated.totalSpent.toLocaleString()}
-                  <span className="text-muted-foreground font-normal text-xs"> / ${aggregated.totalBudget.toLocaleString()}</span>
-                </p>
-              </div>
-              <div className="stat-card bg-secondary rounded-xl">
-                <p className="text-xs text-muted-foreground">Tasks</p>
-                <p className="text-sm font-heading font-bold text-foreground">
-                  {aggregated.completedTasks}/{aggregated.totalTasks}
-                </p>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <ProgressBar label="Budget" value={aggregated.budgetPercent} variant="budget" />
-              <ProgressBar label="Tasks" value={aggregated.taskPercent} variant="completion" />
-            </div>
-          </div>
-        )}
-
-        {/* MOBILE-ONLY tabbed workspace */}
-        <div className="md:hidden" style={{ touchAction: "pan-y" }}>
-          <Tabs defaultValue="overview" className="space-y-4">
-            <div className="overflow-x-auto scrollbar-hide -mx-4 px-4" style={{ touchAction: "pan-x" }}>
-              <TabsList className="bg-muted/60 h-10 p-1 rounded-xl flex flex-nowrap w-max">
-                <TabsTrigger value="overview" className="text-xs rounded-xl gap-1.5"><ListChecks className="h-3.5 w-3.5" />Overview</TabsTrigger>
-                <TabsTrigger value="timeline" className="text-xs rounded-xl gap-1.5"><CalendarDays className="h-3.5 w-3.5" />Timeline</TabsTrigger>
-                <TabsTrigger value="photos" className="text-xs rounded-xl gap-1.5"><Camera className="h-3.5 w-3.5" />Photos</TabsTrigger>
-                <TabsTrigger value="plansfiles" className="text-xs rounded-xl gap-1.5 whitespace-nowrap"><FileImage className="h-3.5 w-3.5" />Plans & Files</TabsTrigger>
-                <TabsTrigger value="notes" className="text-xs rounded-xl gap-1.5"><ClipboardList className="h-3.5 w-3.5" />Notes</TabsTrigger>
-                <TabsTrigger value="closeout" className="text-xs rounded-xl gap-1.5 whitespace-nowrap"><ClipboardCheck className="h-3.5 w-3.5" />Punch Out</TabsTrigger>
-              </TabsList>
-            </div>
-
-            <TabsContent value="overview" className="mt-0 focus-visible:outline-none">
-              {/* Mobile 2x2 stat grid */}
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                <div className="rounded-xl border bg-card/50 p-3 space-y-1">
-                  <div className="flex items-center gap-1 text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                    <TrendingUp className="h-3 w-3" /> Budget Used
-                  </div>
-                  <div className={`text-lg font-heading font-bold tabular-nums ${budgetPercent > 100 ? "text-destructive" : "text-foreground"}`}>
-                    {Math.round(budgetPercent)}%
-                  </div>
-                  <div className="h-1 w-full rounded-full bg-secondary overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${budgetPercent > 100 ? "bg-destructive" : "bg-primary"}`}
-                      style={{ width: `${Math.min(100, budgetPercent)}%` }}
-                    />
-                  </div>
-                </div>
-                <div className="rounded-xl border bg-card/50 p-3 space-y-1">
-                  <div className="flex items-center gap-1 text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                    <CheckCircle2 className="h-3 w-3" /> Tasks Done
-                  </div>
-                  <div className="text-lg font-heading font-bold text-foreground tabular-nums">
-                    {Math.round(taskPercent)}%
-                  </div>
-                  <div className="h-1 w-full rounded-full bg-secondary overflow-hidden">
-                    <div className="h-full rounded-full bg-success" style={{ width: `${Math.min(100, taskPercent)}%` }} />
-                  </div>
-                </div>
-                <div className="rounded-xl border bg-card/50 p-3 space-y-1">
-                  <div className="flex items-center gap-1 text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                    <Wallet className="h-3 w-3" /> Remaining
-                  </div>
-                  <div className={`text-lg font-heading font-bold tabular-nums ${remainingBudget < 0 ? "text-destructive" : "text-foreground"}`}>
-                    ${Math.abs(remainingBudget).toLocaleString()}
-                  </div>
-                </div>
-                <div className="rounded-xl border bg-card/50 p-3 space-y-1">
-                  <div className="flex items-center gap-1 text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                    <Receipt className="h-3 w-3" /> Outstanding
-                  </div>
-                  <div className="text-lg font-heading font-bold text-foreground tabular-nums">
-                    ${invoicesOutstanding.toLocaleString()}
-                  </div>
-                </div>
-              </div>
-
-              <Tabs defaultValue="tasks" className="space-y-4">
-                <div className="overflow-x-auto scrollbar-hide -mx-4 px-4" style={{ touchAction: "pan-x" }}>
-                  <TabsList className="bg-muted/40 h-9 p-1 rounded-xl flex flex-nowrap w-max">
-                    <TabsTrigger value="tasks" className="text-xs rounded-xl">Tasks</TabsTrigger>
-                    {canViewFinancials && <TabsTrigger value="financials" className="text-xs rounded-xl">Financials</TabsTrigger>}
-                    {canViewFinancials && <TabsTrigger value="invoices" className="text-xs rounded-xl">Invoices</TabsTrigger>}
-                    <TabsTrigger value="details" className="text-xs rounded-xl whitespace-nowrap">Project Details</TabsTrigger>
-                    <TabsTrigger value="team" className="text-xs rounded-xl">Team</TabsTrigger>
-                    {!project.parentId && <TabsTrigger value="subs" className="text-xs rounded-xl whitespace-nowrap">Sub-Projects</TabsTrigger>}
-                  </TabsList>
-                </div>
-
-                <TabsContent value="tasks" className="mt-0 focus-visible:outline-none">
-                  <TaskBoard
-                    tasks={project.tasks}
-                    phases={(project as any).taskPhases || []}
-                    onChangeTasks={(isTaskEditor || canTickTasks) ? (tasks) => update({ tasks }) : () => {}}
-                    onChangePhases={isTaskEditor ? (taskPhases) => update({ taskPhases } as any) : () => {}}
-                    isEditor={isTaskEditor}
-                    canComplete={canTickTasks}
-                    projectName={project.name}
-                    projectAddress={project.address}
-                  />
-                </TabsContent>
-
-                {canViewFinancials && (
-                  <TabsContent value="financials" className="mt-0 focus-visible:outline-none">
-                    <BudgetSection data={project as any} onChange={isEditor ? update : () => {}} />
-                  </TabsContent>
-                )}
-
-                {canViewFinancials && (
-                  <TabsContent value="invoices" className="mt-0 focus-visible:outline-none">
-                    <InvoicesSection
-                      invoices={project.invoices}
-                      onChange={isEditor ? (invoices) => update({ invoices }) : () => {}}
-                      totalBudget={project.totalBudget}
-                      totalSpent={project.laborCosts + project.materialCosts}
-                      readOnly={!isEditor}
-                    />
-                  </TabsContent>
-                )}
-
-                <TabsContent value="details" className="mt-0 focus-visible:outline-none">
-                  <ProjectDetails data={project as any} onChange={isEditor ? update : () => {}} />
-                </TabsContent>
-
-                <TabsContent value="team" className="mt-0 focus-visible:outline-none">
-                  <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5">
-                    <TeamMembers projectId={project.id} members={project.members} isEditor={isEditor} ownerUserId={project.createdBy} />
-                  </div>
-                </TabsContent>
-
-                {!project.parentId && (
-                  <TabsContent value="subs" className="mt-0 focus-visible:outline-none">
-                    <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5 space-y-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="section-title flex items-center gap-2"><FolderOpen className="h-4 w-4 text-primary" />Sub-Projects{hasSubs && <span className="text-xs text-muted-foreground font-normal">({subProjects.length})</span>}</h3>
-                        {isEditor && (<Button size="sm" variant="ghost" onClick={() => setShowSubForm(!showSubForm)} className="h-9 text-xs rounded-xl"><Plus className="h-3.5 w-3.5 mr-1" />Add</Button>)}
-                      </div>
-                      {showSubForm && (
-                        <div className="flex gap-2">
-                          <Input placeholder="Sub-project name…" value={newSubName} onChange={(e) => setNewSubName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleAddSub()} className="flex-1 h-9 text-sm rounded-xl" autoFocus />
-                          <Button onClick={handleAddSub} size="sm" className="h-9 text-xs rounded-xl" disabled={creatingSubProject}>Create</Button>
-                        </div>
-                      )}
-                      <div className="space-y-2">
-                        {subProjects.length === 0 ? (
-                          <p className="text-xs text-muted-foreground text-center py-2">No sub-projects yet.</p>
-                        ) : subProjects.map((sub) => (
-                          <button key={sub.id} onClick={() => navigate(`/project/${sub.id}`)} className="w-full text-left rounded-xl border bg-background p-3 space-y-1.5">
-                            <div className="flex items-center justify-between gap-2"><span className="text-sm font-heading font-semibold text-foreground truncate">{sub.name || "Untitled"}</span><ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" /></div>
-                            <div className="flex items-center gap-3 text-xs text-muted-foreground"><span>{sub.tasks.filter((t) => t.completed).length}/{sub.tasks.length} tasks</span><span>${(sub.laborCosts + sub.materialCosts).toLocaleString()} spent</span></div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </TabsContent>
-                )}
-              </Tabs>
-            </TabsContent>
-
-            <TabsContent value="timeline" className="mt-0 focus-visible:outline-none space-y-6">
-              <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} phases={project.taskPhases} />
-              <GanttTimeline tasks={project.tasks} startDate={project.startDate} phases={project.taskPhases} />
-              <CalendarView tasks={project.tasks} projectName={project.name} projectId={project.id} phases={project.taskPhases} events={project.events || []} onEventsChange={isEditor ? (events) => update({ events } as any) : undefined} canEdit={isEditor} />
-              <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5">
-                <h3 className="section-title flex items-center gap-2 mb-4"><Activity className="h-4 w-4 text-primary" />Activity Log</h3>
-                <ActivityLog projectId={project.id} />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="photos" className="mt-0 focus-visible:outline-none">
-              <PhotoGallery photos={project.photos} onChange={isEditor ? (photos) => update({ photos }) : () => {}} />
-            </TabsContent>
-
-            <TabsContent value="plansfiles" className="mt-0 focus-visible:outline-none space-y-6">
-              <BlueprintSection blueprints={project.blueprints} onChange={isEditor ? (blueprints) => update({ blueprints }) : () => {}} />
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 px-1">
-                  <FilePlus2 className="h-3.5 w-3.5 text-primary" />
-                  <h3 className="font-heading text-sm font-bold text-foreground tracking-tight">Files</h3>
-                </div>
-                <LocalFileUploads projectId={project.id} isEditor={isEditor} />
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 px-1">
-                  <BookTemplate className="h-3.5 w-3.5 text-primary" />
-                  <h3 className="font-heading text-sm font-bold text-foreground tracking-tight">Templates</h3>
-                </div>
-                {isEditor ? (
-                  <ProjectTemplates
-                    currentProject={project}
-                    onCreateFromTemplate={async (template) => {
-                      const subId = await addProject(template.name, project.id);
-                      await updateProject(subId, {
-                        totalBudget: template.totalBudget,
-                        laborCosts: template.laborCosts,
-                        materialCosts: template.materialCosts,
-                        tasks: template.tasks.map((t) => ({ ...t, id: uuidv4(), completed: false })) as any,
-                      });
-                      navigate(`/project/${subId}`);
-                    }}
-                  />
-                ) : (
-                  <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">Templates and reusable files are available to editors.</div>
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="notes" className="mt-0 focus-visible:outline-none">
-              <ChangeOrdersSection orders={project.changeOrders} onChange={isEditor ? (changeOrders) => update({ changeOrders }) : () => {}} />
-            </TabsContent>
-
-            <TabsContent value="closeout" className="mt-0 focus-visible:outline-none">
-              <PunchList projectId={project.id} data={punchData} onChange={savePunch} isEditor={isPunchEditor} canSignOff={isPunchSigner} members={project.members} projectName={project.name} projectAddress={project.address} />
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* Command Center: 2-column layout — primary 65-70%, sidebar 30-35%
-            Each column scrolls independently on desktop based on cursor position.
-            Hidden on mobile — mobile uses the tabbed structure below. */}
-        <div className="hidden md:grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-          {/* PRIMARY column (Work-first) — independent scroll on desktop */}
-          <div className="lg:col-span-8 space-y-10">
-            {/* WORK MODULE — elevated, primary focus */}
-            <section className="space-y-4">
-              <header className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-2.5">
-                  <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <ListChecks className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="font-heading text-lg font-bold text-foreground tracking-tight">Tasks</h2>
-                    <p className="text-xs text-muted-foreground">{completedTasks} of {project.tasks.length} complete</p>
-                  </div>
-                </div>
-              </header>
-              <TaskBoard
-                tasks={project.tasks}
-                phases={(project as any).taskPhases || []}
-                onChangeTasks={(isTaskEditor || canTickTasks) ? (tasks) => update({ tasks }) : () => {}}
-                onChangePhases={isTaskEditor ? (taskPhases) => update({ taskPhases } as any) : () => {}}
-                isEditor={isTaskEditor}
-                canComplete={canTickTasks}
-                projectName={project.name}
-                projectAddress={project.address}
-              />
-            </section>
-          </div>
-
-          {/* SECONDARY column — Control sidebar (independent scroll on desktop) */}
-          <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-2 scroll-pane scroll-smooth self-start">
-            {/* FINANCIALS MODULE — owner & project_manager only */}
-            {canViewFinancials && (
-              <section className="space-y-3">
-                <header className="flex items-center gap-2 px-1">
-                  <Wallet className="h-3.5 w-3.5 text-primary" />
-                  <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-muted-foreground">Financials</h3>
-                </header>
-                <div className="space-y-4">
-                  <BudgetSection data={project as any} onChange={isEditor ? update : () => {}} />
-                  <InvoicesSection
-                    invoices={project.invoices}
-                    onChange={isEditor ? (invoices) => update({ invoices }) : () => {}}
-                    totalBudget={project.totalBudget}
-                    totalSpent={project.laborCosts + project.materialCosts}
-                    readOnly={!isEditor}
-                  />
-                </div>
-              </section>
-            )}
-
-            {/* Key Dates */}
-            <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5 space-y-3 shadow-none">
-              <h3 className="section-title flex items-center gap-2">
-                <Target className="h-4 w-4 text-primary" />
-                Key Dates
-              </h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between py-1.5">
-                  <span className="text-xs text-muted-foreground">Start</span>
-                  <span className="font-medium text-foreground">
-                    {project.startDate ? new Date(project.startDate).toLocaleDateString() : "—"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-1.5 border-t">
-                  <span className="text-xs text-muted-foreground">Target Finish</span>
-                  <span className="font-medium text-foreground">
-                    {project.endDate ? new Date(project.endDate).toLocaleDateString() : "—"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-1.5 border-t">
-                  <span className="text-xs text-muted-foreground">Tasks Open</span>
-                  <span className="font-medium text-foreground">{project.tasks.length - completedTasks}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Project details (status, dates inputs) */}
-            <ProjectDetails data={project as any} onChange={isEditor ? update : () => {}} />
-
-            {/* Team — collapsible */}
-            <Collapsible open={teamOpen} onOpenChange={setTeamOpen}>
-              <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5 shadow-none">
-                <CollapsibleTrigger className="flex items-center gap-2 w-full section-title hover:text-primary transition-colors">
-                  {teamOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                  <Users className="h-4 w-4 text-primary" />
-                  Team
-                  <span className="text-xs text-muted-foreground font-normal">({project.members.length})</span>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pt-4">
-                  <TeamMembers projectId={project.id} members={project.members} isEditor={isEditor} ownerUserId={project.createdBy} />
-                </CollapsibleContent>
-              </div>
-            </Collapsible>
-
-            {/* Activity — collapsible */}
-            <Collapsible open={activityOpen} onOpenChange={setActivityOpen}>
-              <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5 shadow-none">
-                <CollapsibleTrigger className="flex items-center gap-2 w-full section-title hover:text-primary transition-colors">
-                  {activityOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                  <Activity className="h-4 w-4 text-primary" />
-                  Activity Log
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pt-4">
-                  <ActivityLog projectId={project.id} />
-                </CollapsibleContent>
-              </div>
-            </Collapsible>
-
-            {/* Sub-Projects — relocated to sidebar */}
-            {!project.parentId && (
-              <Collapsible open={subProjectsOpen} onOpenChange={setSubProjectsOpen}>
-                <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-5 shadow-none space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <CollapsibleTrigger className="flex items-center gap-2 section-title hover:text-primary transition-colors">
-                      {subProjectsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                      <FolderOpen className="h-4 w-4 text-primary" />
-                      Sub-Projects
-                      {hasSubs && <span className="text-xs text-muted-foreground font-normal">({subProjects.length})</span>}
-                    </CollapsibleTrigger>
-                    {isEditor && (
-                      <Button size="sm" variant="ghost" onClick={() => setShowSubForm(!showSubForm)} className="h-9 text-xs rounded-xl">
-                        <Plus className="h-3.5 w-3.5 mr-1" /> Add
-                      </Button>
+        {/* Main section content */}
+        <main className="flex-1 min-w-0 bg-page-bg overflow-y-auto p-5">
+          {/* Mobile section selector */}
+          <div className="md:hidden mb-4 -mx-1 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-1.5 px-1 pb-1 w-max">
+              {navGroups.flatMap((g) => g.items).map((item) => {
+                const Icon = item.icon;
+                const active = activeSection === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveSection(item.id)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors",
+                      active
+                        ? "bg-[#eff6ff] text-primary"
+                        : "bg-card text-muted-foreground border border-border"
                     )}
-                  </div>
-
-                  {showSubForm && (
-                    <div className="flex gap-2">
-                      <Input placeholder="Sub-project name…" value={newSubName} onChange={(e) => setNewSubName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleAddSub()} className="flex-1 h-9 text-sm rounded-xl" autoFocus />
-                      <Button onClick={handleAddSub} size="sm" className="h-9 text-xs rounded-xl" disabled={creatingSubProject}>Create</Button>
-                    </div>
-                  )}
-
-                  <CollapsibleContent className="space-y-2">
-                    {subProjects.length === 0 ? (
-                      <p className="text-xs text-muted-foreground text-center py-2">No sub-projects yet.</p>
-                    ) : (
-                      subProjects.map((sub) => (
-                        <div
-                          key={sub.id}
-                          className="group w-full rounded-xl border bg-background p-3 hover:border-primary/20 hover:shadow-sm transition-all duration-150"
-                        >
-                          <div className="flex items-start gap-2">
-                            <button
-                              onClick={() => navigate(`/project/${sub.id}`)}
-                              className="flex-1 min-w-0 text-left space-y-1.5"
-                            >
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="text-sm font-heading font-semibold text-foreground truncate">
-                                  {sub.name || "Untitled"}
-                                </span>
-                                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                              </div>
-                              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                <span>{sub.tasks.filter((t) => t.completed).length}/{sub.tasks.length} tasks</span>
-                                <span>${(sub.laborCosts + sub.materialCosts).toLocaleString()} spent</span>
-                              </div>
-                            </button>
-                            {isEditor && (
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <button
-                                    className="shrink-0 p-1.5 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                                    title="Delete sub-project"
-                                    aria-label={`Delete sub-project ${sub.name || "Untitled"}`}
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete sub-project?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      This will permanently delete <span className="font-semibold text-foreground">{sub.name || "Untitled"}</span> and all of its tasks, invoices, photos, blueprints, and notes. This action cannot be undone.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => deleteProject(sub.id)}
-                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    >
-                                      Delete
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </CollapsibleContent>
-                </div>
-              </Collapsible>
-            )}
-          </aside>
-        </div>
-
-        {/* TERTIARY — Tabbed workspace (Timeline, Photos, Plans, Notes, Files) — desktop only */}
-        <section className="hidden md:block space-y-4">
-          <header className="flex items-center gap-2.5 px-1">
-            <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
-              <FileImage className="h-4 w-4 text-primary" />
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {item.label}
+                  </button>
+                );
+              })}
             </div>
-            <div>
-              <h2 className="font-heading text-lg font-bold text-foreground tracking-tight">Workspace</h2>
-            </div>
-          </header>
-
-          <div className="rounded-2xl bg-card/70 ring-1 ring-border/60 p-4 sm:p-6 shadow-sm">
-            <Tabs defaultValue="timeline" className="space-y-5">
-              <div className="overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0">
-                <TabsList className="bg-muted/60 h-10 p-1 rounded-xl flex flex-nowrap w-max sm:w-auto">
-                <TabsTrigger value="timeline" className="text-xs sm:text-sm rounded-xl gap-1.5">
-                  <CalendarDays className="h-3.5 w-3.5" /> Timeline
-                </TabsTrigger>
-                <TabsTrigger value="photos" className="text-xs sm:text-sm rounded-xl gap-1.5">
-                  <Camera className="h-3.5 w-3.5" /> Photos
-                </TabsTrigger>
-                <TabsTrigger value="plans" className="text-xs sm:text-sm rounded-xl gap-1.5">
-                  <FileImage className="h-3.5 w-3.5" /> Plans
-                </TabsTrigger>
-                <TabsTrigger value="notes" className="text-xs sm:text-sm rounded-xl gap-1.5">
-                  <ClipboardList className="h-3.5 w-3.5" /> Notes
-                </TabsTrigger>
-                <TabsTrigger value="files" className="text-xs sm:text-sm rounded-xl gap-1.5">
-                  <BookTemplate className="h-3.5 w-3.5" /> Files
-                </TabsTrigger>
-                <TabsTrigger value="closeout" className="text-xs sm:text-sm rounded-xl gap-1.5">
-                  <ClipboardCheck className="h-3.5 w-3.5" /> Punch Out
-                  {punchData.isLocked && (
-                    <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-success" />
-                  )}
-                </TabsTrigger>
-              </TabsList>
-              </div>
-
-              <TabsContent value="timeline" className="space-y-6 mt-0 focus-visible:outline-none">
-                <EstimatedFinishDate tasks={project.tasks} startDate={project.startDate} endDate={project.endDate} phases={project.taskPhases} />
-                <GanttTimeline tasks={project.tasks} startDate={project.startDate} phases={project.taskPhases} />
-                <CalendarView
-                  tasks={project.tasks}
-                  projectName={project.name}
-                  projectId={project.id}
-                  phases={project.taskPhases}
-                  events={project.events || []}
-                  onEventsChange={isEditor ? (events) => update({ events } as any) : undefined}
-                  canEdit={isEditor}
-                />
-              </TabsContent>
-
-              <TabsContent value="photos" className="mt-0 focus-visible:outline-none">
-                <PhotoGallery photos={project.photos} onChange={isEditor ? (photos) => update({ photos }) : () => {}} />
-              </TabsContent>
-
-              <TabsContent value="plans" className="mt-0 focus-visible:outline-none">
-                <BlueprintSection blueprints={project.blueprints} onChange={isEditor ? (blueprints) => update({ blueprints }) : () => {}} />
-              </TabsContent>
-
-              <TabsContent value="notes" className="mt-0 focus-visible:outline-none">
-                <ChangeOrdersSection orders={project.changeOrders} onChange={isEditor ? (changeOrders) => update({ changeOrders }) : () => {}} />
-              </TabsContent>
-
-              <TabsContent value="files" className="mt-0 focus-visible:outline-none">
-                {isEditor ? (
-                  <ProjectTemplates
-                    currentProject={project}
-                    onCreateFromTemplate={async (template) => {
-                      const subId = await addProject(template.name, project.id);
-                      await updateProject(subId, {
-                        totalBudget: template.totalBudget,
-                        laborCosts: template.laborCosts,
-                        materialCosts: template.materialCosts,
-                        tasks: template.tasks.map((t) => ({ ...t, id: uuidv4(), completed: false })) as any,
-                      });
-                      navigate(`/project/${subId}`);
-                    }}
-                  />
-                ) : (
-                  <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
-                    Templates and reusable files are available to editors.
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="closeout" className="mt-0 focus-visible:outline-none">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between gap-3 flex-wrap px-1">
-                    <div className="flex items-center gap-2">
-                      <ClipboardCheck className="h-4 w-4 text-primary" />
-                      <h3 className="font-heading text-sm font-bold text-foreground tracking-tight">Punch List</h3>
-                      {punchData.items.length > 0 && (
-                        <span className="text-xs text-muted-foreground font-normal">
-                          ({punchData.items.length})
-                        </span>
-                      )}
-                      {punchData.isLocked && (
-                        <span className="ml-1 text-xs uppercase tracking-wider px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">
-                          Signed Off
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {punchData.items.filter((i) => i.status === "pass").length} of {punchData.items.length} items passed
-                    </span>
-                  </div>
-                  <PunchList
-                    projectId={project.id}
-                    data={punchData}
-                    onChange={savePunch}
-                    isEditor={isPunchEditor}
-                    canSignOff={isPunchSigner}
-                    members={project.members}
-                    projectName={project.name}
-                    projectAddress={project.address}
-                  />
-                </div>
-              </TabsContent>
-            </Tabs>
           </div>
-        </section>
+          {renderSection()}
+        </main>
       </div>
     </AppLayout>
   );
