@@ -25,17 +25,10 @@ import {
   Document, Page, Text, View, StyleSheet, pdf, Image as PDFImage,
 } from "@react-pdf/renderer";
 const saveAs = (blob: Blob, filename: string) => {
-  const pdfBlob = blob.type ? blob : new Blob([blob], { type: "application/pdf" });
+  const pdfBlob = blob.type === "application/pdf" ? blob : new Blob([blob], { type: "application/pdf" });
   const url = URL.createObjectURL(pdfBlob);
-  const a = window.document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.rel = "noopener";
-  a.style.display = "none";
-  window.document.body.appendChild(a);
-  a.click();
-  window.document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  window.open(url, "_blank");
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
