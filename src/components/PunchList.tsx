@@ -254,7 +254,7 @@ const PunchList = ({
       signedOffBy: name,
     });
     setSignOffOpen(false);
-    toast({ title: "Punch list signed off", description: `Locked by ${name}` });
+    toast.success("Punch list signed off", { description: `Locked by ${name}` });
   };
 
   const handleReopen = () => {
@@ -265,8 +265,7 @@ const PunchList = ({
       signedOffBy: undefined,
     });
     setReopenOpen(false);
-    toast({
-      title: "Punch list reopened",
+    toast.success("Punch list reopened", {
       description: "Items and statuses preserved",
     });
   };
@@ -321,16 +320,13 @@ const PunchList = ({
       document.body.removeChild(link);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-      toast({
-        title: "PDF downloaded",
+      toast.success("PDF downloaded", {
         description: "Ready to share with your homeowner",
       });
     } catch (err) {
       console.error("PDF export failed", err);
-      toast({
-        title: "Export failed",
+      toast.error("Export failed", {
         description: "Could not generate the PDF. Please try again.",
-        variant: "destructive",
       });
     }
   };
