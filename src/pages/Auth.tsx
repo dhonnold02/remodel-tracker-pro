@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Wallet, ClipboardCheck, Users, FolderOpen } from "lucide-react";
 import SightlineLogo from "@/components/SightlineLogo";
 import { stashInviteToken } from "@/lib/inviteFlow";
+import { cn } from "@/lib/utils";
 
 const friendlyAuthError = (msg: string | undefined | null): string => {
   if (!msg) return "Something went wrong. Please try again.";
