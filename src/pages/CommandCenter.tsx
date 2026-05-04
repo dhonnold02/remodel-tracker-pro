@@ -909,8 +909,10 @@ ${logsHtml}
             </div>
           )}
           {crew.length === 0 ? null : (
-            <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
-              <table className="w-full text-sm border-separate border-spacing-1 min-w-[700px]">
+            <>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm border-separate border-spacing-1">
                 <thead>
                   <tr>
                     <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2 py-2 w-40">
@@ -966,6 +968,51 @@ ${logsHtml}
                 </tbody>
               </table>
             </div>
+            {/* Mobile cards */}
+            <div className="md:hidden space-y-3">
+              {crew.map((m) => (
+                <div key={m.id} className="rounded-xl border bg-card/60 p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-semibold text-foreground truncate">{m.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCrew(m.id)}
+                      className="h-6 w-6 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      aria-label={`Remove ${m.name}`}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {weekDays.map((d) => {
+                      const row = dispatchMap.get(dispatchKey(m.id, d));
+                      return (
+                        <li key={d.toISOString()} className="flex items-center gap-2">
+                          <span className="w-20 shrink-0 text-xs text-muted-foreground tabular-nums">
+                            {format(d, "EEE MMM d")}
+                          </span>
+                          <Select
+                            value={row?.project_id || "__none__"}
+                            onValueChange={(v) => setAssignment(m, d, v)}
+                          >
+                            <SelectTrigger className="h-9 text-xs rounded-xl bg-secondary/40 border-border flex-1">
+                              <SelectValue placeholder="—" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="__none__">— Unassigned —</SelectItem>
+                              {projects.map((p) => (
+                                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
+            </>
           )}
         </Section>
 
