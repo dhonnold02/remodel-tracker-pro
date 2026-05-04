@@ -479,6 +479,21 @@ const CommandCenter = () => {
     return out;
   }, [projects, today]);
 
+  // ── Recent activity grouped by project ───────────────────────────────────
+  const activityByProject = useMemo(() => {
+    const groups = new Map<string, ActivityRow[]>();
+    for (const a of activities) {
+      const arr = groups.get(a.project_id) || [];
+      arr.push(a);
+      groups.set(a.project_id, arr);
+    }
+    const out: { project: string; entries: ActivityRow[] }[] = [];
+    for (const [pid, entries] of groups) {
+      out.push({ project: projectName(pid), entries });
+    }
+    return out;
+  }, [activities, projects]);
+
   // ── Crew dispatch grid helpers ───────────────────────────────────────────
   const dispatchKey = (memberId: string, date: Date) =>
     `${memberId}::${format(date, "yyyy-MM-dd")}`;
