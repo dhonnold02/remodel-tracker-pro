@@ -34,7 +34,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Copy, Info, Loader2, Mail, Trash2, UserPlus, X, Check } from "lucide-react";
+import { Copy, Info, Loader2, Mail, Trash2, UserPlus, X, Check, MoreHorizontal } from "lucide-react";
 import {
   Dialog,
   DialogContent,
