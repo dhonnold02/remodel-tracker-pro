@@ -366,6 +366,32 @@ const Team = () => {
               </Button>
             </div>
           </div>
+          {fallbackInviteLink && (
+            <div className="space-y-1.5 border-t pt-3">
+              <Label className="text-xs">Copy invite link manually</Label>
+              <div className="flex gap-2">
+                <Input
+                  readOnly
+                  value={fallbackInviteLink}
+                  onFocus={(e) => e.currentTarget.select()}
+                  className="h-10 rounded-xl text-xs font-mono"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setFallbackInviteLink(null)}
+                  className="h-10 w-10 rounded-xl"
+                  aria-label="Dismiss"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Your browser blocked clipboard access. Tap the link to select it, then copy.
+              </p>
+            </div>
+          )}
         </section>
 
         {/* Members table */}
