@@ -994,7 +994,7 @@ ${logsHtml}
             />
             <Button
               onClick={handleSaveLog}
-              disabled={savingLog}
+              disabled={savingLog || !logProjectId || !logNotes.trim()}
               className="w-full md:w-auto rounded-xl"
             >
               {savingLog ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
