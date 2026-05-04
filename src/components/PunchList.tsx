@@ -396,7 +396,7 @@ const PunchList = ({
           </div>
           <div className="text-right">
             <p className="font-heading text-lg font-bold text-success">{passPercent}%</p>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">
               complete
             </p>
           </div>
@@ -514,7 +514,7 @@ const PunchList = ({
                     <div className="flex items-center gap-2 flex-wrap">
                       <span
                         className={cn(
-                          "text-[10px] px-2 py-0.5 rounded-full font-medium uppercase tracking-wider",
+                          "text-xs px-2 py-0.5 rounded-full font-medium uppercase tracking-wider",
                           it.status === "pass" && "bg-success/15 text-success",
                           it.status === "fail" && "bg-destructive/15 text-destructive",
                           it.status === "pending" &&
@@ -540,10 +540,10 @@ const PunchList = ({
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                       {it.assignee && (
                         <div className="flex items-center gap-1.5">
-                          <div className="h-5 w-5 rounded-full bg-primary/15 text-primary text-[10px] font-bold flex items-center justify-center">
+                          <div className="h-5 w-5 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center">
                             {initialsFor(it.assignee)}
                           </div>
-                          <span className="text-[11px] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {it.assignee}
                           </span>
                         </div>
@@ -553,12 +553,12 @@ const PunchList = ({
                         onClick={() =>
                           setExpandedNotes((s) => ({ ...s, [it.id]: !s[it.id] }))
                         }
-                        className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                       >
                         {isExpanded || it.notes ? "Notes" : "+ Add notes"}
                       </button>
                       {it.photos && it.photos.length > 0 && (
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           · {it.photos.length} photo{it.photos.length !== 1 ? "s" : ""}
                         </span>
                       )}
@@ -581,7 +581,7 @@ const PunchList = ({
                           size="sm"
                           variant="outline"
                           className={cn(
-                            "h-7 px-2 rounded-lg text-[11px] border-border",
+                            "h-7 px-2 rounded-lg text-xs border-border",
                             "hover:text-success hover:border-success",
                             it.status === "pass" && "text-success border-success/40"
                           )}
@@ -594,7 +594,7 @@ const PunchList = ({
                           size="sm"
                           variant="outline"
                           className={cn(
-                            "h-7 px-2 rounded-lg text-[11px] border-border",
+                            "h-7 px-2 rounded-lg text-xs border-border",
                             "hover:text-destructive hover:border-destructive",
                             it.status === "fail" &&
                               "text-destructive border-destructive/40"

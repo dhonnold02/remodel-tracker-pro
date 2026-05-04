@@ -236,7 +236,7 @@ const TaskCard = ({
           <PopoverTrigger asChild>
             <button
               disabled={!isEditor}
-              className={cn("flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md font-medium", PRIORITY_CONFIG[task.priority].cls)}
+              className={cn("flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md font-medium", PRIORITY_CONFIG[task.priority].cls)}
             >
               <span className={cn("h-1.5 w-1.5 rounded-full", PRIORITY_CONFIG[task.priority].dot)} />
               {PRIORITY_CONFIG[task.priority].label}
@@ -261,7 +261,7 @@ const TaskCard = ({
             <button
               disabled={!isEditor}
               className={cn(
-                "flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md transition-colors",
+                "flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md transition-colors",
                 status === "overdue" ? "text-destructive bg-destructive/10 font-medium"
                   : status === "today" ? "text-warning bg-warning/10 font-medium"
                   : task.dueDate ? "text-muted-foreground bg-secondary"
@@ -293,7 +293,7 @@ const TaskCard = ({
         {subtasks.length > 0 && (
           <button
             onClick={onToggleExpand}
-            className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground bg-secondary px-1.5 py-0.5 rounded-md"
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground bg-secondary px-1.5 py-0.5 rounded-md"
           >
             <ListTree className="h-3 w-3" />
             {completedSubs}/{subtasks.length}
@@ -336,7 +336,7 @@ const TaskCard = ({
           {isEditor && (
             <button
               onClick={() => onAddSubtask(task.id)}
-              className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary mt-1"
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary mt-1"
             >
               <Plus className="h-3 w-3" /> Add subtask
             </button>
@@ -420,7 +420,7 @@ const PhaseColumn = ({
             <span className="md:hidden flex-1 text-left text-xs font-semibold text-foreground truncate">
               {phase}
             </span>
-            <span className="md:hidden text-[10px] font-medium text-muted-foreground tabular-nums px-1.5 py-0.5 rounded-md bg-background/80">
+            <span className="md:hidden text-xs font-medium text-muted-foreground tabular-nums px-1.5 py-0.5 rounded-md bg-background/80">
               {parentTasks.length}
             </span>
             <span
@@ -466,7 +466,7 @@ const PhaseColumn = ({
                   {phase}
                 </h3>
               )}
-              <span className="text-[10px] font-medium text-muted-foreground tabular-nums px-1.5 py-0.5 rounded-md bg-background/80">
+              <span className="text-xs font-medium text-muted-foreground tabular-nums px-1.5 py-0.5 rounded-md bg-background/80">
                 {parentTasks.length}
               </span>
               {isEditor && !renaming && (
@@ -520,7 +520,7 @@ const PhaseColumn = ({
             </div>
             {/* Progress */}
             <div className="mt-2.5 space-y-1 pt-2 border-t border-border/40">
-              <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>{completedCount}/{allLeaf.length} done</span>
                 <span className="tabular-nums">{Math.round(percent)}%</span>
               </div>
@@ -543,7 +543,7 @@ const PhaseColumn = ({
         >
           <SortableContext items={parentTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
             {parentTasks.length === 0 && !adding && (
-              <div className="hidden md:block text-[11px] text-muted-foreground/70 italic text-center py-6 px-3 rounded-lg border border-dashed">
+              <div className="hidden md:block text-xs text-muted-foreground/70 italic text-center py-6 px-3 rounded-lg border border-dashed">
                 Drop tasks here
               </div>
             )}

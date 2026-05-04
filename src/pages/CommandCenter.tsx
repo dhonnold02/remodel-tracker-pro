@@ -745,12 +745,12 @@ ${logsHtml}
                   const info = wmoToInfo(d.code);
                   return (
                     <div key={d.date} className="rounded-xl bg-secondary/30 p-2 text-center">
-                      <div className="text-[10px] uppercase text-muted-foreground tracking-wide font-medium">
+                      <div className="text-xs uppercase text-muted-foreground tracking-wide font-medium">
                         {format(parseISO(d.date), "EEE")}
                       </div>
                       <info.Icon className="h-5 w-5 mx-auto my-2 text-primary" />
                       <div className="text-xs font-semibold text-foreground">{d.max}°</div>
-                      <div className="text-[10px] text-muted-foreground">{d.min}°</div>
+                      <div className="text-xs text-muted-foreground">{d.min}°</div>
                     </div>
                   );
                 })}
@@ -775,7 +775,7 @@ ${logsHtml}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">{e.project}</div>
                   </div>
-                  <Badge variant="outline" className="text-[10px]">
+                  <Badge variant="outline" className="text-xs">
                     {EVENT_LABELS[e.type] || "Other"}
                   </Badge>
                   {e.time && (
@@ -830,7 +830,7 @@ ${logsHtml}
                       <li key={j} className="flex items-center gap-3 rounded-lg bg-secondary/30 px-3 py-2">
                         <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
                         <span className="text-sm text-foreground flex-1 truncate">{t.title}</span>
-                        <Badge variant="outline" className="text-[10px]">{t.phase}</Badge>
+                        <Badge variant="outline" className="text-xs">{t.phase}</Badge>
                       </li>
                     ))}
                   </ul>
@@ -921,7 +921,7 @@ ${logsHtml}
                     {weekDays.map((d) => (
                       <th key={d.toISOString()} className="text-xs font-semibold text-muted-foreground text-center px-1 py-2">
                         <div>{format(d, "EEE")}</div>
-                        <div className="text-[10px] font-normal">{format(d, "MMM d")}</div>
+                        <div className="text-xs font-normal">{format(d, "MMM d")}</div>
                       </th>
                     ))}
                   </tr>
@@ -983,7 +983,7 @@ ${logsHtml}
                           <button className="group flex items-center gap-2 flex-1 min-w-0 text-left focus-visible:outline-none">
                             <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
                             <span className="text-sm font-semibold text-foreground truncate flex-1">{m.name}</span>
-                            <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
+                            <span className="text-xs text-muted-foreground tabular-nums shrink-0">
                               {assignedCount}/{weekDays.length} days
                             </span>
                           </button>

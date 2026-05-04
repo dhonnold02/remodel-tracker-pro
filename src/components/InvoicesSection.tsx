@@ -65,26 +65,26 @@ const InvoicesSection = ({ invoices, onChange, totalBudget, totalSpent, readOnly
       {/* Financial summary cards */}
       <div className="grid grid-cols-3 gap-3">
         <div className="min-w-0 rounded-xl border bg-card p-3">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Budget</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Budget</p>
           <p className="font-heading text-sm font-bold text-foreground mt-1.5">{formatCompact(totalBudget)}</p>
         </div>
         <div className="min-w-0 rounded-xl border bg-card p-3">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Spent</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Spent</p>
           <p className="font-heading text-sm font-bold text-foreground mt-1.5">{formatCompact(totalSpent)}</p>
         </div>
         <div className="min-w-0 rounded-xl border bg-card p-3">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Remaining</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Remaining</p>
           <p className={`font-heading text-sm font-bold mt-1.5 ${remaining < 0 ? "text-destructive" : "text-foreground"}`}>{formatCompact(remaining)}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="min-w-0 rounded-xl border border-primary/20 bg-primary/10 p-3">
-          <p className="text-[10px] text-primary uppercase tracking-wider font-medium">Owed by HO</p>
+          <p className="text-xs text-primary uppercase tracking-wider font-medium">Owed by HO</p>
           <p className="font-heading text-sm font-bold text-primary mt-1.5">{formatCompact(owedByHomeowner)}</p>
         </div>
         <div className="min-w-0 rounded-xl border border-warning/20 bg-warning/10 p-3">
-          <p className="text-[10px] text-warning uppercase tracking-wider font-medium">Owed to Subs</p>
+          <p className="text-xs text-warning uppercase tracking-wider font-medium">Owed to Subs</p>
           <p className="font-heading text-sm font-bold text-warning mt-1.5">{formatCompact(owedToSubs)}</p>
         </div>
       </div>
@@ -141,7 +141,7 @@ const InvoicesSection = ({ invoices, onChange, totalBudget, totalSpent, readOnly
               {!readOnly && (
                 <Checkbox checked={inv.paid} onCheckedChange={() => togglePaid(inv.id)} />
               )}
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${inv.type === "homeowner" ? "bg-accent text-accent-foreground" : "bg-warning/10 text-warning"}`}>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${inv.type === "homeowner" ? "bg-accent text-accent-foreground" : "bg-warning/10 text-warning"}`}>
                 {inv.type === "homeowner" ? "HO" : "SUB"}
               </span>
               <span className={`flex-1 truncate ${inv.paid ? "line-through" : ""}`}>{inv.description}</span>

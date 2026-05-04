@@ -323,7 +323,7 @@ const Settings = () => {
                   {uploading ? "Uploading…" : "Drop your logo here or click to upload"}
                 </span>
                 {!uploading && (
-                  <span className="text-[11px] text-muted-foreground/80">
+                  <span className="text-xs text-muted-foreground/80">
                     PNG, JPG, SVG up to 2MB
                   </span>
                 )}

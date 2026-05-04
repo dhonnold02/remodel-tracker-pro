@@ -252,7 +252,7 @@ const Dashboard = ({ projects, loading, onAdd, onDelete, getSubProjects, onUpdat
                     "h-3.5 w-3.5",
                     stat.active ? "text-primary" : "text-muted-foreground"
                   )} />
-                  <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">{stat.label}</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">{stat.label}</p>
                 </div>
                 <p className="text-4xl font-heading font-bold text-foreground leading-none mt-2">{stat.value}</p>
               </button>

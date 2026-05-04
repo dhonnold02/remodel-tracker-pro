@@ -70,20 +70,20 @@ const TeamMembers = ({ projectId, members, isEditor, ownerUserId }: TeamMembersP
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">
                 {member.displayName || "Unknown"}
-                {member.userId === user?.id && <span className="text-[10px] text-muted-foreground ml-1">(you)</span>}
+                {member.userId === user?.id && <span className="text-xs text-muted-foreground ml-1">(you)</span>}
               </p>
             </div>
             <div className="flex items-center gap-1.5">
               {ownerUserId && member.userId === ownerUserId ? (
-                <span className="flex items-center gap-1 text-[10px] text-primary-foreground bg-primary px-2.5 py-0.5 rounded-full font-medium"><Shield className="h-3 w-3" /> Owner</span>
+                <span className="flex items-center gap-1 text-xs text-primary-foreground bg-primary px-2.5 py-0.5 rounded-full font-medium"><Shield className="h-3 w-3" /> Owner</span>
               ) : member.role === "editor" ? (
-                <span className="flex items-center gap-1 text-[10px] text-accent-foreground bg-accent px-2.5 py-0.5 rounded-full font-medium"><Shield className="h-3 w-3" /> Editor</span>
+                <span className="flex items-center gap-1 text-xs text-accent-foreground bg-accent px-2.5 py-0.5 rounded-full font-medium"><Shield className="h-3 w-3" /> Editor</span>
               ) : (
-                <span className="flex items-center gap-1 text-[10px] text-muted-foreground bg-secondary px-2.5 py-0.5 rounded-full"><Eye className="h-3 w-3" /> Viewer</span>
+                <span className="flex items-center gap-1 text-xs text-muted-foreground bg-secondary px-2.5 py-0.5 rounded-full"><Eye className="h-3 w-3" /> Viewer</span>
               )}
               {isEditor && member.userId !== user?.id && (
                 <div className="flex items-center gap-1">
-                  <button onClick={() => updateMemberRole(projectId, member.id, member.role === "editor" ? "viewer" : "editor")} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors px-1" title="Toggle role">↕</button>
+                  <button onClick={() => updateMemberRole(projectId, member.id, member.role === "editor" ? "viewer" : "editor")} className="text-xs text-muted-foreground hover:text-foreground transition-colors px-1" title="Toggle role">↕</button>
                   <button onClick={() => removeMember(projectId, member.id)} className="text-muted-foreground hover:text-destructive transition-colors p-0.5"><X className="h-3.5 w-3.5" /></button>
                 </div>
               )}

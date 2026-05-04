@@ -27,7 +27,7 @@ const initialsFrom = (name?: string | null): string => {
 
 const Avatar = ({ initials }: { initials: string }) => (
   <div
-    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary text-[10px] font-semibold ring-1 ring-primary/20"
+    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary text-xs font-semibold ring-1 ring-primary/20"
     aria-hidden
   >
     {initials}
@@ -43,7 +43,7 @@ const Meta = ({
   name: string;
   createdAt: string;
 }) => (
-  <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+  <div className="flex items-center gap-2 text-xs text-muted-foreground">
     <Avatar initials={initials} />
     <span className="font-medium text-foreground">{name}</span>
     <span aria-hidden>·</span>

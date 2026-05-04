@@ -393,7 +393,7 @@ const Team = () => {
                   <X className="h-4 w-4" />
                 </Button>
               </div>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Your browser blocked clipboard access. Tap the link to select it, then copy.
               </p>
             </div>
@@ -440,7 +440,7 @@ const Team = () => {
                               <div className="text-sm font-medium text-foreground truncate">
                                 {m.display_name || m.email || "Unknown"}
                                 {isSelf && (
-                                  <span className="text-[10px] text-muted-foreground ml-2">(you)</span>
+                                  <span className="text-xs text-muted-foreground ml-2">(you)</span>
                                 )}
                               </div>
                               {m.email && m.email !== m.display_name && (
@@ -464,7 +464,7 @@ const Team = () => {
                           {m.role === "owner" || isSelf ? (
                             <span
                               className={cn(
-                                "inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium",
+                                "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium",
                                 ROLE_BADGE[m.role]
                               )}
                             >
@@ -601,7 +601,7 @@ const Team = () => {
                       <TableCell>
                         <span
                           className={cn(
-                            "inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium",
+                            "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium",
                             ROLE_BADGE[inv.role as Role]
                           )}
                         >
@@ -657,7 +657,7 @@ const Team = () => {
                     <TableHead key={r} className="text-center">
                       <span
                         className={cn(
-                          "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap",
+                          "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap",
                           ROLE_BADGE[r]
                         )}
                       >

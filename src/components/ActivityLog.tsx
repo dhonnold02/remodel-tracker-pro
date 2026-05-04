@@ -86,7 +86,7 @@ const ActivityLog = ({ projectId }: ActivityLogProps) => {
           <button
             key={key}
             onClick={() => setFilter(key)}
-            className={`text-[10px] px-3 py-1.5 rounded-full transition-all duration-150 font-medium ${
+            className={`text-xs px-3 py-1.5 rounded-full transition-all duration-150 font-medium ${
               filter === key
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
@@ -120,7 +120,7 @@ const ActivityLog = ({ projectId }: ActivityLogProps) => {
                       <span className="font-medium">{log.user_name}</span>{" "}
                       <span className="text-muted-foreground">{log.description}</span>
                     </p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {format(new Date(log.created_at), "MMM d, h:mm a")}
                     </p>
                   </div>

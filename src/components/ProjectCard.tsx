@@ -119,7 +119,7 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false, 
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {hasSubs && (
-            <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+            <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
               {subs.length} sub
             </span>
           )}
