@@ -20,11 +20,11 @@ import {
   Cloud, CloudRain, CloudSnow, Sun, CloudLightning, CloudFog,
   ChevronDown, Loader2, FileDown, CalendarClock, ListTodo, Users,
   ClipboardList, Wind, Thermometer, Plus, X,
-  CalendarX, CheckSquare, Flag, BookOpen,
+  CalendarX, CheckSquare, Flag, BookOpen, Activity, NotebookPen,
 } from "lucide-react";
 import { toast } from "sonner";
 import { showSuccess, showError } from "@/lib/toast";
-import { format, addDays, parseISO, startOfWeek, differenceInCalendarDays } from "date-fns";
+import { format, addDays, parseISO, startOfWeek, differenceInCalendarDays, formatDistanceToNow } from "date-fns";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -177,6 +177,15 @@ interface EventRow {
   time: string | null;
 }
 
+interface ActivityRow {
+  id: string;
+  project_id: string;
+  user_name: string;
+  action_type: string;
+  description: string;
+  created_at: string;
+}
+
 const CommandCenter = () => {
   const { user } = useAuth();
   const { companyId, loading: roleLoading } = useRole();
@@ -196,6 +205,12 @@ const CommandCenter = () => {
   const [dispatch, setDispatch] = useState<DispatchRow[]>([]);
   const [logs, setLogs] = useState<DailyLogRow[]>([]);
   const [weekEventRows, setWeekEventRows] = useState<EventRow[]>([]);
+  const [activities, setActivities] = useState<ActivityRow[]>([]);
+
+  // Weekly notes
+  const [weeklyNotes, setWeeklyNotes] = useState<string>("");
+  const [weeklyNotesSaving, setWeeklyNotesSaving] = useState(false);
+  const [weeklyNotesSavedAt, setWeeklyNotesSavedAt] = useState<number | null>(null);
 
   // Add crew member UI
   const [addingCrew, setAddingCrew] = useState(false);
@@ -218,23 +233,36 @@ const CommandCenter = () => {
   );
   const todayKey = format(today, "yyyy-MM-dd");
 
-  // ── Load company settings ────────────────────────────────────────────────
+  // ── Load company settings (owner row by user_id, fallback to companyId) ──
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
+      // Try owner row first (user_id match)
+      let { data } = await supabase
         .from("company_settings")
         .select("company_name, address, logo_url")
         .eq("user_id", user.id)
         .maybeSingle();
+
+      // Fallback for non-owner members: load by company id
+      if (!data && companyId) {
+        const fallback = await supabase
+          .from("company_settings")
+          .select("company_name, address, logo_url")
+          .eq("id", companyId)
+          .maybeSingle();
+        data = fallback.data;
+      }
       if (cancelled || !data) return;
       setCompanyName(data.company_name || "");
       setCompanyAddress(data.address || "");
       setCompanyLogo(data.logo_url || null);
+      // eslint-disable-next-line no-console
+      console.log("[CommandCenter] company address for weather:", data.address);
     })();
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user, companyId]);
 
   // ── Load weather (geocode → forecast) ────────────────────────────────────
   useEffect(() => {
@@ -285,6 +313,20 @@ const CommandCenter = () => {
       .limit(50);
     setLogs((logRows || []) as DailyLogRow[]);
 
+    // recent activity across all accessible projects
+    const projectIdsAll = projects.map((p) => p.id);
+    if (projectIdsAll.length) {
+      const { data: actRows } = await supabase
+        .from("activity_logs")
+        .select("id, project_id, user_name, action_type, description, created_at")
+        .in("project_id", projectIdsAll)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      setActivities((actRows || []) as ActivityRow[]);
+    } else {
+      setActivities([]);
+    }
+
     // calendar events for the week — query project_events directly
     // across every project the user can access (same source as Phase Calendar)
     const projectIds = projects.map((p) => p.id);
@@ -304,6 +346,47 @@ const CommandCenter = () => {
   }, [companyId, weekStart, projects]);
 
   useEffect(() => { loadCompanyData(); }, [loadCompanyData]);
+
+  // ── Load weekly notes for this week ──────────────────────────────────────
+  const weekStartKey = useMemo(() => format(weekStart, "yyyy-MM-dd"), [weekStart]);
+  useEffect(() => {
+    if (!companyId) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("command_center_notes" as any)
+        .select("notes")
+        .eq("company_id", companyId)
+        .eq("week_start_date", weekStartKey)
+        .maybeSingle();
+      if (cancelled) return;
+      setWeeklyNotes(((data as any)?.notes as string) || "");
+    })();
+    return () => { cancelled = true; };
+  }, [companyId, weekStartKey]);
+
+  const handleSaveWeeklyNotes = useCallback(async () => {
+    if (!companyId) return;
+    setWeeklyNotesSaving(true);
+    const { error } = await supabase
+      .from("command_center_notes" as any)
+      .upsert(
+        {
+          company_id: companyId,
+          week_start_date: weekStartKey,
+          notes: weeklyNotes,
+          updated_at: new Date().toISOString(),
+        } as any,
+        { onConflict: "company_id,week_start_date" } as any,
+      );
+    setWeeklyNotesSaving(false);
+    if (error) {
+      showError("Failed to save weekly notes");
+      return;
+    }
+    setWeeklyNotesSavedAt(Date.now());
+    setTimeout(() => setWeeklyNotesSavedAt(null), 2000);
+  }, [companyId, weekStartKey, weeklyNotes]);
 
   const projectName = (id: string) =>
     projects.find((p) => p.id === id)?.name || "Unknown";
@@ -395,6 +478,21 @@ const CommandCenter = () => {
     out.sort((a, b) => a.days - b.days);
     return out;
   }, [projects, today]);
+
+  // ── Recent activity grouped by project ───────────────────────────────────
+  const activityByProject = useMemo(() => {
+    const groups = new Map<string, ActivityRow[]>();
+    for (const a of activities) {
+      const arr = groups.get(a.project_id) || [];
+      arr.push(a);
+      groups.set(a.project_id, arr);
+    }
+    const out: { project: string; entries: ActivityRow[] }[] = [];
+    for (const [pid, entries] of groups) {
+      out.push({ project: projectName(pid), entries });
+    }
+    return out;
+  }, [activities, projects]);
 
   // ── Crew dispatch grid helpers ───────────────────────────────────────────
   const dispatchKey = (memberId: string, date: Date) =>
@@ -525,6 +623,11 @@ const CommandCenter = () => {
       ? `<p class="empty">No logs this week.</p>`
       : weekLogs.map((l) => `<div class="log"><div class="logmeta">${esc(format(parseISO(l.log_date), "EEEE, MMM d"))} · ${esc(projectName(l.project_id))}</div><div class="lognotes">${esc(l.notes)}</div></div>`).join("");
 
+    // Weekly notes
+    const weeklyNotesHtml = weeklyNotes.trim()
+      ? `<div class="log"><div class="lognotes">${esc(weeklyNotes)}</div></div>`
+      : `<p class="empty">No weekly notes.</p>`;
+
     const safeName = (companyName || "Company").replace(/[^a-z0-9]+/gi, "-");
     const docTitle = `${safeName}-WeeklyReport-${format(weekStart, "yyyy-MM-dd")}`;
 
@@ -640,6 +743,9 @@ ${dispatchHtml}
 <h2>Daily Log</h2>
 ${logsHtml}
 
+<h2>Weekly Notes</h2>
+${weeklyNotesHtml}
+
 <footer>
   <span>${esc(companyName || "Sightline")}</span>
   <span class="center">Generated by Sightline</span>
@@ -679,7 +785,7 @@ ${logsHtml}
     showSuccess("Weekly Report ready", {
       description: `Choose "Save as PDF" in the print dialog to download.`,
     });
-  }, [companyLogo, companyName, crew, dispatchMap, logs, projects, weather, weekDays, weekEvents, weekStart]);
+  }, [companyLogo, companyName, crew, dispatchMap, logs, projects, weather, weekDays, weekEvents, weekStart, weeklyNotes]);
 
   const renderExportButton = (className: string) => (
     <Button onClick={handleExportPrint} className={`rounded-xl ${className}`}>
@@ -769,6 +875,36 @@ ${logsHtml}
                   );
                 })}
               </div>
+            </div>
+          )}
+        </Section>
+
+        {/* Recent Activity */}
+        <Section title="Recent Activity" icon={Activity}>
+          {activityByProject.length === 0 ? (
+            <EmptyState icon={Activity} title="No recent activity" description="Activity from your projects will appear here." />
+          ) : (
+            <div className="space-y-4">
+              {activityByProject.map((g) => (
+                <div key={g.project}>
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                    {g.project}
+                  </div>
+                  <ul className="space-y-1.5">
+                    {g.entries.map((a) => (
+                      <li key={a.id} className="flex items-start gap-3 rounded-xl bg-secondary/30 px-3 py-2">
+                        <span className="h-2 w-2 mt-1.5 rounded-full bg-primary shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm text-foreground">{a.description}</div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            {a.user_name || "Someone"} · {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
           )}
         </Section>
@@ -1130,6 +1266,30 @@ ${logsHtml}
               )}
               </>
             )}
+          </div>
+        </Section>
+
+        {/* Weekly Notes */}
+        <Section title="Weekly Notes" icon={NotebookPen}>
+          <div className="space-y-2">
+            <Textarea
+              value={weeklyNotes}
+              onChange={(e) => setWeeklyNotes(e.target.value)}
+              onBlur={handleSaveWeeklyNotes}
+              placeholder="Free-form notes for this week…"
+              rows={5}
+              className="rounded-xl"
+            />
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Week of {format(weekStart, "MMM d, yyyy")}</span>
+              {weeklyNotesSaving ? (
+                <span className="flex items-center gap-1">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Saving…
+                </span>
+              ) : weeklyNotesSavedAt ? (
+                <span className="text-primary">Saved</span>
+              ) : null}
+            </div>
           </div>
         </Section>
       </div>
