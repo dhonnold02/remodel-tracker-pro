@@ -511,8 +511,9 @@ const CommandCenter = () => {
     }));
     const dispatchHtml = crew.length === 0
       ? `<p class="empty">No crew members.</p>`
-      : dispatchByDay.map((d) => `<h3>${esc(d.label)}</h3><table><thead><tr><th style="width:40%">Crew Member</th><th>Project</th></tr></thead><tbody>${
-          d.rows.map((r) => `<tr><td>${esc(r.member)}</td><td class="${r.project === "—" ? "muted" : ""}">${esc(r.project)}</td></tr>`).join("")
+      : `<table><thead><tr><th style="width:40%">Crew Member</th><th>Project</th></tr></thead></table>` +
+        dispatchByDay.map((d) => `<h3>${esc(d.label)}</h3><table><tbody>${
+          d.rows.map((r) => `<tr><td style="width:40%">${esc(r.member)}</td><td class="${r.project === "—" ? "muted" : ""}">${esc(r.project)}</td></tr>`).join("")
         }</tbody></table>`).join("");
 
     // Logs
