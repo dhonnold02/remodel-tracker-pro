@@ -53,7 +53,7 @@ const AuthPage = () => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
-    if (error) setError(error.message);
+    if (error) setError(friendlyAuthError(error.message));
     else setConfirmMessage("Check your email for a password reset link.");
     setLoading(false);
   };
@@ -149,7 +149,10 @@ const AuthPage = () => {
       </div>
 
       {/* Right panel — form */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
+      <div
+        className="flex-1 flex items-center justify-center p-6 sm:p-10"
+        style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}
+      >
         <div className="w-full max-w-sm space-y-8">
           {/* Mobile logo */}
           <div className="flex items-center gap-2.5 lg:hidden">
@@ -232,8 +235,13 @@ const AuthPage = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                {isSignUp && (
-                  <div className="space-y-1.5">
+                <div
+                  className={cn(
+                    "transition-all duration-200 ease-in-out overflow-hidden",
+                    isSignUp ? "max-h-32 opacity-100" : "max-h-0 opacity-0"
+                  )}
+                >
+                  <div className="space-y-1.5 pb-1">
                     <Label htmlFor="displayName" className="text-xs font-medium">
                       Display Name
                     </Label>
@@ -247,7 +255,7 @@ const AuthPage = () => {
                       className="h-11 rounded-xl"
                     />
                   </div>
-                )}
+                </div>
 
                 <div className="space-y-1.5">
                   <Label htmlFor="email" className="text-xs font-medium">
@@ -297,8 +305,13 @@ const AuthPage = () => {
                   />
                 </div>
 
-                {isSignUp && (
-                  <div className="space-y-1.5">
+                <div
+                  className={cn(
+                    "transition-all duration-200 ease-in-out overflow-hidden",
+                    isSignUp ? "max-h-32 opacity-100" : "max-h-0 opacity-0"
+                  )}
+                >
+                  <div className="space-y-1.5 pb-1">
                     <Label htmlFor="inviteCode" className="text-xs font-medium">
                       Invite Code
                     </Label>
@@ -308,12 +321,12 @@ const AuthPage = () => {
                       placeholder="Enter your invite code"
                       value={inviteCode}
                       onChange={(e) => setInviteCode(e.target.value)}
-                      required
+                      required={isSignUp}
                       disabled={loading}
                       className="h-11 rounded-xl"
                     />
                   </div>
-                )}
+                </div>
 
                 {error && (
                   <p className="text-xs text-destructive">{error}</p>
