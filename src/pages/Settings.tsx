@@ -401,6 +401,28 @@ const Settings = () => {
         </section>
 
         {/* Notifications */}
+        {/* Appearance */}
+        <section className="rounded-2xl border bg-card p-4 md:p-6 space-y-5">
+          <SectionHeader
+            title="Appearance"
+            subtitle="Switch between light and dark themes."
+          />
+          <div className="flex items-center justify-between gap-4 rounded-xl border bg-background px-4 py-3">
+            <Label htmlFor="dark_mode" className="text-sm font-medium text-foreground cursor-pointer flex-1">
+              Dark mode
+            </Label>
+            <Switch
+              id="dark_mode"
+              checked={data.dark_mode}
+              onCheckedChange={(checked) => {
+                update("dark_mode", checked);
+                if (checked) document.documentElement.classList.add("dark");
+                else document.documentElement.classList.remove("dark");
+              }}
+            />
+          </div>
+        </section>
+
         <section className="rounded-2xl border bg-card p-4 md:p-6 space-y-5">
           <SectionHeader
             title="Notifications"
