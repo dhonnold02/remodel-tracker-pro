@@ -236,7 +236,7 @@ const TaskCard = ({
           <PopoverTrigger asChild>
             <button
               disabled={!isEditor}
-              className={cn("flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md font-medium", PRIORITY_CONFIG[task.priority].cls)}
+              className={cn("flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-xl font-medium focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none", PRIORITY_CONFIG[task.priority].cls)}
             >
               <span className={cn("h-1.5 w-1.5 rounded-full", PRIORITY_CONFIG[task.priority].dot)} />
               {PRIORITY_CONFIG[task.priority].label}
@@ -247,7 +247,7 @@ const TaskCard = ({
               <button
                 key={p}
                 onClick={() => onUpdate(task.id, { priority: p })}
-                className={cn("w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded-md hover:bg-secondary transition-colors", p === task.priority && "bg-secondary")}
+                className={cn("w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded-xl hover:bg-secondary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none", p === task.priority && "bg-secondary")}
               >
                 <span className={cn("h-2 w-2 rounded-full", PRIORITY_CONFIG[p].dot)} />
                 {PRIORITY_CONFIG[p].label}
@@ -261,7 +261,7 @@ const TaskCard = ({
             <button
               disabled={!isEditor}
               className={cn(
-                "flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md transition-colors",
+                "flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-xl transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 status === "overdue" ? "text-destructive bg-destructive/10 font-medium"
                   : status === "today" ? "text-warning bg-warning/10 font-medium"
                   : task.dueDate ? "text-muted-foreground bg-secondary"
@@ -293,7 +293,7 @@ const TaskCard = ({
         {subtasks.length > 0 && (
           <button
             onClick={onToggleExpand}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground bg-secondary px-1.5 py-0.5 rounded-md"
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground bg-secondary px-1.5 py-0.5 rounded-xl focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
           >
             <ListTree className="h-3 w-3" />
             {completedSubs}/{subtasks.length}
@@ -420,7 +420,7 @@ const PhaseColumn = ({
             <span className="md:hidden flex-1 text-left text-xs font-semibold text-foreground truncate">
               {phase}
             </span>
-            <span className="md:hidden text-xs font-medium text-muted-foreground tabular-nums px-1.5 py-0.5 rounded-md bg-background/80">
+            <span className="md:hidden text-xs font-medium text-muted-foreground tabular-nums px-1.5 py-0.5 rounded-xl bg-background/80">
               {parentTasks.length}
             </span>
             <span
@@ -455,7 +455,7 @@ const PhaseColumn = ({
                     if (e.key === "Enter") handleRename();
                     if (e.key === "Escape") { setRenameValue(phase); setRenaming(false); }
                   }}
-                  className="flex-1 bg-background border rounded-md px-2 py-0.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/30 min-w-0"
+                  className="flex-1 bg-background border rounded-xl px-2 py-0.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/30 min-w-0"
                 />
               ) : (
                 <h3
@@ -466,7 +466,7 @@ const PhaseColumn = ({
                   {phase}
                 </h3>
               )}
-              <span className="text-xs font-medium text-muted-foreground tabular-nums px-1.5 py-0.5 rounded-md bg-background/80">
+              <span className="text-xs font-medium text-muted-foreground tabular-nums px-1.5 py-0.5 rounded-xl bg-background/80">
                 {parentTasks.length}
               </span>
               {isEditor && !renaming && (
@@ -543,7 +543,7 @@ const PhaseColumn = ({
         >
           <SortableContext items={parentTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
             {parentTasks.length === 0 && !adding && (
-              <div className="hidden md:block text-xs text-muted-foreground/70 italic text-center py-6 px-3 rounded-lg border border-dashed">
+              <div className="hidden md:block text-xs text-muted-foreground/70 italic text-center py-6 px-3 rounded-xl border border-dashed">
                 Drop tasks here
               </div>
             )}
@@ -583,14 +583,14 @@ const PhaseColumn = ({
                   className="h-8 text-sm"
                 />
                 <div className="flex gap-1.5">
-                  <Button size="sm" onClick={handleAdd} className="h-7 text-xs flex-1">Add</Button>
-                  <Button size="sm" variant="ghost" onClick={() => { setAdding(false); setNewTitle(""); }} className="h-7 text-xs">Cancel</Button>
+                  <Button size="sm" onClick={handleAdd} className="h-9 text-xs flex-1">Add</Button>
+                  <Button size="sm" variant="ghost" onClick={() => { setAdding(false); setNewTitle(""); }} className="h-9 text-xs">Cancel</Button>
                 </div>
               </div>
             ) : (
               <button
                 onClick={() => setAdding(true)}
-                className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-secondary/60 py-2 rounded-lg transition-colors"
+                className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-secondary/60 py-2 rounded-xl transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
               >
                 <Plus className="h-3.5 w-3.5" /> Add task
               </button>
@@ -885,8 +885,8 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, can
                       className="h-8 text-sm"
                     />
                     <div className="flex gap-1.5">
-                      <Button size="sm" onClick={addPhase} className="h-7 text-xs flex-1">Add phase</Button>
-                      <Button size="sm" variant="ghost" onClick={() => { setAddingPhase(false); setNewPhaseName(""); }} className="h-7 text-xs">Cancel</Button>
+                      <Button size="sm" onClick={addPhase} className="h-9 text-xs flex-1">Add phase</Button>
+                      <Button size="sm" variant="ghost" onClick={() => { setAddingPhase(false); setNewPhaseName(""); }} className="h-9 text-xs">Cancel</Button>
                     </div>
                   </div>
                 ) : (
