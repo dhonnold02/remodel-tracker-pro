@@ -7,6 +7,20 @@ import { CheckCircle, AlertTriangle } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import SightlineLogo from "@/components/SightlineLogo";
 
+const friendlyAuthError = (msg: string | undefined | null): string => {
+  if (!msg) return "Something went wrong. Please try again.";
+  const m = msg.toLowerCase();
+  if (m.includes("invalid login credentials"))
+    return "Incorrect email or password. Please try again.";
+  if (m.includes("already registered") || m.includes("user already registered") || m.includes("already exists"))
+    return "An account with this email already exists. Try signing in instead.";
+  if (m.includes("password should be at least") || m.includes("password must"))
+    return "Password must be at least 6 characters long.";
+  if (m.includes("token") || m.includes("expired"))
+    return "This reset link is invalid or has expired.";
+  return "Something went wrong. Please try again.";
+};
+
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
@@ -56,7 +70,7 @@ const ResetPasswordPage = () => {
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     if (error) {
-      setError(error.message);
+      setError(friendlyAuthError(error.message));
     } else {
       setSuccess(true);
       setTimeout(() => navigate("/"), 2000);
@@ -65,19 +79,34 @@ const ResetPasswordPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-6">
+    <div className="relative min-h-screen bg-background flex items-center justify-center px-4 overflow-hidden">
+      {/* Subtle grid texture */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+      <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+
+      <div className="relative w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
-          <div className="mx-auto w-fit">
-            <SightlineLogo size={48} />
+          <div className="mx-auto flex items-center gap-2.5 w-fit">
+            <SightlineLogo size={44} />
+            <span className="font-heading text-base font-semibold text-foreground">Sightline</span>
           </div>
-          <h1 className="font-heading text-2xl font-bold text-foreground">Set New Password</h1>
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
+            Every job, start to finish.
+          </p>
+          <h1 className="font-heading text-2xl font-bold text-foreground tracking-tight">Set New Password</h1>
           <p className="text-sm text-muted-foreground">Enter your new password below.</p>
         </div>
 
         {success ? (
           <div className="text-center space-y-3 py-6">
-            <CheckCircle className="h-12 w-12 text-accent mx-auto" />
+            <CheckCircle className="h-12 w-12 text-success mx-auto" />
             <p className="text-sm text-foreground font-medium">Password updated successfully!</p>
             <p className="text-xs text-muted-foreground">Redirecting to dashboard…</p>
           </div>
@@ -103,8 +132,8 @@ const ResetPasswordPage = () => {
           </div>
         ) : (
           <form onSubmit={handleReset} className="space-y-4">
-            <div>
-              <Label htmlFor="password" className="text-sm text-muted-foreground">New Password</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-xs font-medium">New Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -113,11 +142,11 @@ const ResetPasswordPage = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="mt-1"
+                className="h-11 rounded-xl"
               />
             </div>
-            <div>
-              <Label htmlFor="confirm" className="text-sm text-muted-foreground">Confirm Password</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="confirm" className="text-xs font-medium">Confirm Password</Label>
               <Input
                 id="confirm"
                 type="password"
@@ -126,13 +155,13 @@ const ResetPasswordPage = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={6}
-                className="mt-1"
+                className="h-11 rounded-xl"
               />
             </div>
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-xs text-destructive">{error}</p>}
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full h-11 rounded-xl shadow-sm" disabled={loading}>
               {loading ? "Updating…" : "Update Password"}
             </Button>
           </form>
