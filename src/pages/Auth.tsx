@@ -133,7 +133,7 @@ const AuthPage = () => {
           <ul className="space-y-3 max-w-md">
             {features.map(({ icon: Icon, text }) => (
               <li key={text} className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
                   <Icon className="h-4 w-4 text-primary" />
                 </div>
                 <span className="text-sm text-foreground">{text}</span>

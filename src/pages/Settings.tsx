@@ -295,7 +295,7 @@ const Settings = () => {
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onFileChange} />
             {data.logo_url ? (
               <div className="mt-1.5 flex items-center gap-4 rounded-xl border bg-secondary/40 p-3">
-                <img src={data.logo_url} alt="Logo" className="h-16 w-16 rounded-lg bg-background object-contain border" />
+                <img src={data.logo_url} alt="Logo" className="h-16 w-16 rounded-xl bg-background object-contain border" />
                 <div className="flex-1 text-xs text-muted-foreground truncate">Current logo</div>
                 <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="rounded-xl">
                   {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Replace"}
@@ -363,7 +363,7 @@ const Settings = () => {
                   type="color"
                   value={data.brand_color && data.brand_color.startsWith("#") ? data.brand_color : "#3b82f6"}
                   onChange={(e) => pickColor(e.target.value)}
-                  className="h-11 w-11 md:h-8 md:w-8 rounded-lg border bg-transparent cursor-pointer"
+                  className="h-11 w-11 md:h-8 md:w-8 rounded-xl border bg-transparent cursor-pointer"
                   aria-label="Custom color"
                 />
                 Custom
@@ -373,7 +373,7 @@ const Settings = () => {
                 <button
                   type="button"
                   onClick={() => { update("brand_color", null); applyBrandPrimary(null); }}
-                  className="md:ml-1 h-11 md:h-8 px-4 md:px-3 rounded-lg border border-dashed text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                  className="md:ml-1 h-11 md:h-8 px-4 md:px-3 rounded-xl border border-dashed text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                 >
                   Reset
                 </button>

@@ -337,7 +337,7 @@ const Onboarding = () => {
                   <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onFileChange} />
                   {logoUrl ? (
                     <div className="flex items-center gap-3 rounded-xl border bg-secondary/40 p-3">
-                      <img src={logoUrl} alt="Logo" className="h-12 w-12 rounded-lg bg-background object-contain border" />
+                      <img src={logoUrl} alt="Logo" className="h-12 w-12 rounded-xl bg-background object-contain border" />
                       <div className="flex-1 text-xs text-muted-foreground truncate">Logo uploaded</div>
                       <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="rounded-xl">
                         {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Replace"}
@@ -377,10 +377,10 @@ const Onboarding = () => {
                   <div className="rounded-xl border bg-secondary/30 p-4">
                     <div className="flex items-center gap-3">
                       {logoUrl ? (
-                        <img src={logoUrl} alt="" className="h-10 w-10 rounded-lg bg-background object-contain border" />
+                        <img src={logoUrl} alt="" className="h-10 w-10 rounded-xl bg-background object-contain border" />
                       ) : (
                         <div
-                          className="h-10 w-10 rounded-lg flex items-center justify-center text-white text-sm font-semibold"
+                          className="h-10 w-10 rounded-xl flex items-center justify-center text-white text-sm font-semibold"
                           style={{ backgroundColor: brandColor || "hsl(var(--primary))" }}
                         >
                           {(companyName || "S").charAt(0).toUpperCase()}

@@ -520,7 +520,7 @@ const ProjectDetailPage = () => {
             <section className="space-y-4">
               <header className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2.5">
-                  <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
                     <ListChecks className="h-4 w-4 text-primary" />
                   </div>
                   <div>
@@ -676,7 +676,7 @@ const ProjectDetailPage = () => {
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                   <button
-                                    className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                    className="shrink-0 p-1.5 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                                     title="Delete sub-project"
                                     aria-label={`Delete sub-project ${sub.name || "Untitled"}`}
                                   >
@@ -716,7 +716,7 @@ const ProjectDetailPage = () => {
         {/* TERTIARY — Tabbed workspace (Timeline, Photos, Plans, Notes, Files) — desktop only */}
         <section className="hidden md:block space-y-4">
           <header className="flex items-center gap-2.5 px-1">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
               <FileImage className="h-4 w-4 text-primary" />
             </div>
             <div>

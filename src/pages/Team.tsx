@@ -311,7 +311,7 @@ const Team = () => {
         {/* Invite form */}
         <section className="rounded-2xl border bg-card shadow-sm p-6 space-y-4">
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
               <UserPlus className="h-4 w-4 text-primary" />
             </div>
             <div>
@@ -444,7 +444,7 @@ const Team = () => {
                               <button
                                 type="button"
                                 onClick={() => setExpandedMemberId(isExpanded ? null : m.id)}
-                                className="md:hidden p-1.5 -mr-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+                                className="md:hidden p-1.5 -mr-1 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
                                 aria-label={isExpanded ? "Hide actions" : "Show actions"}
                                 aria-expanded={isExpanded}
                               >
@@ -487,7 +487,7 @@ const Team = () => {
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <button
-                                  className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                                  className="p-1.5 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                                   title="Remove member"
                                 >
                                   <Trash2 className="h-4 w-4" />
@@ -524,7 +524,7 @@ const Team = () => {
                                 <Button
                                   variant="destructive"
                                   size="sm"
-                                  className="rounded-lg"
+                                  className="rounded-xl"
                                 >
                                   <Trash2 className="h-4 w-4 mr-2" />
                                   Remove member
@@ -607,14 +607,14 @@ const Team = () => {
                         <div className="inline-flex items-center gap-1">
                           <button
                             onClick={() => copyInviteLink(inv.token)}
-                            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                            className="p-1.5 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                             title="Copy invite link"
                           >
                             <Copy className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => revokeInvite(inv.id)}
-                            className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                            className="p-1.5 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                             title="Revoke invitation"
                           >
                             <X className="h-4 w-4" />

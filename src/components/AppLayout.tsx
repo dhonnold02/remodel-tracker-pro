@@ -65,7 +65,7 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
         <div className="px-4 py-3 border-b">
           <div className="flex items-center gap-2.5">
             {brand.brandLogoUrl ? (
-              <img src={brand.brandLogoUrl} alt="Logo" className="h-8 w-8 rounded-lg object-contain" />
+              <img src={brand.brandLogoUrl} alt="Logo" className="h-8 w-8 rounded-xl object-contain" />
             ) : (
               <SightlineLogo size={32} />
             )}

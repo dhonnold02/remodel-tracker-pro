@@ -32,9 +32,9 @@ interface TaskListProps {
 
 /* ─── Priority config ─── */
 const PRIORITY_CONFIG: Record<TaskPriority, { label: string; color: string; dot: string }> = {
-  high: { label: "High", color: "text-red-600 bg-red-500/10", dot: "bg-red-500" },
-  medium: { label: "Med", color: "text-amber-600 bg-amber-500/10", dot: "bg-amber-500" },
-  low: { label: "Low", color: "text-blue-500 bg-blue-500/10", dot: "bg-blue-500" },
+  high: { label: "High", color: "text-destructive bg-destructive/10", dot: "bg-destructive" },
+  medium: { label: "Med", color: "text-warning bg-warning/10", dot: "bg-warning" },
+  low: { label: "Low", color: "text-primary bg-primary/10", dot: "bg-primary" },
 };
 
 /* ─── Due date helpers ─── */
@@ -113,7 +113,7 @@ const DueDatePicker = ({ dueDate, completed, onChange }: { dueDate?: string | nu
         <button className={cn(
           "flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md transition-colors shrink-0",
           status === "overdue" ? "text-destructive bg-destructive/10 font-medium"
-            : status === "today" ? "text-amber-600 bg-amber-500/10 font-medium"
+            : status === "today" ? "text-warning bg-warning/10 font-medium"
             : dueDate ? "text-muted-foreground hover:text-foreground"
             : "text-muted-foreground/50 hover:text-muted-foreground"
         )}>

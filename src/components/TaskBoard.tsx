@@ -112,9 +112,9 @@ const TitleInput = ({
 };
 
 const PRIORITY_CONFIG: Record<TaskPriority, { label: string; cls: string; dot: string }> = {
-  high: { label: "High", cls: "text-red-600 bg-red-500/10", dot: "bg-red-500" },
-  medium: { label: "Med", cls: "text-amber-600 bg-amber-500/10", dot: "bg-amber-500" },
-  low: { label: "Low", cls: "text-blue-500 bg-blue-500/10", dot: "bg-blue-500" },
+  high: { label: "High", cls: "text-destructive bg-destructive/10", dot: "bg-destructive" },
+  medium: { label: "Med", cls: "text-warning bg-warning/10", dot: "bg-warning" },
+  low: { label: "Low", cls: "text-primary bg-primary/10", dot: "bg-primary" },
 };
 
 // Stable color per phase index — uses HSL with golden ratio for nice variation
@@ -263,7 +263,7 @@ const TaskCard = ({
               className={cn(
                 "flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md transition-colors",
                 status === "overdue" ? "text-destructive bg-destructive/10 font-medium"
-                  : status === "today" ? "text-amber-600 bg-amber-500/10 font-medium"
+                  : status === "today" ? "text-warning bg-warning/10 font-medium"
                   : task.dueDate ? "text-muted-foreground bg-secondary"
                   : "text-muted-foreground/60 hover:text-muted-foreground",
               )}
