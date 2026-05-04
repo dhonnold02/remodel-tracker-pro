@@ -918,11 +918,11 @@ ${weeklyNotesHtml}
 
         {/* Recent Activity */}
         <Section title="Recent Activity" icon={Activity}>
-          {activityByProject.length === 0 ? (
-            <EmptyState icon={Activity} title="No recent activity" description="Activity from your projects will appear here." />
+          {recentActivity24h.length === 0 ? (
+            <EmptyState icon={Activity} title="No activity in the last 24 hours." />
           ) : (
             <div className="space-y-4">
-              {activityByProject.map((g) => (
+              {recentActivity24h.map((g) => (
                 <div key={g.project}>
                   <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                     {g.project}
@@ -932,7 +932,9 @@ ${weeklyNotesHtml}
                       <li key={a.id} className="flex items-start gap-3 rounded-xl bg-secondary/30 px-3 py-2">
                         <span className="h-2 w-2 mt-1.5 rounded-full bg-primary shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm text-foreground">{a.description}</div>
+                          <div className="text-sm text-foreground">
+                            {a.description}{a.count > 1 ? ` (${a.count}×)` : ""}
+                          </div>
                           <div className="text-xs text-muted-foreground mt-0.5">
                             {a.user_name || "Someone"} · {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
                           </div>
@@ -944,6 +946,44 @@ ${weeklyNotesHtml}
               ))}
             </div>
           )}
+
+          <Collapsible className="mt-4">
+            <CollapsibleTrigger asChild>
+              <button className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
+                Show previous 7 days <ChevronDown className="h-3 w-3" />
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-3">
+              {recentActivity7d.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No activity in the past 7 days</p>
+              ) : (
+                <div className="space-y-4">
+                  {recentActivity7d.map((g) => (
+                    <div key={g.project}>
+                      <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                        {g.project}
+                      </div>
+                      <ul className="space-y-1.5">
+                        {g.entries.map((a) => (
+                          <li key={a.id} className="flex items-start gap-3 rounded-xl bg-secondary/30 px-3 py-2">
+                            <span className="h-2 w-2 mt-1.5 rounded-full bg-primary shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm text-foreground">
+                                {a.description}{a.count > 1 ? ` (${a.count}×)` : ""}
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-0.5">
+                                {a.user_name || "Someone"} · {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
         </Section>
 
         {/* Today's Events */}
