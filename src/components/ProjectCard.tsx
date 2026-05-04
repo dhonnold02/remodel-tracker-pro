@@ -105,6 +105,7 @@ const ProjectCard = ({ project, getSubProjects, onDelete, isSubProject = false, 
       ref={setNodeRef}
       style={dragStyle}
       {...(sortable ? attributes : {})}
+      {...(sortable ? listeners : {})}
       className={`bg-card rounded-xl border border-border p-5 space-y-4 cursor-pointer group relative overflow-hidden transition-all duration-150 hover:shadow-md hover:border-border ${
         isCompleted ? "border-l-4 border-l-success" : ""
       }`}
