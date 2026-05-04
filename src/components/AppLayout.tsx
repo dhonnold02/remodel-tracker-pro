@@ -90,7 +90,7 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary"
               )}
             >
-              <item.icon className="h-4 w-4" />
+              <item.icon className={cn("h-4 w-4", isActive(item.path) && "text-primary")} />
               {item.label}
             </button>
           ))}
@@ -114,7 +114,7 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary"
               )}
             >
-              <SlidersHorizontal className="h-4 w-4" />
+              <SlidersHorizontal className={cn("h-4 w-4", location.pathname.startsWith("/settings") && "text-primary")} />
               Settings
             </button>
           )}
