@@ -294,7 +294,7 @@ const Settings = () => {
           <div className="flex-1 min-w-0 max-w-3xl space-y-6">
         {/* Company profile */}
         {(activeSection === "profile" || true) && (
-        <section data-section="profile" className={cn("rounded-xl border border-[hsl(214_13%_90%)] bg-white p-5 space-y-5", activeSection !== "profile" && "hidden md:hidden")}>
+        <section data-section="profile" className={cn("rounded-xl border border-[hsl(214_13%_90%)] bg-white p-5 space-y-5", activeSection !== "profile" && "md:hidden")}>
           <SectionHeader
             title="Company Profile"
             subtitle="Used everywhere in the app, including PDF exports."
@@ -378,7 +378,7 @@ const Settings = () => {
         )}
 
         {/* Brand colors */}
-        <section data-section="brand" className={cn("rounded-xl border border-[hsl(214_13%_90%)] bg-white p-5 space-y-5", activeSection !== "brand" && "hidden md:hidden")}>
+        <section data-section="brand" className={cn("rounded-xl border border-[hsl(214_13%_90%)] bg-white p-5 space-y-5", activeSection !== "brand" && "md:hidden")}>
           <SectionHeader
             title="Brand Color"
             subtitle="Applied to buttons, highlights, and your exported PDFs."
@@ -440,7 +440,7 @@ const Settings = () => {
 
         {/* Notifications */}
         {/* Appearance */}
-        <section data-section="appearance" className={cn("rounded-xl border border-[hsl(214_13%_90%)] bg-white p-5 space-y-5", activeSection !== "appearance" && "hidden md:hidden")}>
+        <section data-section="appearance" className={cn("rounded-xl border border-[hsl(214_13%_90%)] bg-white p-5 space-y-5", activeSection !== "appearance" && "md:hidden")}>
           <SectionHeader
             title="Appearance"
             subtitle="Switch between light and dark themes."
@@ -461,7 +461,7 @@ const Settings = () => {
           </div>
         </section>
 
-        <section data-section="notifications" className={cn("rounded-xl border border-[hsl(214_13%_90%)] bg-white p-5 space-y-5", activeSection !== "notifications" && "hidden md:hidden")}>
+        <section data-section="notifications" className={cn("rounded-xl border border-[hsl(214_13%_90%)] bg-white p-5 space-y-5", activeSection !== "notifications" && "md:hidden")}>
           <SectionHeader
             title="Notifications"
             subtitle="Choose when Sightline emails you about activity and upcoming events."
