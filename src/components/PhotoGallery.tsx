@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { FileAttachment } from "@/types/project";
 import { ImagePlus, X, Camera, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import EmptyState from "@/components/EmptyState";
 
 interface PhotoGalleryProps {
   photos: FileAttachment[];
@@ -118,29 +119,29 @@ const PhotoGallery = ({ photos, onChange }: PhotoGalleryProps) => {
   const activePhoto = activeIndex !== null ? photos[activeIndex] : null;
 
   return (
-    <div className="premium-card p-6 space-y-5">
-      <div className="flex items-center justify-between">
-        <h2 className="section-title flex items-center gap-2">
-          <Camera className="h-4 w-4 text-primary" />
-          Photos
-        </h2>
-        <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()} className="rounded-xl h-9 text-xs">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">{photos.length} photo{photos.length === 1 ? "" : "s"}</p>
+        <Button size="sm" onClick={() => inputRef.current?.click()} className="rounded-lg h-9 text-xs">
           <ImagePlus className="h-3.5 w-3.5 mr-1.5" />
-          Add
+          Add Photo
         </Button>
         <input ref={inputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleUpload} />
       </div>
       {photos.length === 0 ? (
-        <div
-          onClick={() => inputRef.current?.click()}
-          className="border-2 border-dashed border-muted rounded-xl p-8 text-center cursor-pointer hover:border-primary/30 transition-colors"
-        >
-          <Camera className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">Drop photos here or click to upload</p>
-          <p className="text-xs text-muted-foreground mt-1">JPG, PNG, HEIC up to 10MB</p>
-        </div>
+        <EmptyState
+          icon={Camera}
+          title="No photos yet"
+          description="Upload progress photos, before/after shots, or punch list evidence."
+          action={
+            <Button size="sm" onClick={() => inputRef.current?.click()} className="rounded-lg h-9 text-xs">
+              <ImagePlus className="h-3.5 w-3.5 mr-1.5" />
+              Add Photo
+            </Button>
+          }
+        />
       ) : (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-3">
           {photos.map((photo, idx) => (
             <div
               key={photo.id}
