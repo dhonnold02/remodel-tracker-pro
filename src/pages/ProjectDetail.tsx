@@ -390,9 +390,7 @@ const ProjectDetailPage = () => {
         );
       case "team":
         return (
-          <div className="rounded-xl bg-card border border-[hsl(214_13%_90%)] p-5">
-            <TeamMembers projectId={project.id} members={project.members} isEditor={isEditor} ownerUserId={project.createdBy} />
-          </div>
+          <TeamMembers projectId={project.id} members={project.members} isEditor={isEditor} ownerUserId={project.createdBy} />
         );
     }
   };
@@ -419,6 +417,17 @@ const ProjectDetailPage = () => {
             { label: "Passed", value: String(punchPassed), tone: "success" as const },
             { label: "Failed", value: String(punchFailed), tone: "destructive" as const },
             { label: "Pending", value: String(punchPending), tone: "warning" as const },
+          ] : activeSection === "budget" ? [
+            { label: "Total Budget", value: fmtMoney(project.totalBudget) },
+            { label: "Spent", value: fmtMoney(totalSpent) },
+            { label: "Remaining", value: fmtMoney(Math.abs(remainingBudget)), tone: remainingBudget < 0 ? "destructive" as const : undefined },
+            { label: "Used %", value: `${Math.round(budgetPercent)}%`, tone: budgetPercent > 100 ? "destructive" as const : undefined },
+          ] : activeSection === "invoices" ? [
+            { label: "Budget", value: fmtMoney(project.totalBudget) },
+            { label: "Spent", value: fmtMoney(totalSpent) },
+            { label: "Remaining", value: fmtMoney(Math.abs(remainingBudget)), tone: remainingBudget < 0 ? "destructive" as const : undefined },
+            { label: "Owed by HO", value: fmtMoney(project.invoices.filter((i: any) => i.type === "homeowner" && !i.paid).reduce((s: number, i: any) => s + (Number(i.amount) || 0), 0)) },
+            { label: "Owed to Subs", value: fmtMoney(project.invoices.filter((i: any) => i.type === "subcontractor" && !i.paid).reduce((s: number, i: any) => s + (Number(i.amount) || 0), 0)) },
           ] : [
             { label: "Budget Used", value: `${Math.round(budgetPercent)}%`, tone: budgetPercent > 100 ? "destructive" as const : undefined },
             { label: "Tasks Done", value: `${completedTasks}/${project.tasks.length}` },
