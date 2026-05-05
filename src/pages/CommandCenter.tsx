@@ -145,27 +145,26 @@ async function fetchWeather(lat: number, lng: number): Promise<WeatherData | nul
 // Section wrapper (collapsible on mobile)
 // ─────────────────────────────────────────────────────────────────────────────
 const Section = ({
-  title, icon: Icon, children, defaultOpen = true,
+  title, icon: Icon, children, defaultOpen = true, className = "",
 }: {
   title: string;
   icon: React.ComponentType<any>;
   children: React.ReactNode;
   defaultOpen?: boolean;
+  className?: string;
 }) => {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <section className="rounded-2xl border border-border bg-card overflow-hidden">
+    <section className={`rounded-xl border border-[hsl(214_13%_90%)] bg-white overflow-hidden ${className}`}>
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger asChild>
           <button
             type="button"
-            className="w-full flex items-center justify-between gap-3 p-4 md:p-5 md:cursor-default"
+            className="w-full flex items-center justify-between gap-3 p-4 md:cursor-default"
           >
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                <Icon className="h-4 w-4" />
-              </div>
-              <h2 className="font-heading text-base md:text-lg font-semibold text-foreground">
+            <div className="flex items-center gap-2">
+              <Icon className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-semibold text-foreground">
                 {title}
               </h2>
             </div>
@@ -174,7 +173,7 @@ const Section = ({
             />
           </button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="px-4 md:px-5 pb-5">
+        <CollapsibleContent className="px-4 pb-4">
           {children}
         </CollapsibleContent>
       </Collapsible>
