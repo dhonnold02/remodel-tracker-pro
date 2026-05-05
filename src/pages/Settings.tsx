@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, Upload, X, Check, LogOut } from "lucide-react";
+import { Loader2, Upload, X, Check, LogOut, Building2, Palette, Sun, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { showSuccess, showError } from "@/lib/toast";
 import { applyBrandPrimary, BRAND_PRESETS } from "@/lib/brandColor";
@@ -153,6 +153,14 @@ const Settings = () => {
     setData((d) => ({ ...d, [key]: value }));
   };
 
+  const [activeSection, setActiveSection] = useState<"profile" | "brand" | "appearance" | "notifications">("profile");
+  const sections = [
+    { id: "profile" as const, label: "Company Profile", icon: Building2 },
+    { id: "brand" as const, label: "Brand Color", icon: Palette },
+    { id: "appearance" as const, label: "Appearance", icon: Sun },
+    { id: "notifications" as const, label: "Notifications", icon: Bell },
+  ];
+
   const pickColor = (hex: string) => {
     update("brand_color", hex);
     applyBrandPrimary(hex);
@@ -250,15 +258,42 @@ const Settings = () => {
       title="Settings"
       subtitle="Manage your company profile and preferences"
       actions={
-        <Button onClick={handleSave} disabled={saving} className="rounded-xl hidden md:inline-flex">
+        <Button onClick={handleSave} disabled={saving} className="h-9 rounded-lg hidden md:inline-flex">
           {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
           Save changes
         </Button>
       }
     >
-      <div className="max-w-3xl space-y-6 md:space-y-8 pb-44 md:pb-0">
+      <div className="-m-4 lg:-m-8 min-h-full bg-[hsl(210_20%_98%)] px-6 py-5 pb-44 md:pb-8">
+        <div className="flex gap-6">
+          {/* Left nav */}
+          <aside className="hidden md:block w-48 shrink-0">
+            <nav className="sticky top-20 space-y-1">
+              {sections.map((s) => {
+                const active = activeSection === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => setActiveSection(s.id)}
+                    className={cn(
+                      "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                      active
+                        ? "bg-primary/10 text-primary"
+                        : "text-slate-700 hover:bg-white"
+                    )}
+                  >
+                    <s.icon className="h-4 w-4" />
+                    {s.label}
+                  </button>
+                );
+              })}
+            </nav>
+          </aside>
+
+          <div className="flex-1 min-w-0 max-w-3xl space-y-6">
         {/* Company profile */}
-        <section className="rounded-2xl border bg-card p-4 md:p-6 space-y-5">
+        {(activeSection === "profile" || true) && (
+        <section data-section="profile" className={cn("rounded-xl border border-[hsl(214_13%_90%)] bg-white p-5 space-y-5", activeSection !== "profile" && "hidden md:hidden")}>
           <SectionHeader
             title="Company Profile"
             subtitle="Used everywhere in the app, including PDF exports."
@@ -339,16 +374,17 @@ const Settings = () => {
             )}
           </div>
         </section>
+        )}
 
         {/* Brand colors */}
-        <section className="rounded-2xl border bg-card p-4 md:p-6 space-y-5">
+        <section data-section="brand" className={cn("rounded-xl border border-[hsl(214_13%_90%)] bg-white p-5 space-y-5", activeSection !== "brand" && "hidden md:hidden")}>
           <SectionHeader
             title="Brand Color"
             subtitle="Applied to buttons, highlights, and your exported PDFs."
           />
 
           <div>
-            <div className="flex flex-wrap items-center gap-3 md:gap-2">
+            <div className="grid grid-cols-8 gap-2 items-center">
               {BRAND_PRESETS.map((p) => {
                 const selected = (data.brand_color || "").toLowerCase() === p.hex.toLowerCase();
                 return (
@@ -357,19 +393,20 @@ const Settings = () => {
                     type="button"
                     onClick={() => pickColor(p.hex)}
                     title={`${p.name} — ${p.hex}`}
-                    className={`h-11 w-11 md:h-8 md:w-8 rounded-full border-2 transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${selected ? "border-foreground scale-110 ring-2 ring-primary ring-offset-2 ring-offset-background" : "border-transparent hover:scale-105"}`}
+                    className={`h-9 w-9 rounded-lg border-2 transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${selected ? "border-foreground ring-2 ring-primary ring-offset-2 ring-offset-background" : "border-transparent hover:scale-105"}`}
                     style={{ backgroundColor: p.hex }}
                     aria-label={p.name}
                   />
                 );
               })}
-
-              <label className="md:ml-2 flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+            </div>
+            <div className="flex items-center gap-3 mt-3">
+              <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
                 <input
                   type="color"
                   value={data.brand_color && data.brand_color.startsWith("#") ? data.brand_color : "#3b82f6"}
                   onChange={(e) => pickColor(e.target.value)}
-                  className="h-11 w-11 md:h-8 md:w-8 rounded-xl border bg-transparent cursor-pointer"
+                  className="h-9 w-9 rounded-lg border bg-transparent cursor-pointer"
                   aria-label="Custom color"
                 />
                 Custom
@@ -379,14 +416,14 @@ const Settings = () => {
                 <button
                   type="button"
                   onClick={() => { update("brand_color", null); applyBrandPrimary(null); }}
-                  className="md:ml-1 h-11 md:h-8 px-4 md:px-3 rounded-xl border border-dashed text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                  className="h-9 px-3 rounded-lg border border-dashed text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                 >
                   Reset
                 </button>
               )}
             </div>
 
-            <div className="mt-5 rounded-xl border bg-secondary/40 p-4 space-y-3">
+            <div className="mt-5 rounded-xl border border-[hsl(214_13%_90%)] bg-[hsl(210_20%_98%)] p-4 space-y-3">
               <div className="text-xs font-semibold text-foreground">Preview</div>
               <div className="flex items-center gap-3">
                 <Button type="button" size="sm" className="rounded-xl pointer-events-none">
@@ -402,12 +439,12 @@ const Settings = () => {
 
         {/* Notifications */}
         {/* Appearance */}
-        <section className="rounded-2xl border bg-card p-4 md:p-6 space-y-5">
+        <section data-section="appearance" className={cn("rounded-xl border border-[hsl(214_13%_90%)] bg-white p-5 space-y-5", activeSection !== "appearance" && "hidden md:hidden")}>
           <SectionHeader
             title="Appearance"
             subtitle="Switch between light and dark themes."
           />
-          <div className="flex items-center justify-between gap-4 rounded-xl border bg-background px-4 py-3">
+          <div className="flex items-center justify-between gap-4 rounded-lg border border-[hsl(214_13%_90%)] bg-[hsl(210_20%_98%)] px-4 py-3">
             <Label htmlFor="dark_mode" className="text-sm font-medium text-foreground cursor-pointer flex-1">
               Dark mode
             </Label>
@@ -423,7 +460,7 @@ const Settings = () => {
           </div>
         </section>
 
-        <section className="rounded-2xl border bg-card p-4 md:p-6 space-y-5">
+        <section data-section="notifications" className={cn("rounded-xl border border-[hsl(214_13%_90%)] bg-white p-5 space-y-5", activeSection !== "notifications" && "hidden md:hidden")}>
           <SectionHeader
             title="Notifications"
             subtitle="Choose when Sightline emails you about activity and upcoming events."
@@ -436,7 +473,7 @@ const Settings = () => {
               { key: "notify_invoices" as const, label: "Email me when an invoice is added" },
               { key: "notify_calendar_events" as const, label: "Email me when a calendar event is upcoming (24 hours before)" },
             ].map(({ key, label }) => (
-              <div key={key} className="flex items-center justify-between gap-4 rounded-xl border bg-background px-4 py-3">
+              <div key={key} className="flex items-center justify-between gap-4 rounded-lg border border-[hsl(214_13%_90%)] bg-[hsl(210_20%_98%)] px-4 py-3">
                 <Label htmlFor={key} className="text-sm font-medium text-foreground cursor-pointer flex-1">
                   {label}
                 </Label>
@@ -450,14 +487,6 @@ const Settings = () => {
           </div>
         </section>
 
-        {/* Desktop save */}
-        <div className="hidden md:flex justify-end pb-4">
-          <Button onClick={handleSave} disabled={saving} size="lg" className="rounded-xl">
-            {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
-            Save changes
-          </Button>
-        </div>
-
         {/* Sign out (mobile only) */}
         <div className="md:hidden pt-2">
           <Button
@@ -469,6 +498,8 @@ const Settings = () => {
             <LogOut className="h-4 w-4 mr-2" />
             Sign Out
           </Button>
+        </div>
+          </div>
         </div>
       </div>
 
