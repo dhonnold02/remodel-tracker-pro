@@ -548,16 +548,14 @@ const Team = () => {
                 </TableBody>
               </Table>
             )}
-          </div>
-        </section>
+          </section>
 
-        {/* Pending invitations */}
-        <section className="space-y-3">
-          <div className="flex items-baseline justify-between">
-            <h2 className="font-heading text-lg font-bold text-foreground">Pending invitations</h2>
-            <p className="text-xs text-muted-foreground">{invitations.length} pending</p>
-          </div>
-          <div className="rounded-2xl border bg-card overflow-hidden">
+          {/* Pending invitations card */}
+          <section className="rounded-xl border border-[hsl(214_13%_90%)] bg-white overflow-hidden">
+            <div className="flex items-baseline justify-between px-5 py-3 border-b border-[hsl(214_13%_90%)]">
+              <h2 className="text-sm font-semibold text-foreground">Pending invitations</h2>
+              <p className="text-xs text-muted-foreground">{invitations.length} pending</p>
+            </div>
             {invitations.length === 0 ? (
               <EmptyState
                 icon={Mail}
@@ -568,16 +566,16 @@ const Team = () => {
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Expires</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="text-xs uppercase tracking-wider">Email</TableHead>
+                    <TableHead className="text-xs uppercase tracking-wider">Role</TableHead>
+                    <TableHead className="text-xs uppercase tracking-wider">Expires</TableHead>
+                    <TableHead className="text-xs uppercase tracking-wider text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {invitations.map((inv) => (
-                    <TableRow key={inv.id}>
+                  {invitations.map((inv, idx) => (
+                    <TableRow key={inv.id} className={cn(idx % 2 === 1 && "bg-slate-50")}>
                       <TableCell className="text-sm text-foreground">{inv.invited_email}</TableCell>
                       <TableCell>
                         <span
@@ -617,8 +615,8 @@ const Team = () => {
                 </TableBody>
               </Table>
             )}
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
 
       {/* Role permissions modal */}
