@@ -392,6 +392,33 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_log_photos: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          log_id: string
+          photo_url: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          log_id: string
+          photo_url: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          log_id?: string
+          photo_url?: string
+        }
+        Relationships: []
+      }
       daily_logs: {
         Row: {
           company_id: string
@@ -853,6 +880,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      timecards: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          crew_member_id: string
+          hours: number
+          id: string
+          updated_at: string
+          work_date: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          crew_member_id: string
+          hours?: number
+          id?: string
+          updated_at?: string
+          work_date: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          crew_member_id?: string
+          hours?: number
+          id?: string
+          updated_at?: string
+          work_date?: string
+        }
+        Relationships: []
       }
     }
     Views: {
