@@ -119,6 +119,12 @@ export interface ProjectData {
   createdAt: string;
   taskPhases: string[];
   events: ProjectEvent[];
+  primaryContactName: string;
+  primaryContactPhone: string;
+  primaryContactEmail: string;
+  secondaryContactName: string;
+  secondaryContactPhone: string;
+  secondaryContactEmail: string;
 }
 
 interface ProjectsContextType {
@@ -259,6 +265,12 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       endDate: p.end_date,
       createdBy: p.created_by,
       createdAt: p.created_at,
+      primaryContactName: (p as any).primary_contact_name || "",
+      primaryContactPhone: (p as any).primary_contact_phone || "",
+      primaryContactEmail: (p as any).primary_contact_email || "",
+      secondaryContactName: (p as any).secondary_contact_name || "",
+      secondaryContactPhone: (p as any).secondary_contact_phone || "",
+      secondaryContactEmail: (p as any).secondary_contact_email || "",
       tasks: tasks
         .filter((t) => t.project_id === p.id)
         .map((t) => ({ id: t.id, title: t.title, notes: t.notes, completed: t.completed, parentTaskId: (t as any).parent_task_id || null, dueDate: (t as any).due_date || null, priority: ((t as any).priority || "medium") as TaskPriority, tags: (t as any).tags || [], phase: (t as any).phase || "General" })),
@@ -416,6 +428,12 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     if (partial.startDate !== undefined) projectFields.start_date = partial.startDate;
     if (partial.endDate !== undefined) projectFields.end_date = partial.endDate;
     if ((partial as any).taskPhases !== undefined) projectFields.task_phases = (partial as any).taskPhases;
+    if ((partial as any).primaryContactName !== undefined) projectFields.primary_contact_name = (partial as any).primaryContactName;
+    if ((partial as any).primaryContactPhone !== undefined) projectFields.primary_contact_phone = (partial as any).primaryContactPhone;
+    if ((partial as any).primaryContactEmail !== undefined) projectFields.primary_contact_email = (partial as any).primaryContactEmail;
+    if ((partial as any).secondaryContactName !== undefined) projectFields.secondary_contact_name = (partial as any).secondaryContactName;
+    if ((partial as any).secondaryContactPhone !== undefined) projectFields.secondary_contact_phone = (partial as any).secondaryContactPhone;
+    if ((partial as any).secondaryContactEmail !== undefined) projectFields.secondary_contact_email = (partial as any).secondaryContactEmail;
 
     if (Object.keys(projectFields).length > 0) {
       await supabase.from("projects").update(projectFields as any).eq("id", id);
