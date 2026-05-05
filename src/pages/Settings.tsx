@@ -17,6 +17,7 @@ import { showSuccess, showError } from "@/lib/toast";
 import { applyBrandPrimary, BRAND_PRESETS } from "@/lib/brandColor";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import SectionHeader from "@/components/SectionHeader";
+import { cn } from "@/lib/utils";
 
 interface CompanySettings {
   company_name: string;
