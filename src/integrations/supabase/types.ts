@@ -698,6 +698,12 @@ export type Database = {
           material_costs: number
           name: string
           parent_id: string | null
+          primary_contact_email: string
+          primary_contact_name: string
+          primary_contact_phone: string
+          secondary_contact_email: string
+          secondary_contact_name: string
+          secondary_contact_phone: string
           start_date: string
           task_phases: string[]
           total_budget: number
@@ -713,6 +719,12 @@ export type Database = {
           material_costs?: number
           name?: string
           parent_id?: string | null
+          primary_contact_email?: string
+          primary_contact_name?: string
+          primary_contact_phone?: string
+          secondary_contact_email?: string
+          secondary_contact_name?: string
+          secondary_contact_phone?: string
           start_date?: string
           task_phases?: string[]
           total_budget?: number
@@ -728,6 +740,12 @@ export type Database = {
           material_costs?: number
           name?: string
           parent_id?: string | null
+          primary_contact_email?: string
+          primary_contact_name?: string
+          primary_contact_phone?: string
+          secondary_contact_email?: string
+          secondary_contact_name?: string
+          secondary_contact_phone?: string
           start_date?: string
           task_phases?: string[]
           total_budget?: number
