@@ -14,6 +14,7 @@ import Settings from "./pages/Settings";
 import Onboarding from "./pages/Onboarding";
 import Team from "./pages/Team";
 import CommandCenter from "./pages/CommandCenter";
+import Timecards from "./pages/Timecards";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { applyBrandPrimary } from "@/lib/brandColor";
@@ -210,6 +211,7 @@ const App = () => (
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
                 <Route path="/command-center" element={<ProtectedRoute><CommandCenter /></ProtectedRoute>} />
+                <Route path="/timecards" element={<ProtectedRoute><Timecards /></ProtectedRoute>} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="*" element={<NotFound />} />
