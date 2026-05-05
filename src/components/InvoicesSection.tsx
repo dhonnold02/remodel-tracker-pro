@@ -57,45 +57,12 @@ const InvoicesSection = ({ invoices, onChange, totalBudget, totalSpent, readOnly
   };
 
   return (
-    <div className="premium-card p-6 space-y-5 overflow-hidden">
-      <h2 className="section-title flex items-center gap-2">
-        <Receipt className="h-4 w-4 text-primary" />
-        Invoices & Financials
-      </h2>
-
-      {/* Financial summary cards */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="min-w-0 rounded-xl border bg-card p-3">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Budget</p>
-          <p className="font-heading text-sm font-bold text-foreground mt-1.5">{formatCompact(totalBudget)}</p>
-        </div>
-        <div className="min-w-0 rounded-xl border bg-card p-3">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Spent</p>
-          <p className="font-heading text-sm font-bold text-foreground mt-1.5">{formatCompact(totalSpent)}</p>
-        </div>
-        <div className="min-w-0 rounded-xl border bg-card p-3">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Remaining</p>
-          <p className={`font-heading text-sm font-bold mt-1.5 ${remaining < 0 ? "text-destructive" : "text-foreground"}`}>{formatCompact(remaining)}</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div className="min-w-0 rounded-xl border border-primary/20 bg-primary/10 p-3">
-          <p className="text-xs text-primary uppercase tracking-wider font-medium">Owed by HO</p>
-          <p className="font-heading text-sm font-bold text-primary mt-1.5">{formatCompact(owedByHomeowner)}</p>
-        </div>
-        <div className="min-w-0 rounded-xl border border-warning/20 bg-warning/10 p-3">
-          <p className="text-xs text-warning uppercase tracking-wider font-medium">Owed to Subs</p>
-          <p className="font-heading text-sm font-bold text-warning mt-1.5">{formatCompact(owedToSubs)}</p>
-        </div>
-      </div>
-
-      {/* Add invoice */}
+    <div className="space-y-4">
+      {/* Add invoice form */}
       {!readOnly && (
-        <div className="space-y-2">
-          <div className="flex gap-2 flex-wrap">
+        <div className="bg-white border border-[hsl(214_13%_90%)] rounded-xl p-3 flex gap-2 flex-wrap items-center">
             <Select value={type} onValueChange={(v) => setType(v as any)}>
-              <SelectTrigger className="w-[130px] h-9 text-xs rounded-xl">
+              <SelectTrigger className="w-[140px] h-9 text-xs rounded-lg">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -107,7 +74,7 @@ const InvoicesSection = ({ invoices, onChange, totalBudget, totalSpent, readOnly
               placeholder="Invoice description..."
               value={desc}
               onChange={e => setDesc(e.target.value)}
-              className="flex-1 min-w-[120px] h-9 text-sm rounded-xl"
+              className="flex-1 min-w-[160px] h-9 text-sm rounded-lg"
             />
             <div className="relative">
               <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -117,14 +84,12 @@ const InvoicesSection = ({ invoices, onChange, totalBudget, totalSpent, readOnly
                 placeholder="0"
                 value={amount}
                 onChange={e => setAmount(e.target.value)}
-                className="w-24 h-9 text-sm pl-7 rounded-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-28 h-9 text-sm pl-7 rounded-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
-          </div>
           <Button
-            variant="outline"
             size="sm"
-            className="w-full rounded-xl text-xs mt-1"
+            className="rounded-lg text-xs h-9"
             onClick={handleAdd}
           >
             <Plus className="h-3.5 w-3.5 mr-1" /> Add Invoice
@@ -134,26 +99,47 @@ const InvoicesSection = ({ invoices, onChange, totalBudget, totalSpent, readOnly
 
       {/* Invoice list */}
       {invoices.length === 0 ? (
-        <EmptyState icon={Receipt} title="No invoices yet" />
+        <EmptyState icon={Receipt} title="No invoices yet" description="Track invoices owed to/from homeowner and subs." />
       ) : (
-        <div className="space-y-2 max-h-64 overflow-y-auto">
-          {invoices.map(inv => (
-            <div key={inv.id} className={`flex items-center gap-3 rounded-xl border p-3 text-sm transition-all duration-150 ${inv.paid ? "bg-muted/30 opacity-60" : "bg-background hover:shadow-sm"}`}>
-              {!readOnly && (
-                <Checkbox checked={inv.paid} onCheckedChange={() => togglePaid(inv.id)} />
-              )}
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${inv.type === "homeowner" ? "bg-accent text-accent-foreground" : "bg-warning/10 text-warning"}`}>
-                {inv.type === "homeowner" ? "HO" : "SUB"}
-              </span>
-              <span className={`flex-1 truncate ${inv.paid ? "line-through" : ""}`}>{inv.description}</span>
-              <span className="font-heading font-semibold text-foreground">${inv.amount.toLocaleString()}</span>
-              {!readOnly && (
-                <button onClick={() => remove(inv.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-          ))}
+        <div className="bg-white border border-[hsl(214_13%_90%)] rounded-xl overflow-hidden">
+          <div className="grid grid-cols-[1fr_100px_100px_90px_140px] gap-3 px-4 py-2 border-b border-[hsl(214_13%_90%)] bg-[hsl(210_20%_98%)] text-xs uppercase tracking-wider text-muted-foreground">
+            <span>Description</span>
+            <span>Type</span>
+            <span className="text-right">Amount</span>
+            <span>Status</span>
+            <span className="text-right">Actions</span>
+          </div>
+          <div className="divide-y divide-[hsl(214_13%_90%)]">
+            {invoices.map(inv => (
+              <div key={inv.id} className="grid grid-cols-[1fr_100px_100px_90px_140px] gap-3 px-4 py-3 items-center text-sm">
+                <span className={`truncate ${inv.paid ? "line-through text-muted-foreground" : "text-foreground"}`}>{inv.description}</span>
+                <span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium uppercase tracking-wider ${inv.type === "homeowner" ? "bg-blue-50 text-blue-700 border border-blue-200" : "bg-amber-50 text-amber-700 border border-amber-200"}`}>
+                    {inv.type === "homeowner" ? "HO" : "Sub"}
+                  </span>
+                </span>
+                <span className="font-semibold text-foreground tabular-nums text-right">${inv.amount.toLocaleString()}</span>
+                <span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium uppercase tracking-wider ${inv.paid ? "bg-green-50 text-green-700 border border-green-200" : "bg-slate-100 text-slate-600"}`}>
+                    {inv.paid ? "Paid" : "Open"}
+                  </span>
+                </span>
+                <div className="flex items-center justify-end gap-2">
+                  {!readOnly && (
+                    <>
+                      <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+                        <Checkbox checked={inv.paid} onCheckedChange={() => togglePaid(inv.id)} />
+                        Paid
+                      </label>
+                      <button onClick={() => remove(inv.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1.5 rounded-lg">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
