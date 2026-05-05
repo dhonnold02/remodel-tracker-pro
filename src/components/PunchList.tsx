@@ -380,7 +380,7 @@ const PunchList = ({
       )}
 
       {/* Header / progress */}
-      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+      <div className="rounded-xl border border-[hsl(214_13%_90%)] bg-white p-4 space-y-3">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
@@ -402,46 +402,17 @@ const PunchList = ({
             </p>
           </div>
         </div>
-        <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
+        <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
           <div
             className={cn("h-full transition-all duration-300", progressColor)}
             style={{ width: `${Math.max(0, progressPercent)}%` }}
           />
         </div>
-        {effectiveCanSignOff && (() => {
-          const hasPending = items.some(
-            (item) => item.status === "pending" || item.status === "fail"
-          );
-          const hasItems = items.length > 0;
-          const isLocked = locked;
-
-          if (!isLocked && hasItems && !hasPending) {
-            return (
-              <button
-                onClick={() => setSignOffOpen(true)}
-                className="w-full flex items-center justify-center gap-2 bg-success text-success-foreground hover:bg-success/90 transition-colors rounded-xl py-3 text-sm font-medium"
-              >
-                <Lock className="h-4 w-4" />
-                Mark Complete & Sign Off
-              </button>
-            );
-          }
-
-          if (!isLocked && hasItems && hasPending) {
-            return (
-              <p className="text-xs text-muted-foreground text-center py-2">
-                Resolve all pending items to sign off
-              </p>
-            );
-          }
-
-          return null;
-        })()}
       </div>
 
       {/* Add item row */}
       {canEdit && (
-        <div className="flex gap-2 flex-wrap">
+        <div className="rounded-xl border border-[hsl(214_13%_90%)] bg-white p-3 flex gap-2 flex-wrap">
           <Input
             placeholder="e.g. Touch up paint in hallway, Fix cabinet hinge, Caulk master bath..."
             value={newTitle}
@@ -452,10 +423,10 @@ const PunchList = ({
                 addItem();
               }
             }}
-            className="flex-1 min-w-[180px] h-9 text-sm rounded-xl"
+            className="flex-1 min-w-[180px] h-9 text-sm rounded-lg"
           />
           <Select value={newAssignee} onValueChange={setNewAssignee}>
-            <SelectTrigger className="w-[150px] h-9 text-xs rounded-xl">
+            <SelectTrigger className="w-[150px] h-9 text-xs rounded-lg">
               <SelectValue placeholder="Assignee" />
             </SelectTrigger>
             <SelectContent>
@@ -469,8 +440,7 @@ const PunchList = ({
           </Select>
           <Button
             size="sm"
-            variant="outline"
-            className="h-9 rounded-xl text-xs"
+            className="h-9 rounded-lg text-xs"
             onClick={addItem}
           >
             <Plus className="h-3.5 w-3.5 mr-1" />
@@ -493,96 +463,69 @@ const PunchList = ({
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="rounded-xl border border-[hsl(214_13%_90%)] bg-white overflow-hidden">
+          <div className="grid grid-cols-[1fr_140px_120px_80px] gap-3 px-4 py-2 border-b border-[hsl(214_13%_90%)] text-xs uppercase tracking-wider text-muted-foreground bg-[hsl(210_20%_98%)]">
+            <span>Item</span>
+            <span>Assignee</span>
+            <span>Status</span>
+            <span className="text-right">Photo</span>
+          </div>
+          <div className="divide-y divide-[hsl(214_13%_90%)]">
           {items.map((it) => {
-            const sideClass =
+            const statusClass =
               it.status === "pass"
-                ? "border-l-2 border-l-success bg-success/5"
+                ? "bg-green-50 text-green-700 border border-green-200"
                 : it.status === "fail"
-                ? "border-l-2 border-l-destructive bg-destructive/5"
-                : "border-l-2 border-l-border";
+                ? "bg-red-50 text-red-700 border border-red-200"
+                : "bg-slate-100 text-slate-600";
             const isExpanded = !!expandedNotes[it.id];
             return (
-              <div
-                key={it.id}
-                className={cn(
-                  "rounded-xl border border-border p-3 space-y-2 transition-colors",
-                  sideClass
-                )}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span
-                        className={cn(
-                          "text-xs px-2 py-0.5 rounded-full font-medium uppercase tracking-wider",
-                          it.status === "pass" && "bg-success/15 text-success",
-                          it.status === "fail" && "bg-destructive/15 text-destructive",
-                          it.status === "pending" &&
-                            "bg-secondary text-muted-foreground"
-                        )}
-                      >
-                        {it.status}
-                      </span>
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {it.title}
-                      </p>
-                    </div>
+              <div key={it.id} className="px-4 py-3">
+                <div className="grid grid-cols-[1fr_140px_120px_80px] gap-3 items-center">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{it.title}</p>
                     {it.description && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {it.description}
-                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">{it.description}</p>
                     )}
-                    {it.failReason && it.status === "fail" && (
-                      <p className="text-xs text-destructive mt-1 italic">
-                        Failed: {it.failReason}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      {it.assignee && (
-                        <div className="flex items-center gap-1.5">
-                          <div className="h-5 w-5 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center">
-                            {initialsFor(it.assignee)}
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            {it.assignee}
-                          </span>
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setExpandedNotes((s) => ({ ...s, [it.id]: !s[it.id] }))
-                        }
-                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        {isExpanded || it.notes ? "Notes" : "+ Add notes"}
-                      </button>
-                      {it.photos && it.photos.length > 0 && (
-                        <span className="text-xs text-muted-foreground">
-                          · {it.photos.length} photo{it.photos.length !== 1 ? "s" : ""}
-                        </span>
-                      )}
-                    </div>
                   </div>
-
-                  {/* Action buttons */}
-                  <div className="flex items-center gap-1 flex-shrink-0">
+                  <div className="min-w-0 text-xs text-muted-foreground">
+                    {it.assignee ? (
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="h-5 w-5 rounded-full bg-primary/15 text-primary text-[10px] font-bold flex items-center justify-center">
+                          {initialsFor(it.assignee)}
+                        </span>
+                        <span className="truncate">{it.assignee}</span>
+                      </span>
+                    ) : <span className="text-muted-foreground/60">—</span>}
+                  </div>
+                  <div>
+                    <span className={cn("inline-block text-[10px] px-2 py-0.5 rounded-full font-medium uppercase tracking-wider", statusClass)}>
+                      {it.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-end gap-1">
                     {canEdit && (
                       <>
                         <button
                           type="button"
                           title="Attach photo"
                           onClick={() => triggerPhotoUpload(it.id)}
-                          className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors min-h-[44px] min-w-[44px] inline-flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                          className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                         >
                           <Camera className="h-3.5 w-3.5" />
                         </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {canEdit && (
+                  <div className="flex items-center gap-1 mt-2 flex-wrap">
                         <Button
                           size="sm"
                           variant="outline"
                           className={cn(
-                            "h-9 px-2 rounded-xl text-xs border-border",
+                            "h-7 px-2 rounded-lg text-xs",
                             "hover:text-success hover:border-success",
                             it.status === "pass" && "text-success border-success/40"
                           )}
@@ -595,7 +538,7 @@ const PunchList = ({
                           size="sm"
                           variant="outline"
                           className={cn(
-                            "h-9 px-2 rounded-xl text-xs border-border",
+                            "h-7 px-2 rounded-lg text-xs",
                             "hover:text-destructive hover:border-destructive",
                             it.status === "fail" &&
                               "text-destructive border-destructive/40"
@@ -610,16 +553,21 @@ const PunchList = ({
                         </Button>
                         <button
                           type="button"
+                          onClick={() => setExpandedNotes((s) => ({ ...s, [it.id]: !s[it.id] }))}
+                          className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2"
+                        >
+                          {isExpanded || it.notes ? "Notes" : "+ Notes"}
+                        </button>
+                        <button
+                          type="button"
                           title="Delete item"
                           onClick={() => removeItem(it.id)}
-                          className="p-2.5 rounded-xl text-muted-foreground hover:text-destructive transition-colors min-h-[44px] min-w-[44px] inline-flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive ml-auto transition-colors"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
-                      </>
-                    )}
                   </div>
-                </div>
+                )}
 
                 {/* Notes input — auto-expanded for failed items, with red border */}
                 {(isExpanded || it.notes || it.status === "fail") && (
@@ -633,7 +581,7 @@ const PunchList = ({
                     onChange={(e) => setNotes(it.id, e.target.value)}
                     disabled={!canEdit}
                     className={cn(
-                      "min-h-[60px] text-xs rounded-xl resize-none",
+                      "min-h-[60px] text-xs rounded-lg resize-none mt-2",
                       it.status === "fail" && "border-destructive/50 focus-visible:ring-destructive/30"
                     )}
                   />
@@ -641,7 +589,7 @@ const PunchList = ({
 
                 {/* Photo thumbnails — clickable, opens lightbox */}
                 {it.photos && it.photos.length > 0 && (
-                  <div className="flex gap-2 flex-wrap">
+                  <div className="flex gap-2 flex-wrap mt-2">
                     {it.photos.map((p, idx) => (
                       <button
                         key={idx}
@@ -662,11 +610,39 @@ const PunchList = ({
                     ))}
                   </div>
                 )}
+
+                {it.failReason && it.status === "fail" && (
+                  <p className="text-xs text-destructive mt-1 italic">Failed: {it.failReason}</p>
+                )}
               </div>
             );
           })}
+          </div>
         </div>
       )}
+
+      {/* Sign Off bar */}
+      {effectiveCanSignOff && !locked && items.length > 0 && (() => {
+        const hasPending = items.some((i) => i.status === "pending");
+        return (
+          <div className="rounded-xl bg-blue-50 border border-blue-200 p-3 flex items-center justify-between gap-3">
+            <p className="text-sm text-blue-900">
+              {hasPending
+                ? "Resolve all pending items before signing off."
+                : "All items reviewed — ready to sign off this punch list."}
+            </p>
+            <Button
+              size="sm"
+              disabled={hasPending}
+              onClick={() => setSignOffOpen(true)}
+              className="h-9 rounded-lg text-xs gap-1.5"
+            >
+              <Lock className="h-3.5 w-3.5" />
+              Sign Off
+            </Button>
+          </div>
+        );
+      })()}
 
       <input
         ref={fileInputRef}

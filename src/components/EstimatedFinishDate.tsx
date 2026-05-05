@@ -1,6 +1,6 @@
 import { Task } from "@/hooks/useProjects";
 import { estimateFinishDate } from "@/lib/estimateFinishDate";
-import { CalendarClock, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
 import { phaseColorFor } from "@/lib/phaseColors";
@@ -24,11 +24,10 @@ const EstimatedFinishDate = ({ tasks, startDate, endDate, phases = [] }: Props) 
   }
 
   return (
-    <div className="premium-card p-6 space-y-4">
-      <div className="flex items-center gap-2">
-        <CalendarClock className="h-4 w-4 text-primary" />
-        <h2 className="section-title">Estimated Finish</h2>
-      </div>
+    <div className="bg-white border border-[hsl(214_13%_90%)] rounded-xl p-4 space-y-3">
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+        Estimated Finish
+      </p>
 
       {tasks.length === 0 ? (
         <p className="text-sm text-muted-foreground">Add tasks to see an estimated finish date.</p>
@@ -42,7 +41,7 @@ const EstimatedFinishDate = ({ tasks, startDate, endDate, phases = [] }: Props) 
             <p className={`font-heading text-3xl font-bold ${overdue ? "text-destructive" : "text-foreground"}`}>
               {format(result.date, "MMM d, yyyy")}
             </p>
-            <span className="text-sm text-muted-foreground">({result.totalWorkDays} work days)</span>
+            <span className="text-sm text-muted-foreground">{result.totalWorkDays} work days remaining</span>
           </div>
           {overdue && endDate && (
             <p className="text-xs text-destructive">⚠ Exceeds target end date of {format(new Date(endDate), "MMM d, yyyy")}</p>

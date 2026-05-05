@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { parseISO, format, isValid } from "date-fns";
-import { CalendarDays, CheckCircle2, Plus, Trash2, Clock } from "lucide-react";
+import { CheckCircle2, Plus, Trash2, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { phaseColor } from "@/lib/phaseColors";
 import { supabase } from "@/integrations/supabase/client";
@@ -258,13 +258,12 @@ const CalendarView = ({ tasks, phases, events = [], onEventsChange, canEdit = fa
   };
 
   return (
-    <div className="premium-card p-6 space-y-5">
+    <div className="bg-white border border-[hsl(214_13%_90%)] rounded-xl p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <CalendarDays className="h-4 w-4 text-primary" />
-          <h2 className="section-title">Phase Calendar</h2>
+        <div>
+          <h2 className="text-sm font-semibold text-foreground">Phase Calendar</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Click a date to view or add events</p>
         </div>
-        <span className="text-xs text-muted-foreground">Click a date to view or add events</span>
       </div>
 
       {/* Phase legend */}
