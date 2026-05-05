@@ -145,27 +145,26 @@ async function fetchWeather(lat: number, lng: number): Promise<WeatherData | nul
 // Section wrapper (collapsible on mobile)
 // ─────────────────────────────────────────────────────────────────────────────
 const Section = ({
-  title, icon: Icon, children, defaultOpen = true,
+  title, icon: Icon, children, defaultOpen = true, className = "",
 }: {
   title: string;
   icon: React.ComponentType<any>;
   children: React.ReactNode;
   defaultOpen?: boolean;
+  className?: string;
 }) => {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <section className="rounded-2xl border border-border bg-card overflow-hidden">
+    <section className={`rounded-xl border border-[hsl(214_13%_90%)] bg-white overflow-hidden ${className}`}>
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger asChild>
           <button
             type="button"
-            className="w-full flex items-center justify-between gap-3 p-4 md:p-5 md:cursor-default"
+            className="w-full flex items-center justify-between gap-3 p-4 md:cursor-default"
           >
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                <Icon className="h-4 w-4" />
-              </div>
-              <h2 className="font-heading text-base md:text-lg font-semibold text-foreground">
+            <div className="flex items-center gap-2">
+              <Icon className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-semibold text-foreground">
                 {title}
               </h2>
             </div>
@@ -174,7 +173,7 @@ const Section = ({
             />
           </button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="px-4 md:px-5 pb-5">
+        <CollapsibleContent className="px-4 pb-4">
           {children}
         </CollapsibleContent>
       </Collapsible>
@@ -898,10 +897,11 @@ ${weeklyNotesHtml}
       subtitle="Daily operations dashboard"
       actions={renderExportButton("hidden md:inline-flex")}
     >
-      <div className="max-w-6xl space-y-5 md:space-y-6 pb-8">
+      <div className="max-w-6xl pb-8 space-y-4">
         {/* Mobile export button */}
         {renderExportButton("md:hidden w-full")}
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Weather */}
         <Section title="Weather" icon={Cloud}>
           {!companyAddress ? (
@@ -956,7 +956,75 @@ ${weeklyNotesHtml}
           )}
         </Section>
 
-        {/* Recent Activity */}
+        {/* Today's Events */}
+        <Section title="Today's Events" icon={CalendarClock}>
+          {todayEvents.length === 0 ? (
+            <EmptyState icon={CalendarX} title="No events scheduled today" />
+          ) : (
+            <ul className="space-y-2">
+              {todayEvents.map((e, i) => (
+                <li key={i} className="flex items-center gap-3 rounded-lg bg-[hsl(210_20%_98%)] px-3 py-2.5">
+                  <span className="h-2.5 w-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: EVENT_COLORS[e.type] || EVENT_COLORS.other }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-foreground truncate">{e.title}</div>
+                    <div className="text-xs text-muted-foreground truncate">{e.project}</div>
+                  </div>
+                  <Badge variant="outline" className="text-xs">{EVENT_LABELS[e.type] || "Other"}</Badge>
+                  {e.time && <span className="text-xs text-muted-foreground tabular-nums">{e.time}</span>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
+
+        {/* Tasks Due Today */}
+        <Section title="Tasks Due Today" icon={ListTodo}>
+          {tasksDueToday.length === 0 ? (
+            <EmptyState icon={CheckSquare} title="No tasks due today" />
+          ) : (
+            <div className="space-y-3">
+              {tasksDueToday.map((g, i) => (
+                <div key={i}>
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">{g.project}</div>
+                  <ul className="space-y-1.5">
+                    {g.tasks.map((t, j) => (
+                      <li key={j} className="flex items-center gap-3 rounded-lg bg-[hsl(210_20%_98%)] px-3 py-2">
+                        <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
+                        <span className="text-sm text-foreground flex-1 truncate">{t.title}</span>
+                        <Badge variant="outline" className="text-xs">{t.phase}</Badge>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        {/* Upcoming Deadlines */}
+        <Section title="Upcoming Deadlines" icon={Flag}>
+          {deadlines.length === 0 ? (
+            <EmptyState icon={Flag} title="No upcoming deadlines" description="No deadlines in the next 14 days." />
+          ) : (
+            <ul className="space-y-2">
+              {deadlines.map((d, i) => (
+                <li key={i} className="flex items-center gap-3 rounded-lg bg-[hsl(210_20%_98%)] px-3 py-2.5">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-foreground truncate">{d.project}</div>
+                    <div className="text-xs text-muted-foreground">{d.label} · {format(parseISO(d.date), "MMM d, yyyy")}</div>
+                  </div>
+                  <Badge variant="outline" className={d.days <= 3 ? "text-destructive border-destructive/50" : ""}>
+                    {d.days === 0 ? "Today" : `${d.days}d`}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
+        </div>
+
+        {/* Recent Activity — full width */}
         <Section title="Recent Activity" icon={Activity}>
           {recentActivity24h.length === 0 ? (
             <EmptyState icon={Activity} title="No activity in the last 24 hours." />
@@ -1026,114 +1094,7 @@ ${weeklyNotesHtml}
           </Collapsible>
         </Section>
 
-        {/* Today's Events */}
-        <Section title="Today's Events" icon={CalendarClock}>
-          {todayEvents.length === 0 ? (
-            <EmptyState icon={CalendarX} title="No events scheduled today" />
-          ) : (
-            <ul className="space-y-2">
-              {todayEvents.map((e, i) => (
-                <li key={i} className="flex items-center gap-3 rounded-xl bg-secondary/30 px-3 py-2.5">
-                  <span className="h-2.5 w-2.5 rounded-full shrink-0"
-                        style={{ backgroundColor: EVENT_COLORS[e.type] || EVENT_COLORS.other }} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-foreground truncate">
-                      {e.title}
-                    </div>
-                    <div className="text-xs text-muted-foreground truncate">{e.project}</div>
-                  </div>
-                  <Badge variant="outline" className="text-xs">
-                    {EVENT_LABELS[e.type] || "Other"}
-                  </Badge>
-                  {e.time && (
-                    <span className="text-xs text-muted-foreground tabular-nums">{e.time}</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <Collapsible className="mt-4">
-            <CollapsibleTrigger asChild>
-              <button className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
-                Show full week <ChevronDown className="h-3 w-3" />
-              </button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-3">
-              {weekEvents.length === 0 ? (
-                <EmptyState icon={CalendarX} title="No events this week" />
-              ) : (
-                <ul className="space-y-1.5">
-                  {weekEvents.map((e, i) => (
-                    <li key={i} className="flex items-center gap-3 text-xs px-3 py-1.5 rounded-xl bg-secondary/20">
-                      <span className="h-2 w-2 rounded-full shrink-0"
-                            style={{ backgroundColor: EVENT_COLORS[e.type] || EVENT_COLORS.other }} />
-                      <span className="text-muted-foreground tabular-nums w-16 shrink-0">
-                        {format(parseISO(e.date), "EEE MMM d")}
-                      </span>
-                      <span className="flex-1 truncate text-foreground">{e.title}</span>
-                      <span className="text-muted-foreground truncate hidden sm:block">{e.project}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CollapsibleContent>
-          </Collapsible>
-        </Section>
-
-        {/* Tasks Due Today */}
-        <Section title="Tasks Due Today" icon={ListTodo}>
-          {tasksDueToday.length === 0 ? (
-            <EmptyState icon={CheckSquare} title="No tasks due today" />
-          ) : (
-            <div className="space-y-4">
-              {tasksDueToday.map((g, i) => (
-                <div key={i}>
-                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                    {g.project}
-                  </div>
-                  <ul className="space-y-1.5">
-                    {g.tasks.map((t, j) => (
-                      <li key={j} className="flex items-center gap-3 rounded-xl bg-secondary/30 px-3 py-2">
-                        <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
-                        <span className="text-sm text-foreground flex-1 truncate">{t.title}</span>
-                        <Badge variant="outline" className="text-xs">{t.phase}</Badge>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          )}
-        </Section>
-
-        {/* Upcoming Deadlines */}
-        <Section title="Upcoming Deadlines" icon={Thermometer}>
-          {deadlines.length === 0 ? (
-            <EmptyState icon={Flag} title="No upcoming deadlines" description="No deadlines in the next 14 days." />
-          ) : (
-            <ul className="space-y-2">
-              {deadlines.map((d, i) => (
-                <li key={i} className="flex items-center gap-3 rounded-xl bg-secondary/30 px-3 py-2.5">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-foreground truncate">{d.project}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {d.label} · {format(parseISO(d.date), "MMM d, yyyy")}
-                    </div>
-                  </div>
-                  <Badge
-                    variant="outline"
-                    className={d.days <= 3 ? "text-destructive border-destructive/50" : ""}
-                  >
-                    {d.days === 0 ? "Today" : `${d.days}d`}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Section>
-
-        {/* Crew Dispatch */}
+        {/* Crew Dispatch — full width */}
         <Section title="Crew Dispatch" icon={Users}>
           <div className="flex items-center justify-between gap-2 mb-3">
             <p className="text-xs text-muted-foreground">
@@ -1301,6 +1262,7 @@ ${weeklyNotesHtml}
           )}
         </Section>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Daily Log */}
         <Section title="Daily Log" icon={ClipboardList}>
           <div className="space-y-3">
@@ -1409,6 +1371,7 @@ ${weeklyNotesHtml}
             </div>
           </div>
         </Section>
+        </div>
       </div>
     </AppLayout>
   );

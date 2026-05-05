@@ -3,6 +3,7 @@ import { useCallback, useRef } from "react";
 import { FileAttachment } from "@/types/project";
 import { FileUp, X, FileText, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import EmptyState from "@/components/EmptyState";
 
 interface BlueprintSectionProps {
   blueprints: FileAttachment[];
@@ -38,39 +39,33 @@ const BlueprintSection = ({ blueprints, onChange }: BlueprintSectionProps) => {
   const isImage = (name: string) => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(name);
 
   return (
-    <div className="premium-card p-6 space-y-5">
-      <div className="flex items-center justify-between">
-        <h2 className="section-title flex items-center gap-2">
+    <div className="bg-white border border-[hsl(214_13%_90%)] rounded-xl p-5 space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <FolderOpen className="h-4 w-4 text-primary" />
           Blueprints & Plans
         </h2>
-        <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()} className="rounded-xl h-9 text-xs">
+        <Button size="sm" onClick={() => inputRef.current?.click()} className="rounded-lg h-9 text-xs">
           <FileUp className="h-3.5 w-3.5 mr-1.5" />
           Upload
         </Button>
         <input ref={inputRef} type="file" accept="image/*,.pdf" multiple className="hidden" onChange={handleUpload} />
       </div>
       {blueprints.length === 0 ? (
-        <div
-          onClick={() => inputRef.current?.click()}
-          className="border-2 border-dashed border-muted rounded-xl p-8 text-center cursor-pointer hover:border-primary/30 transition-colors"
-        >
-          <FileUp className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">Click to upload blueprints</p>
-        </div>
+        <EmptyState icon={FolderOpen} title="No blueprints yet" description="Upload site plans, drawings, or PDFs." />
       ) : (
         <div className="space-y-2">
           {blueprints.map((bp) => (
-            <div key={bp.id} className="flex items-center gap-3 rounded-xl border bg-background p-3 hover:shadow-sm transition-shadow duration-150">
+            <div key={bp.id} className="flex items-center gap-3 rounded-lg border border-[hsl(214_13%_90%)] bg-white p-3 hover:bg-accent/40 transition-colors">
               {isImage(bp.name) ? (
-                <img src={bp.dataUrl} alt={bp.name} className="h-12 w-12 rounded-xl object-cover shrink-0 shadow-sm" />
+                <img src={bp.dataUrl} alt={bp.name} className="h-10 w-10 rounded-lg object-cover shrink-0" />
               ) : (
-                <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center shrink-0">
-                  <FileText className="h-5 w-5 text-muted-foreground" />
+                <div className="h-10 w-10 rounded-lg bg-accent flex items-center justify-center shrink-0">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
                 </div>
               )}
               <span className="text-sm text-foreground truncate flex-1">{bp.name}</span>
-              <button onClick={() => remove(bp.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
+              <button onClick={() => remove(bp.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1.5 rounded-lg">
                 <X className="h-4 w-4" />
               </button>
             </div>

@@ -1,9 +1,10 @@
 import { uuidv4 } from "@/lib/uuid";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Upload, Trash2, FileText, Download } from "lucide-react";
+import { Upload, Trash2, FileText, Download, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 import { showSuccess, showError } from "@/lib/toast";
+import EmptyState from "@/components/EmptyState";
 
 interface StoredFile {
   id: string;
@@ -89,46 +90,51 @@ const LocalFileUploads = ({ projectId, isEditor }: Props) => {
   const remove = (id: string) => persist(files.filter((f) => f.id !== id));
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-muted/30 p-4 space-y-3">
-      {isEditor && (
-        <>
-          <input
-            ref={inputRef}
-            type="file"
-            multiple
-            className="hidden"
-            onChange={handleSelect}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="w-full gap-2"
-            onClick={() => inputRef.current?.click()}
-          >
-            <Upload className="h-4 w-4" />
-            Upload files
-          </Button>
-          <p className="text-xs text-muted-foreground text-center">
-            Stored locally on this device · Max 10MB per file
-          </p>
-        </>
-      )}
+    <div className="bg-white border border-[hsl(214_13%_90%)] rounded-xl p-5 space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <FolderOpen className="h-4 w-4 text-primary" />
+            Files
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Stored locally on this device · Max 10MB per file</p>
+        </div>
+        {isEditor && (
+          <>
+            <input
+              ref={inputRef}
+              type="file"
+              multiple
+              className="hidden"
+              onChange={handleSelect}
+            />
+            <Button
+              type="button"
+              size="sm"
+              className="rounded-lg h-9 text-xs"
+              onClick={() => inputRef.current?.click()}
+            >
+              <Upload className="h-3.5 w-3.5 mr-1.5" />
+              Upload
+            </Button>
+          </>
+        )}
+      </div>
 
       {files.length === 0 ? (
-        <div className="rounded-xl border border-dashed p-6 text-center text-xs text-muted-foreground">
-          No files uploaded yet
-        </div>
+        <EmptyState icon={FolderOpen} title="No files uploaded yet" description="Permits, contracts, or specs land here." />
       ) : (
         <ul className="space-y-2">
           {files.map((f) => (
             <li
               key={f.id}
-              className="flex items-center gap-2 rounded-xl bg-background/60 ring-1 ring-border/60 p-2.5"
+              className="flex items-center gap-2 rounded-lg border border-[hsl(214_13%_90%)] bg-white p-3 hover:bg-accent/40 transition-colors"
             >
-              <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="h-10 w-10 rounded-lg bg-accent flex items-center justify-center shrink-0">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+              </div>
               <div className="min-w-0 flex-1">
-                <div className="text-xs font-medium text-foreground truncate">
+                <div className="text-sm font-medium text-foreground truncate">
                   {f.name}
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -138,7 +144,7 @@ const LocalFileUploads = ({ projectId, isEditor }: Props) => {
               <a
                 href={f.dataUrl}
                 download={f.name}
-                className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                className="inline-flex items-center justify-center p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 title="Download"
                 aria-label={`Download ${f.name}`}
               >
@@ -148,7 +154,7 @@ const LocalFileUploads = ({ projectId, isEditor }: Props) => {
                 <button
                   type="button"
                   onClick={() => remove(f.id)}
-                  className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                  className="inline-flex items-center justify-center p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                   title="Remove"
                   aria-label={`Remove ${f.name}`}
                 >

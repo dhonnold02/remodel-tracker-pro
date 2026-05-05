@@ -38,32 +38,33 @@ const TeamMembers = ({ projectId, members, isEditor, ownerUserId }: TeamMembersP
   };
 
   return (
-    <div className="space-y-4">
-      {isEditor && (
-        <div className="flex justify-end">
-          <Button size="sm" variant="ghost" onClick={() => setShowInvite(!showInvite)} className="h-9 text-xs rounded-xl">
-            <Plus className="h-3.5 w-3.5 mr-1" /> Invite
+    <div className="bg-white border border-[hsl(214_13%_90%)] rounded-xl p-5 space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-foreground">Team Members <span className="text-muted-foreground font-normal">({members.length})</span></h2>
+        {isEditor && (
+          <Button size="sm" onClick={() => setShowInvite(!showInvite)} className="h-9 text-xs rounded-lg">
+            <Plus className="h-3.5 w-3.5 mr-1" /> Invite Member
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       {showInvite && (
-        <div className="space-y-2 rounded-xl border bg-background p-4">
-          <Input placeholder="Email address" type="email" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleInvite()} className="h-9 text-sm rounded-xl" autoFocus />
+        <div className="space-y-2 rounded-lg border border-[hsl(214_13%_90%)] bg-[hsl(210_20%_98%)] p-3">
+          <Input placeholder="Email address" type="email" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleInvite()} className="h-9 text-sm rounded-lg" autoFocus />
           <div className="flex items-center gap-2">
-            <select value={role} onChange={(e) => setRole(e.target.value as "editor" | "viewer")} className="flex-1 h-9 rounded-xl border bg-background px-3 text-sm text-foreground">
+            <select value={role} onChange={(e) => setRole(e.target.value as "editor" | "viewer")} className="flex-1 h-9 rounded-lg border bg-white px-3 text-sm text-foreground">
               <option value="editor">Editor</option>
               <option value="viewer">Viewer</option>
             </select>
-            <Button onClick={handleInvite} size="sm" className="h-9 text-xs rounded-xl" disabled={inviting}>{inviting ? "…" : "Add"}</Button>
+            <Button onClick={handleInvite} size="sm" className="h-9 text-xs rounded-lg" disabled={inviting}>{inviting ? "…" : "Add"}</Button>
           </div>
           {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
       )}
 
-      <div className="space-y-2">
+      <div className="divide-y divide-[hsl(214_13%_90%)]">
         {members.map((member) => (
-          <div key={member.id} className="flex items-center gap-3 rounded-xl bg-background border p-3 hover:shadow-sm transition-shadow duration-150">
+          <div key={member.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
             <Avatar className="h-9 w-9">
               <AvatarFallback className="text-xs bg-accent text-accent-foreground font-medium">{getInitials(member.displayName)}</AvatarFallback>
             </Avatar>
@@ -72,6 +73,7 @@ const TeamMembers = ({ projectId, members, isEditor, ownerUserId }: TeamMembersP
                 {member.displayName || "Unknown"}
                 {member.userId === user?.id && <span className="text-xs text-muted-foreground ml-1">(you)</span>}
               </p>
+              <p className="text-xs text-muted-foreground">Joined recently</p>
             </div>
             <div className="flex items-center gap-1.5">
               {ownerUserId && member.userId === ownerUserId ? (

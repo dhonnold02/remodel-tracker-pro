@@ -390,9 +390,7 @@ const ProjectDetailPage = () => {
         );
       case "team":
         return (
-          <div className="rounded-xl bg-card border border-[hsl(214_13%_90%)] p-5">
-            <TeamMembers projectId={project.id} members={project.members} isEditor={isEditor} ownerUserId={project.createdBy} />
-          </div>
+          <TeamMembers projectId={project.id} members={project.members} isEditor={isEditor} ownerUserId={project.createdBy} />
         );
     }
   };
@@ -408,8 +406,8 @@ const ProjectDetailPage = () => {
     <AppLayout title={topbarTitle as any} actions={headerActions}>
       {/* Stat strip */}
       <div className="-mx-4 lg:-mx-8 -mt-4 lg:-mt-8 mb-4 bg-white border-b border-[hsl(214_13%_90%)]">
-        <div className="grid grid-cols-2 md:grid-cols-4">
-          {(activeSection === "timeline" ? [
+        {(() => {
+          const stats = activeSection === "timeline" ? [
             { label: "Est. Finish", value: finishEstimate ? format(finishEstimate.date, "MMM d, yyyy") : "—" },
             { label: "Start Date", value: project.startDate ? format(new Date(project.startDate), "MMM d, yyyy") : "—" },
             { label: "Active Phases", value: String(activePhases) },
@@ -419,12 +417,27 @@ const ProjectDetailPage = () => {
             { label: "Passed", value: String(punchPassed), tone: "success" as const },
             { label: "Failed", value: String(punchFailed), tone: "destructive" as const },
             { label: "Pending", value: String(punchPending), tone: "warning" as const },
+          ] : activeSection === "budget" ? [
+            { label: "Total Budget", value: fmtMoney(project.totalBudget) },
+            { label: "Spent", value: fmtMoney(totalSpent) },
+            { label: "Remaining", value: fmtMoney(Math.abs(remainingBudget)), tone: remainingBudget < 0 ? "destructive" as const : undefined },
+            { label: "Used %", value: `${Math.round(budgetPercent)}%`, tone: budgetPercent > 100 ? "destructive" as const : undefined },
+          ] : activeSection === "invoices" ? [
+            { label: "Budget", value: fmtMoney(project.totalBudget) },
+            { label: "Spent", value: fmtMoney(totalSpent) },
+            { label: "Remaining", value: fmtMoney(Math.abs(remainingBudget)), tone: remainingBudget < 0 ? "destructive" as const : undefined },
+            { label: "Owed by HO", value: fmtMoney(project.invoices.filter((i: any) => i.type === "homeowner" && !i.paid).reduce((s: number, i: any) => s + (Number(i.amount) || 0), 0)) },
+            { label: "Owed to Subs", value: fmtMoney(project.invoices.filter((i: any) => i.type === "subcontractor" && !i.paid).reduce((s: number, i: any) => s + (Number(i.amount) || 0), 0)) },
           ] : [
             { label: "Budget Used", value: `${Math.round(budgetPercent)}%`, tone: budgetPercent > 100 ? "destructive" as const : undefined },
             { label: "Tasks Done", value: `${completedTasks}/${project.tasks.length}` },
             { label: "Remaining", value: fmtMoney(Math.abs(remainingBudget)), tone: remainingBudget < 0 ? "destructive" as const : undefined },
             { label: "Outstanding", value: fmtMoney(invoicesOutstanding) },
-          ]).map((stat, idx, arr) => (
+          ];
+          const cols = stats.length === 5 ? "md:grid-cols-5" : "md:grid-cols-4";
+          return (
+          <div className={cn("grid grid-cols-2", cols)}>
+          {stats.map((stat, idx, arr) => (
             <div key={stat.label} className={cn("px-4 py-3", idx < arr.length - 1 && "border-r border-[hsl(214_13%_90%)]")}>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{stat.label}</p>
               <p className={cn(
@@ -438,7 +451,9 @@ const ProjectDetailPage = () => {
               </p>
             </div>
           ))}
-        </div>
+          </div>
+          );
+        })()}
       </div>
 
       {hasSubs && aggregated && (

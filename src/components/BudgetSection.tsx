@@ -1,7 +1,7 @@
 import { ProjectData } from "@/types/project";
 import { Label } from "@/components/ui/label";
 import ProgressBar from "./ProgressBar";
-import { DollarSign, Wallet } from "lucide-react";
+import { DollarSign } from "lucide-react";
 import { DebouncedNumberInput } from "@/components/inputs/DebouncedInput";
 
 interface BudgetSectionProps {
@@ -23,11 +23,8 @@ const BudgetSection = ({ data, onChange }: BudgetSectionProps) => {
   };
 
   return (
-    <div className="premium-card p-6 space-y-5">
-      <h2 className="section-title flex items-center gap-2">
-        <Wallet className="h-4 w-4 text-primary" />
-        Budget
-      </h2>
+    <div className="bg-white border border-[hsl(214_13%_90%)] rounded-xl p-5 space-y-5">
+      <h2 className="text-sm font-semibold text-foreground">Budget Inputs</h2>
 
       <div className="space-y-4">
         <div>
@@ -39,7 +36,7 @@ const BudgetSection = ({ data, onChange }: BudgetSectionProps) => {
               placeholder="0"
               value={data.totalBudget}
               onDebouncedChange={(n) => onChange({ totalBudget: n })}
-              className="pl-9 rounded-xl h-10"
+              className="pl-9 rounded-lg h-10"
             />
           </div>
         </div>
@@ -53,7 +50,7 @@ const BudgetSection = ({ data, onChange }: BudgetSectionProps) => {
                 placeholder="0"
                 value={data.laborCosts}
                 onDebouncedChange={(n) => onChange({ laborCosts: n })}
-                className="pl-9 rounded-xl h-10"
+                className="pl-9 rounded-lg h-10"
               />
             </div>
           </div>
@@ -66,28 +63,26 @@ const BudgetSection = ({ data, onChange }: BudgetSectionProps) => {
                 placeholder="0"
                 value={data.materialCosts}
                 onDebouncedChange={(n) => onChange({ materialCosts: n })}
-                className="pl-9 rounded-xl h-10"
+                className="pl-9 rounded-lg h-10"
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Summary */}
+      {/* Summary chips */}
       <div className="grid grid-cols-3 gap-2">
-        <div className="min-w-0 rounded-xl border bg-card p-3">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Spent</p>
-          <p className="font-heading text-sm font-bold text-foreground mt-1.5">{formatCompact(totalSpent)}</p>
+        <div className="rounded-lg bg-[hsl(210_20%_98%)] border border-[hsl(214_13%_90%)] px-3 py-2">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Spent</p>
+          <p className="text-sm font-semibold text-foreground tabular-nums mt-0.5">{formatCompact(totalSpent)}</p>
         </div>
-        <div className="min-w-0 rounded-xl border bg-card p-3">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Remaining</p>
-          <p className={`font-heading text-sm font-bold mt-1.5 ${remaining < 0 ? 'text-destructive' : 'text-foreground'}`}>
-            {formatCompact(remaining)}
-          </p>
+        <div className="rounded-lg bg-[hsl(210_20%_98%)] border border-[hsl(214_13%_90%)] px-3 py-2">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Remaining</p>
+          <p className={`text-sm font-semibold tabular-nums mt-0.5 ${remaining < 0 ? "text-destructive" : "text-foreground"}`}>{formatCompact(remaining)}</p>
         </div>
-        <div className="min-w-0 rounded-xl border bg-card p-3">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Used</p>
-          <p className="font-heading text-sm font-bold text-foreground mt-1.5">{Math.round(budgetPercent)}%</p>
+        <div className="rounded-lg bg-[hsl(210_20%_98%)] border border-[hsl(214_13%_90%)] px-3 py-2">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Used</p>
+          <p className="text-sm font-semibold text-foreground tabular-nums mt-0.5">{Math.round(budgetPercent)}%</p>
         </div>
       </div>
 
