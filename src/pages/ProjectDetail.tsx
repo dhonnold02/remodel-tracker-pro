@@ -36,6 +36,8 @@ import {
 import { exportProjectCSV, exportProjectPDF } from "@/lib/exportProject";
 import { cn } from "@/lib/utils";
 import PunchList, { usePunchList } from "@/components/PunchList";
+import { estimateFinishDate } from "@/lib/estimateFinishDate";
+import { format } from "date-fns";
 
 type Section =
   | "overview" | "tasks" | "timeline" | "photos" | "plansfiles" | "notes"
@@ -150,6 +152,24 @@ const ProjectDetailPage = () => {
   const invoicesOutstanding = project.invoices
     .filter((i: any) => i.status !== "paid")
     .reduce((sum: number, i: any) => sum + (Number(i.amount) || 0), 0);
+
+  // Section-specific stat metrics
+  const finishEstimate = estimateFinishDate(project.tasks, project.startDate);
+  const activePhases = (project.taskPhases || []).filter((p: string) => {
+    const norm = p.trim().toLowerCase();
+    if (["general", "misc", "other"].includes(norm)) return false;
+    const phaseTasks = project.tasks.filter((t: any) => (t.phase || "General") === p && !t.parentTaskId);
+    return phaseTasks.length > 0 && phaseTasks.some((t: any) => !t.completed);
+  }).length;
+  const now = new Date();
+  const eventsThisMonth = (project.events || []).filter((e: any) => {
+    const d = new Date(e.date);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }).length;
+  const punchTotal = punchData.items.length;
+  const punchPassed = punchData.items.filter((i: any) => i.status === "pass").length;
+  const punchFailed = punchData.items.filter((i: any) => i.status === "fail").length;
+  const punchPending = punchData.items.filter((i: any) => i.status === "pending").length;
 
   const projectStatus: { label: string; tone: "active" | "complete" | "planning" } =
     project.tasks.length === 0
@@ -389,30 +409,35 @@ const ProjectDetailPage = () => {
       {/* Stat strip */}
       <div className="-mx-4 lg:-mx-8 -mt-4 lg:-mt-8 mb-4 bg-white border-b border-[hsl(214_13%_90%)]">
         <div className="grid grid-cols-2 md:grid-cols-4">
-          <div className="px-4 py-3 border-r border-[hsl(214_13%_90%)]">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Budget Used</p>
-            <p className={cn("text-xl font-semibold tabular-nums mt-0.5", budgetPercent > 100 ? "text-destructive" : "text-foreground")}>
-              {Math.round(budgetPercent)}%
-            </p>
-          </div>
-          <div className="px-4 py-3 border-r border-[hsl(214_13%_90%)]">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Tasks Done</p>
-            <p className="text-xl font-semibold text-foreground tabular-nums mt-0.5">
-              {completedTasks}/{project.tasks.length}
-            </p>
-          </div>
-          <div className="px-4 py-3 border-r border-[hsl(214_13%_90%)]">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Remaining</p>
-            <p className={cn("text-xl font-semibold tabular-nums mt-0.5", remainingBudget < 0 ? "text-destructive" : "text-foreground")}>
-              {fmtMoney(Math.abs(remainingBudget))}
-            </p>
-          </div>
-          <div className="px-4 py-3">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Outstanding</p>
-            <p className="text-xl font-semibold text-foreground tabular-nums mt-0.5">
-              {fmtMoney(invoicesOutstanding)}
-            </p>
-          </div>
+          {(activeSection === "timeline" ? [
+            { label: "Est. Finish", value: finishEstimate ? format(finishEstimate.date, "MMM d, yyyy") : "—" },
+            { label: "Start Date", value: project.startDate ? format(new Date(project.startDate), "MMM d, yyyy") : "—" },
+            { label: "Active Phases", value: String(activePhases) },
+            { label: "Events This Month", value: String(eventsThisMonth) },
+          ] : activeSection === "punchout" ? [
+            { label: "Total Items", value: String(punchTotal) },
+            { label: "Passed", value: String(punchPassed), tone: "success" as const },
+            { label: "Failed", value: String(punchFailed), tone: "destructive" as const },
+            { label: "Pending", value: String(punchPending), tone: "warning" as const },
+          ] : [
+            { label: "Budget Used", value: `${Math.round(budgetPercent)}%`, tone: budgetPercent > 100 ? "destructive" as const : undefined },
+            { label: "Tasks Done", value: `${completedTasks}/${project.tasks.length}` },
+            { label: "Remaining", value: fmtMoney(Math.abs(remainingBudget)), tone: remainingBudget < 0 ? "destructive" as const : undefined },
+            { label: "Outstanding", value: fmtMoney(invoicesOutstanding) },
+          ]).map((stat, idx, arr) => (
+            <div key={stat.label} className={cn("px-4 py-3", idx < arr.length - 1 && "border-r border-[hsl(214_13%_90%)]")}>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{stat.label}</p>
+              <p className={cn(
+                "text-xl font-semibold tabular-nums mt-0.5",
+                (stat as any).tone === "destructive" && "text-destructive",
+                (stat as any).tone === "success" && "text-success",
+                (stat as any).tone === "warning" && "text-warning",
+                !(stat as any).tone && "text-foreground"
+              )}>
+                {stat.value}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 
