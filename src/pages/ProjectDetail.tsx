@@ -406,8 +406,8 @@ const ProjectDetailPage = () => {
     <AppLayout title={topbarTitle as any} actions={headerActions}>
       {/* Stat strip */}
       <div className="-mx-4 lg:-mx-8 -mt-4 lg:-mt-8 mb-4 bg-white border-b border-[hsl(214_13%_90%)]">
-        <div className="grid grid-cols-2 md:grid-cols-4">
-          {(activeSection === "timeline" ? [
+        {(() => {
+          const stats = activeSection === "timeline" ? [
             { label: "Est. Finish", value: finishEstimate ? format(finishEstimate.date, "MMM d, yyyy") : "—" },
             { label: "Start Date", value: project.startDate ? format(new Date(project.startDate), "MMM d, yyyy") : "—" },
             { label: "Active Phases", value: String(activePhases) },
@@ -433,7 +433,11 @@ const ProjectDetailPage = () => {
             { label: "Tasks Done", value: `${completedTasks}/${project.tasks.length}` },
             { label: "Remaining", value: fmtMoney(Math.abs(remainingBudget)), tone: remainingBudget < 0 ? "destructive" as const : undefined },
             { label: "Outstanding", value: fmtMoney(invoicesOutstanding) },
-          ]).map((stat, idx, arr) => (
+          ];
+          const cols = stats.length === 5 ? "md:grid-cols-5" : "md:grid-cols-4";
+          return (
+          <div className={cn("grid grid-cols-2", cols)}>
+          {stats.map((stat, idx, arr) => (
             <div key={stat.label} className={cn("px-4 py-3", idx < arr.length - 1 && "border-r border-[hsl(214_13%_90%)]")}>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{stat.label}</p>
               <p className={cn(
@@ -447,7 +451,9 @@ const ProjectDetailPage = () => {
               </p>
             </div>
           ))}
-        </div>
+          </div>
+          );
+        })()}
       </div>
 
       {hasSubs && aggregated && (
