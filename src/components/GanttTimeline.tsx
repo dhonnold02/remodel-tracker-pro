@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Task } from "@/hooks/useProjects";
 import { format, addBusinessDays, parseISO, differenceInBusinessDays, isValid } from "date-fns";
-import { CalendarRange, CheckCircle2, X } from "lucide-react";
+import { CheckCircle2, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { phaseColor } from "@/lib/phaseColors";
 import { estimatePhaseDays } from "@/lib/estimateFinishDate";
 
@@ -113,11 +113,8 @@ const GanttTimeline = ({ tasks, startDate, phases }: Props) => {
 
   if (bars.length === 0) {
     return (
-      <div className="premium-card p-6 space-y-3">
-        <div className="flex items-center gap-2">
-          <CalendarRange className="h-4 w-4 text-primary" />
-          <h2 className="section-title">Phase Timeline</h2>
-        </div>
+      <div className="bg-white border border-[hsl(214_13%_90%)] rounded-xl p-4 space-y-3">
+        <h2 className="text-sm font-semibold text-foreground">Phase Timeline</h2>
         <p className="text-sm text-muted-foreground">Add tasks to see the project timeline by phase.</p>
       </div>
     );
@@ -133,13 +130,20 @@ const GanttTimeline = ({ tasks, startDate, phases }: Props) => {
   const activeBar = bars.find((b) => b.phase === activePhase) || null;
 
   return (
-    <div className="premium-card p-6 space-y-5">
+    <div className="bg-white border border-[hsl(214_13%_90%)] rounded-xl p-4 space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <CalendarRange className="h-4 w-4 text-primary" />
-          <h2 className="section-title">Phase Timeline</h2>
+        <div>
+          <h2 className="text-sm font-semibold text-foreground">Phase Timeline</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Click a bar to view tasks</p>
         </div>
-        <span className="text-xs text-muted-foreground">Click a bar to view tasks</span>
+        <div className="flex items-center gap-1">
+          <button type="button" className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" aria-label="Previous month">
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <button type="button" className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" aria-label="Next month">
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       <div className="flex overflow-hidden rounded-xl border bg-background">
