@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import {
   Plus, Trash2, ChevronDown, ChevronRight, GripVertical,
   CalendarIcon, AlertTriangle, X, MoreHorizontal, Pencil, ListTree, FileDown,
+  Search, Filter, ArrowUpDown,
 } from "lucide-react";
 import {
   DndContext, DragOverlay, PointerSensor, TouchSensor, KeyboardSensor,
@@ -798,36 +799,115 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, can
   const totalDone = totalLeaf.filter(t => t.completed).length;
   const totalPercent = totalLeaf.length > 0 ? (totalDone / totalLeaf.length) * 100 : 0;
 
+  // Search / sort state
+  const [search, setSearch] = useState("");
+  const [sortMode, setSortMode] = useState<"manual" | "due" | "priority">("manual");
+
+  const visibleTasksByPhase = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const out: Record<string, Task[]> = {};
+    for (const phase of effectivePhases) {
+      let list = (tasksByPhase[phase] || []).filter((t) => !t.parentTaskId);
+      if (q) list = list.filter((t) => t.title.toLowerCase().includes(q));
+      if (sortMode === "due") {
+        list = [...list].sort((a, b) => {
+          if (!a.dueDate && !b.dueDate) return 0;
+          if (!a.dueDate) return 1;
+          if (!b.dueDate) return -1;
+          return a.dueDate.localeCompare(b.dueDate);
+        });
+      } else if (sortMode === "priority") {
+        const rank: Record<TaskPriority, number> = { high: 0, medium: 1, low: 2 };
+        list = [...list].sort((a, b) => rank[a.priority] - rank[b.priority]);
+      }
+      out[phase] = list;
+    }
+    return out;
+  }, [tasksByPhase, effectivePhases, search, sortMode]);
+
   return (
     <div className="space-y-4">
-      {/* Board summary */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-1">
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <span>{totalDone}/{totalLeaf.length} tasks complete</span>
-          <span className="text-foreground font-medium tabular-nums">{Math.round(totalPercent)}%</span>
-          <div className="hidden sm:block w-32 h-1 rounded-full bg-secondary overflow-hidden">
-            <div className="h-full bg-success rounded-full transition-all duration-500" style={{ width: `${totalPercent}%` }} />
-          </div>
+      {/* Toolbar */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-sm text-muted-foreground">
+          {totalDone} of {totalLeaf.length} tasks complete · {Math.round(totalPercent)}%
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 text-xs gap-1.5 rounded-lg"
+            onClick={() =>
+              exportTasksPDF({
+                projectName: projectName || "Project",
+                projectAddress,
+                tasks,
+                brandLogoUrl: brand.brandLogoUrl,
+                brandName: brand.brandName,
+              })
+            }
+            disabled={tasks.length === 0}
+          >
+            <FileDown className="h-3.5 w-3.5" />
+            Export Tasks PDF
+          </Button>
+          {isEditor && (
+            <Button
+              size="sm"
+              className="h-9 text-xs gap-1.5 rounded-lg"
+              onClick={() => setAddingPhase(true)}
+            >
+              <Plus className="h-3.5 w-3.5" /> Add Phase
+            </Button>
+          )}
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-9 md:h-8 text-xs gap-1.5 w-full md:w-auto"
-          onClick={() =>
-            exportTasksPDF({
-              projectName: projectName || "Project",
-              projectAddress,
-              tasks,
-              brandLogoUrl: brand.brandLogoUrl,
-              brandName: brand.brandName,
-            })
-          }
-          disabled={tasks.length === 0}
-        >
-          <FileDown className="h-3.5 w-3.5" />
-          Export Tasks PDF
-        </Button>
       </div>
+
+      {/* Search + filter / sort */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search tasks..."
+            className="h-9 pl-9 rounded-lg border text-sm"
+          />
+        </div>
+        <Button variant="outline" size="sm" className="h-9 text-xs gap-1.5 rounded-lg">
+          <Filter className="h-3.5 w-3.5" /> Filter
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-9 text-xs gap-1.5 rounded-lg">
+              <ArrowUpDown className="h-3.5 w-3.5" /> Sort
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuItem onClick={() => setSortMode("manual")}>Manual order</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setSortMode("due")}>Due date</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setSortMode("priority")}>Priority</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {addingPhase && isEditor && (
+        <div className="rounded-xl border bg-card p-3 flex gap-2 items-center">
+          <Input
+            autoFocus
+            placeholder="Phase name…"
+            value={newPhaseName}
+            onChange={(e) => setNewPhaseName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") addPhase();
+              if (e.key === "Escape") { setAddingPhase(false); setNewPhaseName(""); }
+            }}
+            className="h-9 text-sm rounded-lg flex-1"
+          />
+          <Button size="sm" onClick={addPhase} className="h-9 text-xs rounded-lg">Add</Button>
+          <Button size="sm" variant="ghost" onClick={() => { setAddingPhase(false); setNewPhaseName(""); }} className="h-9 text-xs rounded-lg">Cancel</Button>
+        </div>
+      )}
 
       <DndContext
         sensors={sensors}
@@ -837,86 +917,32 @@ const TaskBoard = ({ tasks, phases, onChangeTasks, onChangePhases, isEditor, can
         onDragEnd={onDragEnd}
         onDragCancel={() => setActiveId(null)}
       >
-        {/* Board background layer — columns float as lanes on top */}
-        <div className="rounded-2xl bg-secondary/40 ring-1 ring-border/40 p-3 sm:p-4 md:p-5 overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden">
-          <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-stretch min-h-[200px]">
-            {effectivePhases.map((phase, i) => (
-              <PhaseColumn
-                key={phase}
-                phase={phase}
-                index={i}
-                tasks={tasksByPhase[phase] || []}
-                allTasks={tasks}
-                isEditor={isEditor}
-                canComplete={effectiveCanComplete}
-                collapsed={collapsed.has(phase)}
-                expandedTaskId={expandedTaskId}
-                onToggleCollapse={() => setCollapsed(prev => {
-                  const next = new Set(prev);
-                  next.has(phase) ? next.delete(phase) : next.add(phase);
-                  return next;
-                })}
-                onToggleExpandTask={(id) => setExpandedTaskId(prev => prev === id ? null : id)}
-                onAddTask={addTask}
-                onRenamePhase={renamePhase}
-                onDeletePhase={deletePhase}
-                onToggleComplete={toggleComplete}
-                onUpdateTask={updateTask}
-                onAddSubtask={addSubtask}
-                onRemoveTask={removeTask}
-                isFirst={i === 0}
-              />
-            ))}
-
-            {/* Add phase — subtle inline button */}
-            {isEditor && (
-              <div className="shrink-0 self-start">
-                {addingPhase ? (
-                  <div className="w-60 rounded-xl border bg-card p-2 space-y-2 shadow-sm">
-                    <Input
-                      autoFocus
-                      placeholder="Phase name…"
-                      value={newPhaseName}
-                      onChange={(e) => setNewPhaseName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") addPhase();
-                        if (e.key === "Escape") { setAddingPhase(false); setNewPhaseName(""); }
-                      }}
-                      className="h-8 text-sm"
-                    />
-                    <div className="flex gap-1.5">
-                      <Button size="sm" onClick={addPhase} className="h-9 text-xs flex-1">Add phase</Button>
-                      <Button size="sm" variant="ghost" onClick={() => { setAddingPhase(false); setNewPhaseName(""); }} className="h-9 text-xs">Cancel</Button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setAddingPhase(true)}
-                    className="flex items-center gap-1.5 px-3 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0 self-start mt-1"
-                  >
-                    <Plus className="h-3.5 w-3.5" />Add phase
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+        <div className="space-y-3">
+          {effectivePhases.map((phase, i) => (
+            <PhaseBlock
+              key={phase}
+              phase={phase}
+              index={i}
+              tasks={visibleTasksByPhase[phase] || []}
+              allTasks={tasks}
+              isEditor={isEditor}
+              canComplete={effectiveCanComplete}
+              isFirst={i === 0}
+              onAddTask={addTask}
+              onRenamePhase={renamePhase}
+              onDeletePhase={deletePhase}
+              onToggleComplete={toggleComplete}
+              onUpdateTask={updateTask}
+              onRemoveTask={removeTask}
+            />
+          ))}
         </div>
 
         <DragOverlay>
           {activeTask ? (
-            <TaskCard
-              task={activeTask}
-              subtasks={activeSubs}
-              isEditor={false}
-              canComplete={false}
-              expanded={false}
-              onToggleExpand={() => {}}
-              onToggleComplete={() => {}}
-              onUpdate={() => {}}
-              onAddSubtask={() => {}}
-              onRemove={() => {}}
-              isOverlay
-            />
+            <div className="rounded-lg bg-card border border-border shadow-lg px-4 py-2 text-sm">
+              {activeTask.title}
+            </div>
           ) : null}
         </DragOverlay>
       </DndContext>
