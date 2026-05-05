@@ -119,6 +119,12 @@ export interface ProjectData {
   createdAt: string;
   taskPhases: string[];
   events: ProjectEvent[];
+  primaryContactName: string;
+  primaryContactPhone: string;
+  primaryContactEmail: string;
+  secondaryContactName: string;
+  secondaryContactPhone: string;
+  secondaryContactEmail: string;
 }
 
 interface ProjectsContextType {
