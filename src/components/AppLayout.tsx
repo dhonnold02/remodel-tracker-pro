@@ -6,7 +6,7 @@ import { useRole } from "@/hooks/useRole";
 import SightlineLogo from "@/components/SightlineLogo";
 import {
   LayoutDashboard, Users,
-  LogOut, WifiOff, ChevronLeft, SlidersHorizontal, Zap,
+  LogOut, WifiOff, ChevronLeft, SlidersHorizontal, Zap, Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -32,6 +32,7 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
   const slimNav: { label: string; icon: typeof LayoutDashboard; path: string; show: boolean }[] = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/", show: true },
     { label: "Command Center", icon: Zap, path: "/command-center", show: true },
+    { label: "Timecards", icon: Clock, path: "/timecards", show: true },
     { label: "Team", icon: Users, path: "/team", show: canInviteMembers },
     { label: "Settings", icon: SlidersHorizontal, path: "/settings", show: canAccessSettings },
   ].filter((i) => i.show);
@@ -177,6 +178,7 @@ const AppLayout = ({ children, title, subtitle, backTo, actions }: AppLayoutProp
         {[
           { label: "Dashboard", icon: LayoutDashboard, onClick: () => navigate("/"), active: location.pathname === "/" },
           { label: "Command Center", icon: Zap, onClick: () => navigate("/command-center"), active: location.pathname.startsWith("/command-center") },
+          { label: "Time", icon: Clock, onClick: () => navigate("/timecards"), active: location.pathname.startsWith("/timecards") },
           ...(canInviteMembers ? [{ label: "Team", icon: Users, onClick: () => navigate("/team"), active: location.pathname.startsWith("/team") }] : []),
           ...(canAccessSettings ? [{ label: "Settings", icon: SlidersHorizontal, onClick: () => navigate("/settings"), active: location.pathname.startsWith("/settings") }] : []),
         ].map((tab) => (
