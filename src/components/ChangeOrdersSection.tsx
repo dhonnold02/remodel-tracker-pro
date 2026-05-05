@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ChangeOrder, ChangeOrderComment } from "@/types/project";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, ClipboardList, MessageSquare, FileEdit } from "lucide-react";
+import { Plus, Trash2, MessageSquare, FileEdit, NotebookPen } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
 
 interface ChangeOrdersProps {
@@ -112,10 +112,10 @@ const ChangeOrdersSection = ({ orders, onChange }: ChangeOrdersProps) => {
   };
 
   return (
-    <div className="premium-card p-6 space-y-5">
-      <h2 className="section-title flex items-center gap-2">
-        <ClipboardList className="h-4 w-4 text-primary" />
-        Change Orders & Notes
+    <div className="bg-white border border-[hsl(214_13%_90%)] rounded-xl p-5 space-y-4">
+      <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+        <NotebookPen className="h-4 w-4 text-primary" />
+        Notes & Change Orders
       </h2>
 
       <div className="space-y-2">
@@ -123,15 +123,14 @@ const ChangeOrdersSection = ({ orders, onChange }: ChangeOrdersProps) => {
           placeholder="Add a note, change order, or contractor instruction…"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          className="flex w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none resize-none min-h-[72px] focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background transition-shadow"
+          className="flex w-full rounded-lg border border-[hsl(214_13%_90%)] bg-white px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none resize-none min-h-[72px] focus:ring-2 focus:ring-ring transition-shadow"
         />
         <div className="flex justify-end">
           <Button
-            variant="outline"
             size="sm"
             onClick={add}
             disabled={!draft.trim()}
-            className="rounded-xl"
+            className="rounded-lg h-9 text-xs"
           >
             <Plus className="h-3.5 w-3.5 mr-1" />
             Add Note
@@ -140,18 +139,15 @@ const ChangeOrdersSection = ({ orders, onChange }: ChangeOrdersProps) => {
       </div>
 
       {orders.length === 0 ? (
-        <EmptyState icon={FileEdit} title="No change orders yet" />
+        <EmptyState icon={FileEdit} title="No notes yet" />
       ) : (
-        <div className="space-y-3">
+        <div className="divide-y divide-[hsl(214_13%_90%)]">
           {orders.map((order) => {
             const replyOpen = openReplyId === order.id;
             const commentCount = order.comments?.length || 0;
             return (
-              <div
-                key={order.id}
-                className="rounded-xl border border-l-2 border-l-primary/30 bg-background hover:shadow-sm transition-shadow duration-150"
-              >
-                <div className="p-4 space-y-2">
+              <div key={order.id} className="py-4 first:pt-0 last:pb-0">
+                <div className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
                     <Meta
                       initials={order.authorInitials || initialsFrom(order.authorName)}
@@ -166,10 +162,10 @@ const ChangeOrdersSection = ({ orders, onChange }: ChangeOrdersProps) => {
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
-                  <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                  <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed pl-8">
                     {order.text}
                   </p>
-                  <div className="flex items-center pt-1">
+                  <div className="flex items-center pl-8">
                     <button
                       onClick={() => setOpenReplyId(replyOpen ? null : order.id)}
                       className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -183,7 +179,7 @@ const ChangeOrdersSection = ({ orders, onChange }: ChangeOrdersProps) => {
                 </div>
 
                 {(replyOpen || commentCount > 0) && (
-                  <div className="border-t border-border/60 bg-muted/30 px-4 py-3 space-y-3 rounded-b-xl">
+                  <div className="ml-8 mt-3 border-l-2 border-[hsl(214_13%_90%)] pl-4 space-y-3">
                     {commentCount > 0 && (
                       <ul className="space-y-3">
                         {order.comments.map((c) => (
