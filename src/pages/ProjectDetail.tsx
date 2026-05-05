@@ -8,6 +8,7 @@ import AppLayout from "@/components/AppLayout";
 import SkeletonCard from "@/components/SkeletonCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProjectDetails from "@/components/ProjectDetails";
+import ContactsCard from "@/components/ContactsCard";
 import BudgetSection from "@/components/BudgetSection";
 import InvoicesSection from "@/components/InvoicesSection";
 import TaskBoard from "@/components/TaskBoard";
@@ -236,6 +237,7 @@ const ProjectDetailPage = () => {
         return (
           <div className="space-y-6">
             <ProjectDetails data={project as any} onChange={isEditor ? update : () => {}} />
+            <ContactsCard data={project as any} onChange={isEditor ? (update as any) : () => {}} readOnly={!isEditor} />
             {!project.parentId && (
               <div className="rounded-xl bg-card border border-[hsl(214_13%_90%)] p-5 space-y-3">
                 <div className="flex items-center justify-between gap-2">
