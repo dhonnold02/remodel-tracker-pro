@@ -308,52 +308,38 @@ const Team = () => {
 
   return (
     <AppLayout title="Team" subtitle="Invite and manage your company members">
-      <div className="max-w-5xl mx-auto space-y-8">
-        {/* Invite form */}
-        <section className="rounded-2xl border bg-card shadow-sm p-6 space-y-4">
-          <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
-              <UserPlus className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <h2 className="font-heading text-base font-bold text-foreground">Invite a member</h2>
-              <p className="text-xs text-muted-foreground">
-                Generate an invite link — share it however you like (text, Slack, email).
-              </p>
-            </div>
+      <div className="-m-4 lg:-m-8 min-h-full bg-[hsl(210_20%_98%)] px-6 py-5">
+        <div className="max-w-5xl mx-auto space-y-6">
+          <div>
+            <h1 className="font-heading text-2xl font-semibold text-foreground">Team</h1>
+            <p className="text-sm text-muted-foreground mt-1">Invite and manage your company members</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-[1fr_200px_auto] gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Email</Label>
+          {/* Invite card */}
+          <section className="rounded-xl border border-[hsl(214_13%_90%)] bg-white p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-foreground">Invite a member</h2>
+              <button
+                type="button"
+                onClick={() => setPermissionsOpen(true)}
+                className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                aria-label="View role permissions"
+              >
+                <Info className="h-3.5 w-3.5" />
+                Role permissions
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_180px_auto] gap-2">
               <Input
                 type="email"
                 placeholder="teammate@company.com"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && sendInvite()}
-                className="h-10 rounded-xl"
+                className="h-9 rounded-lg"
               />
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5">
-                <Label className="text-xs">Role</Label>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setPermissionsOpen(true);
-                  }}
-                  className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors min-h-[44px] min-w-[44px] inline-flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                  title="View role permissions"
-                  aria-label="View role permissions"
-                >
-                  <Info className="h-3.5 w-3.5" />
-                </button>
-              </div>
               <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as InvitableRole)}>
-                <SelectTrigger className="h-10 rounded-xl">
+                <SelectTrigger className="h-9 rounded-lg">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -362,18 +348,15 @@ const Team = () => {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="flex items-end sm:col-auto">
               <Button
                 onClick={sendInvite}
                 disabled={inviting || !inviteEmail.trim()}
-                className="h-10 rounded-xl px-5 w-full sm:w-auto"
+                className="h-9 rounded-lg px-4 w-full sm:w-auto"
               >
                 {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send Invite"}
               </Button>
             </div>
-          </div>
-          {fallbackInviteLink && (
+            {fallbackInviteLink && (
             <div className="space-y-1.5 border-t pt-3">
               <Label className="text-xs">Copy invite link manually</Label>
               <div className="flex gap-2">
@@ -381,14 +364,14 @@ const Team = () => {
                   readOnly
                   value={fallbackInviteLink}
                   onFocus={(e) => e.currentTarget.select()}
-                  className="h-10 rounded-xl text-xs font-mono"
+                  className="h-9 rounded-lg text-xs font-mono"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
                   onClick={() => setFallbackInviteLink(null)}
-                  className="h-10 w-10 rounded-xl"
+                  className="h-9 w-9 rounded-lg"
                   aria-label="Dismiss"
                 >
                   <X className="h-4 w-4" />
@@ -398,37 +381,36 @@ const Team = () => {
                 Your browser blocked clipboard access. Tap the link to select it, then copy.
               </p>
             </div>
-          )}
-        </section>
+            )}
+          </section>
 
-        {/* Members table */}
-        <section className="space-y-3">
-          <div className="flex items-baseline justify-between">
-            <h2 className="font-heading text-lg font-bold text-foreground">Members</h2>
-            <p className="text-xs text-muted-foreground">{members.length} total</p>
-          </div>
-          <div className="rounded-2xl border bg-card overflow-hidden">
+          {/* Members card */}
+          <section className="rounded-xl border border-[hsl(214_13%_90%)] bg-white overflow-hidden">
+            <div className="flex items-baseline justify-between px-5 py-3 border-b border-[hsl(214_13%_90%)]">
+              <h2 className="text-sm font-semibold text-foreground">Members</h2>
+              <p className="text-xs text-muted-foreground">{members.length} total</p>
+            </div>
             {loading ? (
               <PageLoader variant="inline" />
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Name / Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Joined</TableHead>
-                    <TableHead className="text-right hidden md:table-cell">Actions</TableHead>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="text-xs uppercase tracking-wider">Name / Email</TableHead>
+                    <TableHead className="text-xs uppercase tracking-wider">Role</TableHead>
+                    <TableHead className="text-xs uppercase tracking-wider">Joined</TableHead>
+                    <TableHead className="text-xs uppercase tracking-wider text-right hidden md:table-cell">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sortedMembers.map((m) => {
+                  {sortedMembers.map((m, idx) => {
                     const isSelf = m.user_id === user?.id;
                     const canRemove = !isSelf && m.role !== "owner";
                     const isExpanded = expandedMemberId === m.id;
                     return (
                       <Fragment key={m.id}>
                       <TableRow
-                        className={cn(canRemove && "md:cursor-default cursor-pointer")}
+                        className={cn(idx % 2 === 1 && "bg-slate-50", canRemove && "md:cursor-default cursor-pointer")}
                         onClick={() => {
                           if (!canRemove) return;
                           if (typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches) return;
