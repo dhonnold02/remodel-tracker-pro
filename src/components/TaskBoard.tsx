@@ -604,6 +604,290 @@ const PhaseColumn = ({
 };
 
 /* ────── Main Board ────── */
+/* ────── New: vertical PhaseBlock + TaskRow (replaces kanban) ────── */
+interface TaskRowProps {
+  task: Task;
+  isEditor: boolean;
+  canComplete: boolean;
+  onToggleComplete: (id: string) => void;
+  onUpdate: (id: string, partial: Partial<Task>) => void;
+  onRemove: (id: string) => void;
+}
+
+const TaskRow = ({ task, isEditor, canComplete, onToggleComplete, onUpdate, onRemove }: TaskRowProps) => {
+  const sortable = useSortable({
+    id: task.id,
+    data: { type: "task", phase: task.phase || "General" },
+    disabled: !isEditor,
+  });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = sortable;
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 };
+  const status = getDueDateStatus(task.dueDate, task.completed);
+  const assignee = task.tags?.[0];
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="group flex items-center gap-3 px-4 py-2 border-b border-[hsl(214_13%_90%)] last:border-b-0 hover:bg-slate-50/60 transition-colors"
+    >
+      {isEditor && (
+        <button
+          {...attributes}
+          {...listeners}
+          className="touch-none cursor-grab active:cursor-grabbing text-muted-foreground/30 hover:text-foreground opacity-0 group-hover:opacity-100 -ml-2"
+          aria-label="Drag task"
+        >
+          <GripVertical className="h-3.5 w-3.5" />
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={() => (isEditor || canComplete) && onToggleComplete(task.id)}
+        disabled={!isEditor && !canComplete}
+        aria-label={task.completed ? "Mark incomplete" : "Mark complete"}
+        className={cn(
+          "w-4 h-4 rounded-sm border border-slate-300 flex items-center justify-center shrink-0 transition-colors",
+          task.completed && "bg-primary border-primary text-primary-foreground",
+        )}
+      >
+        {task.completed && <span className="text-[10px] leading-none">✓</span>}
+      </button>
+      <TitleInput
+        value={task.title}
+        onCommit={(v) => onUpdate(task.id, { title: v })}
+        readOnly={!isEditor}
+        placeholder="Task title…"
+        className={cn(
+          "flex-1 bg-transparent text-sm outline-none min-w-0",
+          task.completed ? "line-through text-muted-foreground" : "text-foreground",
+        )}
+      />
+      {assignee && (
+        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full shrink-0">
+          {assignee}
+        </span>
+      )}
+      <Popover>
+        <PopoverTrigger asChild>
+          <button
+            disabled={!isEditor}
+            className={cn(
+              "text-xs shrink-0 inline-flex items-center gap-1",
+              status === "overdue" ? "text-destructive font-medium" : "text-muted-foreground",
+            )}
+          >
+            {status === "overdue" && <AlertTriangle className="h-3 w-3" />}
+            {task.dueDate ? format(parseISO(task.dueDate), "MMM d") : (isEditor ? "Set due" : "")}
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="end">
+          <Calendar
+            mode="single"
+            selected={task.dueDate ? parseISO(task.dueDate) : undefined}
+            onSelect={(d) => onUpdate(task.id, { dueDate: d ? format(d, "yyyy-MM-dd") : null })}
+            className="p-3 pointer-events-auto"
+          />
+          {task.dueDate && (
+            <div className="px-3 pb-2">
+              <Button variant="ghost" size="sm" className="w-full text-xs h-7" onClick={() => onUpdate(task.id, { dueDate: null })}>
+                Clear due date
+              </Button>
+            </div>
+          )}
+        </PopoverContent>
+      </Popover>
+      {isEditor && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground p-1 rounded-md">
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            {(["high", "medium", "low"] as TaskPriority[]).map((p) => (
+              <DropdownMenuItem key={p} onClick={() => onUpdate(task.id, { priority: p })}>
+                <span className={cn("h-2 w-2 rounded-full mr-2", PRIORITY_CONFIG[p].dot)} />
+                {PRIORITY_CONFIG[p].label} priority
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onRemove(task.id)} className="text-destructive focus:text-destructive">
+              <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+    </div>
+  );
+};
+
+interface PhaseBlockProps {
+  phase: string;
+  index: number;
+  tasks: Task[];
+  allTasks: Task[];
+  isEditor: boolean;
+  canComplete: boolean;
+  isFirst: boolean;
+  onAddTask: (phase: string, title: string) => void;
+  onRenamePhase: (oldName: string, newName: string) => void;
+  onDeletePhase: (phase: string) => void;
+  onToggleComplete: (id: string) => void;
+  onUpdateTask: (id: string, partial: Partial<Task>) => void;
+  onRemoveTask: (id: string) => void;
+}
+
+const PhaseBlock = ({
+  phase, index, tasks, allTasks, isEditor, canComplete, isFirst,
+  onAddTask, onRenamePhase, onDeletePhase, onToggleComplete, onUpdateTask, onRemoveTask,
+}: PhaseBlockProps) => {
+  const [adding, setAdding] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [renaming, setRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState(phase);
+
+  const { setNodeRef: setDropRef, isOver } = useDroppable({
+    id: `phase-${phase}`,
+    data: { type: "phase", phase },
+  });
+
+  const allLeaf = tasks.filter(t => !allTasks.some(c => c.parentTaskId === t.id));
+  const completedCount = allLeaf.filter(t => t.completed).length;
+  const percent = allLeaf.length > 0 ? (completedCount / allLeaf.length) * 100 : 0;
+  const color = phaseColor(index);
+
+  const handleAdd = () => {
+    if (!newTitle.trim()) { setAdding(false); return; }
+    onAddTask(phase, newTitle.trim());
+    setNewTitle("");
+  };
+
+  const handleRename = () => {
+    const v = renameValue.trim();
+    if (v && v !== phase) onRenamePhase(phase, v);
+    setRenaming(false);
+  };
+
+  return (
+    <div
+      ref={setDropRef}
+      className={cn(
+        "bg-white border border-[hsl(214_13%_90%)] rounded-xl overflow-hidden mb-3 transition-colors",
+        isOver && "border-primary/40 ring-1 ring-primary/20",
+      )}
+    >
+      {/* Phase header */}
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-[hsl(214_13%_90%)]">
+        <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: color.bar }} />
+        {renaming ? (
+          <input
+            autoFocus
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+            onBlur={handleRename}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleRename();
+              if (e.key === "Escape") { setRenameValue(phase); setRenaming(false); }
+            }}
+            className="text-sm font-semibold bg-background border rounded px-2 py-0.5 outline-none focus:ring-2 focus:ring-primary/30 min-w-0"
+          />
+        ) : (
+          <h3
+            className="text-sm font-semibold text-foreground truncate"
+            onDoubleClick={() => isEditor && setRenaming(true)}
+            title={isEditor ? "Double-click to rename" : phase}
+          >
+            {phase}
+          </h3>
+        )}
+        <span className="text-xs text-muted-foreground tabular-nums">
+          {completedCount}/{allLeaf.length}
+        </span>
+        <div className="flex-1" />
+        <div className="hidden sm:block w-24 h-1 rounded-full bg-secondary overflow-hidden">
+          <div className="h-full rounded-full transition-all duration-500" style={{ width: `${percent}%`, background: color.bar }} />
+        </div>
+        <span className="text-xs text-muted-foreground tabular-nums w-10 text-right">{Math.round(percent)}%</span>
+        {isEditor && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="text-muted-foreground hover:text-foreground p-1 rounded-md">
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem onClick={() => { setRenameValue(phase); setRenaming(true); }}>
+                <Pencil className="h-3.5 w-3.5 mr-2" /> Rename phase
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setAdding(true)}>
+                <Plus className="h-3.5 w-3.5 mr-2" /> Add task
+              </DropdownMenuItem>
+              {!isFirst && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => onDeletePhase(phase)} className="text-destructive focus:text-destructive">
+                    <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete phase
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+
+      {/* Task rows */}
+      <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+        {tasks.length === 0 && !adding ? (
+          <div className="px-4 py-3 text-xs text-muted-foreground italic">
+            No tasks yet — add one below
+          </div>
+        ) : (
+          tasks.map((t) => (
+            <TaskRow
+              key={t.id}
+              task={t}
+              isEditor={isEditor}
+              canComplete={canComplete}
+              onToggleComplete={onToggleComplete}
+              onUpdate={onUpdateTask}
+              onRemove={onRemoveTask}
+            />
+          ))
+        )}
+      </SortableContext>
+
+      {/* Add task row */}
+      {isEditor && (
+        adding ? (
+          <div className="px-4 py-2 border-t border-[hsl(214_13%_90%)] flex gap-2 items-center">
+            <Input
+              autoFocus
+              placeholder="Task title…"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleAdd();
+                if (e.key === "Escape") { setAdding(false); setNewTitle(""); }
+              }}
+              className="h-8 text-sm rounded-md flex-1"
+            />
+            <Button size="sm" onClick={handleAdd} className="h-8 text-xs rounded-md">Add</Button>
+            <Button size="sm" variant="ghost" onClick={() => { setAdding(false); setNewTitle(""); }} className="h-8 text-xs rounded-md">Cancel</Button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setAdding(true)}
+            className="w-full flex items-center gap-1.5 px-4 py-2 text-sm text-primary hover:bg-primary/5 transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" /> Add task
+          </button>
+        )
+      )}
+    </div>
+  );
+};
+
 interface TaskBoardProps {
   tasks: Task[];
   phases: string[];
